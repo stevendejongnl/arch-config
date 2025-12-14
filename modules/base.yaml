@@ -1,0 +1,97 @@
+# Base packages installed on all systems
+# These packages are included regardless of host or modules
+
+description: Base system packages
+
+packages:
+  # Essential base system
+  - base
+  - base-devel
+
+  # Kernel
+  # - linux              # Standard kernel
+  # - linux-zen          # Zen kernel (optimized for desktop)
+  - linux-lts           # Long-term support kernel
+  # - linux-hardened     # Security-focused kernel
+
+  # Firmware
+  - linux-lts-headers
+  - linux-firmware
+  - aic94xx-firmware    # Firmware for Adaptec/LSI SAS controllers
+  - ast-firmware        # Firmware for ASPEED AST graphics
+
+  # System
+  - arandr
+  - amd-ucode           # AMD CPU microcode updates
+  - acpi                # ACPI support
+  - auto-cpufreq        # Automatic CPU frequency scaling
+  - blueman             # Bluetooth manager
+  - efibootmgr          # EFI boot manager
+  - lxappearance        # Appearance settings manager
+  - lxsession           # LXDE session manager
+  - mesa-utils          # Mesa utilities (e.g., glxinfo)
+  - networkmanager      # Network management service
+  - network-manager-applet  # NetworkManager system tray applet
+  - paccache-hook       # Tool to manage pacman cache
+  - sudo
+  - upd72020x-fw        # Firmware for Realtek RTL8723BU Wi-Fi/BT chipsets
+  - update-grub         # Update GRUB bootloader
+  - v4l2loopback-dkms   # V4L2 loopback device driver
+  - wd719x-firmware     # Firmware for Marvell Yukon Ethernet controllers
+  - xf86-video-vesa     # VESA video driver for Xorg
+
+  # Window manager
+  - picom               # Compositor for X11
+  - rofi                # Application launcher and dmenu replacement
+  - xorg-server         # Xorg display server
+  - xorg-xhost          # Xorg host program
+  - xorg-xinit          # Xorg initialization program
+  - xorg-xinput         # Xorg input device configuration tool
+  - xorg-xrandr         # Xorg screen resizing and rotation tool
+  - xorg-xsetroot       # Xorg root window parameter setting tool
+  - xorg-xprop          # Xorg window property utility
+  - xorg-xbacklight     # Xorg backlight control utility
+
+  # Audio
+  - pipewire            # Audio and video server
+  - pipewire-alsa       # ALSA support for PipeWire
+  - pipewire-audio      # Audio support for PipeWire
+  - pipewire-jack       # JACK support for PipeWire
+  - pipewire-pulse      # PulseAudio replacement for PipeWire
+  - pipewire-zeroconf   # Zeroconf support for PipeWire
+
+  # Basic tools
+  - git
+  - neovim
+  - btop
+  - alacritty
+  - autorandr
+  - bind                # DNS server and tools
+  - bluez-qt            # Bluetooth tools for Qt-based environments
+  - bluez-tools         # Bluetooth command-line tools
+  - caffeine-ng         # Prevents system from sleeping
+  - darkman             # Automatic dark mode switcher
+  - pavucontrol         # PulseAudio volume control
+  - tmate               # Instant terminal sharing
+  - tmux                # Terminal multiplexer
+  - unclutter           # Hide mouse cursor when idle
+  - x11-ssh-askpass     # SSH password prompt for X11
+  - xaskpass            # SSH password prompt for X11
+  - xdg-desktop-portal-gtk  # GTK implementation of XDG desktop portal
+  - zoxide              # Fast directory jumper
+  - zsh
+
+  # Applications
+  - thunar              # File manager
+  - thunar-archive-plugin  # Archive support for Thunar
+  - thunar-media-tags-plugin  # Media tags support for Thunar
+  - thunar-shares-plugin  # Network shares support for Thunar
+  - thunar-volman       # Volume management for Thunar
+  - ungoogled-chromium-bin
+  - whatsapp-for-linux
+
+  # dcli dependencies
+  # - paru         # AUR helper (required for AUR package management)
+  - yay          # AUR helper (required for AUR package management)
+  - fzf          # Fuzzy finder (required for dcli search/module/backup TUI)
+  - timeshift    # System backup tool (required for dcli backup commands)
