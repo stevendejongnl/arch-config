@@ -1,0 +1,14 @@
+description: DWM
+
+# List of packages in this module
+packages: []
+
+# Modules that conflict with this one
+conflicts: []
+
+# Script to run before installing packages (optional)
+# Useful for system preparation like enabling multilib
+pre_install_hook: "scripts/dwm.sh"
+
+# Script to run after installing packages (optional)
+post_install_hook: ""
