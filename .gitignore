@@ -1,2 +1,5 @@
 # System packages merged from host (auto-generated, host-specific)
 system-packages-*.yaml
+
+config.yaml
+state/config-backups/

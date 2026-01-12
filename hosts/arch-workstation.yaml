@@ -1,0 +1,50 @@
+# Host configuration for arch-workstation
+# workstation
+
+host: arch-workstation
+description: workstation
+
+# Import shared configurations (optional)
+# Example:
+# import:
+#   - hosts/shared/laptop-common.yaml
+
+# Enabled modules
+enabled_modules: []
+
+# Module processing mode
+# parallel: Collect and install all modules at once (faster, default)
+# sequential: Process modules one-by-one in enabled_modules order (more control)
+module_processing: parallel
+
+# Host-specific packages
+packages: []
+
+# Exclude packages from base or modules
+exclude: []
+
+# Configuration backup settings
+config_backups:
+  enabled: true      # Auto-backup on sync
+  max_backups: 5     # Keep last 5 backups (0 = unlimited)
+
+# System backup settings
+system_backups:
+  enabled: true           # Global toggle for system backups
+  backup_on_sync: true    # Create backup during dcli sync
+  backup_on_update: true  # Create backup during dcli update
+  tool: timeshift                # Backup tool: timeshift or snapper
+  snapper_config: root    # Snapper config name (if using snapper)
+
+# Update hooks (optional - run scripts before/after system updates)
+# update_hooks:
+#   pre_update: "scripts/pre-update.sh"   # Run before yay -Syu
+#   post_update: "scripts/post-update.sh" # Run after flatpak update
+#   behavior: ask                          # Options: ask, always, once, skip
+
+# Settings
+flatpak_scope: user
+auto_prune: false
+
+# AUR helper to use (auto-detects paru or yay if not specified)
+# aur_helper: paru   # Options: paru, yay, or any AUR helper
