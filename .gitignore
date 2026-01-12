@@ -2,4 +2,4 @@
 system-packages-*.yaml
 
 config.yaml
-state/config-backups/
+state/
