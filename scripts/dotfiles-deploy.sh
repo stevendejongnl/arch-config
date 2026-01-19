@@ -58,21 +58,34 @@ CRITICAL_FILES=(
     ".local/share/applications"
 )
 
-log "Backing up existing dotfiles..."
-for file in "${CRITICAL_FILES[@]}"; do
-    backup_if_exists "$file"
+# Clean up old symlinks that point to wrong location (e.g., ~/dotfiles instead of ~/.config/arch-config/dotfiles)
+log "Cleaning up old symlinks pointing to ~/dotfiles..."
+find "$HOME_DIR" -maxdepth 1 -type l 2>/dev/null | while read link; do
+    target=$(readlink "$link" 2>/dev/null || true)
+    # Remove if symlink target looks like old path: starts with "dotfiles/" (relative path)
+    if [ -n "$target" ] && echo "$target" | grep -q "^dotfiles/"; then
+        log "Removing old symlink: $(basename "$link") → $target"
+        rm -f "$link"
+    fi
+done
+
+# Also clean up .config symlinks with old relative paths
+find "$HOME_DIR/.config" -maxdepth 2 -type l 2>/dev/null | while read link; do
+    target=$(readlink "$link" 2>/dev/null || true)
+    if [ -n "$target" ] && echo "$target" | grep -q "^\.\./dotfiles/"; then
+        log "Removing old symlink: $(basename "$link") → $target"
+        rm -f "$link"
+    fi
 done
 
 # Deploy with stow
 log "Deploying dotfiles with GNU stow..."
 cd "$DOTFILES_DIR"
 
-# Use stow with --restow to intelligently symlink
-# --restow: Restow (unstow then stow) to fix any conflicts
-# --verbose=1: Show what's being done
+# Use stow with --verbose to show what's being done
 # --target: Where to create symlinks (home directory)
 # . : Everything in current directory
-if ! stow --verbose=1 --target="$HOME_DIR" --restow .; then
+if ! stow --verbose=1 --target="$HOME_DIR" .; then
     error "Stow failed. Check for conflicts with existing files."
 fi
 

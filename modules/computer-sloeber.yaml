@@ -2,9 +2,4 @@
 
 description: Computer Sloeber Packages
 
-packages:
-  - waydroid
-  - cage
-  - weston
-  - wmctrl
-  - wl-clipboard
+packages: []

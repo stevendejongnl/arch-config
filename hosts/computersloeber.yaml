@@ -20,7 +20,15 @@ enabled_modules:
 packages: []
 
 # Exclude packages from base or modules
-exclude: []
+exclude:
+  - wine-mono
+  - texlive-doc
+  - winetricks
+  - wine-gecko
+  - libreoffice-still
+  - winegui
+  - waydroid
+  - caffeine-ng
 
 # Configuration backup settings
 config_backups:
