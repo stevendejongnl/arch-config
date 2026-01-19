@@ -1,0 +1,10 @@
+# Computer Sloeber packages
+
+description: Computer Sloeber Packages
+
+packages:
+  - waydroid
+  - cage
+  - weston
+  - wmctrl
+  - wl-clipboard

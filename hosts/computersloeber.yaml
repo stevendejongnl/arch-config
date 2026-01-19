@@ -12,6 +12,7 @@ description: 'Work Laptop'
 # Enabled modules
 enabled_modules:
   - dwm
+  - computer-sloeber
 
 # Host-specific packages
 packages: []

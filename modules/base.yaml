@@ -79,7 +79,14 @@ packages:
   - xaskpass            # SSH password prompt for X11
   - xdg-desktop-portal-gtk  # GTK implementation of XDG desktop portal
   - zoxide              # Fast directory jumper
-  - zsh
+  - zsh                 # Z shell
+  - android-tools       # Android platform tools (adb, fastboot)
+  - jdk                 # Java Development Kit
+  - jdk17-openjdk       # OpenJDK 17
+  - direnv              # Environment variable manager
+  - wakeonlan           # Wake-on-LAN utility
+  - tcpdump             # Network packet analyzer
+  - lazydocker          # Simple terminal UI for Docker and Docker Compose
 
   # Applications
   - thunar              # File manager
@@ -89,6 +96,11 @@ packages:
   - thunar-volman       # Volume management for Thunar
   - ungoogled-chromium-bin
   - whatsapp-for-linux
+  - jetbrains-toolbox
+  - barrier            # Keyboard and mouse sharing
+
+  # AI Tools
+  - claude-code
 
   # dcli dependencies
   # - paru         # AUR helper (required for AUR package management)
