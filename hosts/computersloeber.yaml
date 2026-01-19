@@ -13,6 +13,8 @@ description: 'Work Laptop'
 enabled_modules:
   - dwm
   - computer-sloeber
+  - dotfiles              # Deploy dotfiles with stow symlinks
+  - secrets               # Unlock and deploy encrypted secrets
 
 # Host-specific packages
 packages: []

@@ -1,0 +1,10 @@
+description: Dotfiles deployment and systemd service management
+
+packages: []
+
+conflicts: []
+
+# Note: dcli executes scripts in scripts/ directory as hooks
+# The following scripts handle dotfiles deployment:
+# - scripts/dotfiles-deploy.sh: Symlinks dotfiles using GNU stow
+# - scripts/dotfiles-systemd.sh: Enables essential systemd user services

@@ -107,3 +107,8 @@ packages:
   - yay          # AUR helper (required for AUR package management)
   - fzf          # Fuzzy finder (required for dcli search/module/backup TUI)
   - timeshift    # System backup tool (required for dcli backup commands)
+
+  # Dotfiles and secrets management
+  - git-crypt    # Transparent git encryption for secrets
+  - stow         # Symlink farm manager for dotfiles deployment
+  - rsync        # Fast incremental file transfer for backups

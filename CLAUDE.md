@@ -128,6 +128,17 @@ cat modules/computer-sloeber.yaml
   - Clones/pulls from suckless repository
   - Runs `make dwm` to build from source
   - Place custom build logic here
+- `scripts/dotfiles-deploy.sh` - Deploys dotfiles via GNU stow
+  - Symlinks configuration files from `dotfiles/` to home directory
+  - Backs up existing conflicting files
+  - Runs systemd service configuration
+- `scripts/dotfiles-systemd.sh` - Enables systemd user services
+  - Enables essential services (darkman, 1password, wallpaper)
+  - Reloads systemd user daemon
+- `scripts/secrets-decrypt.sh` - Unlocks and deploys secrets
+  - Decrypts git-crypt encrypted files using GPG key
+  - Deploys SSH keys and credentials to home directory
+  - Sets correct file permissions (600 for private keys)
 
 ## Key Concepts
 
@@ -151,6 +162,80 @@ backup_tool: timeshift
 ```
 
 The system supports automatic configuration backups. Enable/disable in host configuration.
+
+## Dotfiles Management
+
+**dotfiles/** contains application configuration files that are deployed to the home directory.
+
+**How it works**:
+- Files are stored in `dotfiles/` mirroring home directory structure
+- Deployed via GNU stow, creating symlinks (not copies)
+- Version controlled in git for reproducibility
+- Edited directly in place (symlinks are transparent)
+
+**Key directories**:
+- `dotfiles/.config/` - Application configs (xinitrc, alacritty, nvim, tmux, etc.)
+- `dotfiles/.dwm/` - DWM window manager configuration and statusbar
+- `dotfiles/.local/bin/` - Custom scripts and executables
+- `dotfiles/.zshrc`, `.bashrc` - Shell configuration
+
+**Workflow**:
+1. Add dotfile to `dotfiles/` directory (maintain home directory structure)
+2. Run `bash scripts/dotfiles-deploy.sh` to create symlinks
+3. Edit via symlink: `vim ~/.zshrc` → edits `dotfiles/.zshrc`
+4. Commit changes: `git add dotfiles/` and `git commit`
+
+**Deployment**: Run `dcli sync` (automatically calls `dotfiles-deploy.sh`)
+
+**Documentation**: See [docs/DOTFILES.md](docs/DOTFILES.md) for detailed guide
+
+## Secrets Management
+
+**secrets/** contains encrypted files (SSH keys, credentials) managed by git-crypt.
+
+**How it works**:
+- SSH keys and tokens stored in `secrets/` directory
+- Files marked in `.gitattributes` for encryption
+- Encrypted with git-crypt using GPG keys
+- Decrypted locally for deployment
+- Only accessible to users with authorized GPG keys
+
+**Key directories**:
+- `secrets/ssh/` - SSH private key, public key, config (encrypted)
+- `secrets/credentials/` - Application tokens and credentials (encrypted)
+
+**Setup** (first time):
+```bash
+cd ~/.config/arch-config
+git-crypt init                          # Initialize encryption
+git-crypt add-gpg-user YOUR_GPG_KEY_ID # Add your GPG key
+# Copy secrets and commit
+```
+
+**Deployment**: Run `dcli sync` (automatically calls `secrets-decrypt.sh`)
+
+**Security**:
+- SSH keys: 600 permissions, decrypted locally only
+- Git view: Files appear encrypted in repository
+- Access control: Only GPG key holders can decrypt
+- History: Full git history available after unlock
+
+**Documentation**: See [docs/SECRETS.md](docs/SECRETS.md) for detailed guide
+
+## Bootstrap New Machine
+
+New Arch Linux installations can be fully configured using the bootstrap process.
+
+**Overview**:
+1. Install git and base-devel
+2. Import GPG key for decrypting secrets
+3. Clone arch-config repository
+4. Install dcli and dependencies
+5. Run `dcli sync` to configure entire system
+
+**Result**: System identical to computersloeber with all packages, dotfiles, and secrets deployed.
+
+**Documentation**: See [bootstrap/README.md](bootstrap/README.md) for step-by-step guide
 
 ## Common Tasks
 
