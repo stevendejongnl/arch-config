@@ -1,0 +1,6 @@
+[Unit]
+Description=Autostart Target
+Documentation=man:systemd.special(7)
+
+[Install]
+WantedBy=default.target

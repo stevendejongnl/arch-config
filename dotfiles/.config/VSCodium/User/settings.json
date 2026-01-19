@@ -1,0 +1,25 @@
+{
+    "files.autoSave": "onFocusChange",
+    "git.autofetch": true,
+    "redhat.telemetry.enabled": false,
+    "[jsonc]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    },
+    "git.confirmSync": false,
+    "git.branchProtection": [
+        "main",
+        "master"
+    ],
+    "git.fetchOnPull": true,
+    "git.pruneOnFetch": true,
+    "extensions.experimental.affinity": {
+        "asvetliakov.vscode-neovim": 1
+    },
+    "workbench.colorTheme": "Atom One Dark",
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
+}

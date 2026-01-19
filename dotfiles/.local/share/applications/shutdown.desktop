@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=SHUT UP!
+Comment=Shut down the system
+Exec=/home/stevendejong/.local/share/applications/scripts/shutdown.sh
+Icon=system-shutdown
+Terminal=false
+Type=Application
+Categories=System;Utility;

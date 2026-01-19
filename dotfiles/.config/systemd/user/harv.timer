@@ -1,0 +1,14 @@
+[Unit]
+Description=Harv Timer
+Requires=harv.service
+
+[Timer]
+# Run 2 minutes after boot
+OnBootSec=2min
+# Run every hour
+OnUnitActiveSec=1h
+# Persist timer state across reboots (catches up missed runs)
+Persistent=true
+
+[Install]
+WantedBy=timers.target

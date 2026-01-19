@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Stop Android (Waydroid)
+Comment=Kill all Waydroid and Weston instances
+Exec=sh -c 'killall weston waydroid; waydroid session stop 2>/dev/null; notify-send "Android Stopped" "Waydroid and Weston killed"'
+Icon=process-stop
+Terminal=false
+Type=Application
+Categories=System;

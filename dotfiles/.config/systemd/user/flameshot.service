@@ -1,0 +1,9 @@
+[Unit]
+Description=flameshot
+After=graphical.target
+
+[Service]
+ExecStart=flameshot
+
+[Install]
+WantedBy=autostart.target

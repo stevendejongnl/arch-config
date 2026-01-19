@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Change Wallpaper
+Comment=Change the wallpaper
+# Exec=/usr/bin/kitty --hold /bin/bash -c '$HOME/.config/systemd/user/scripts/wallpaper.sh -s'
+Exec=/home/stevendejong/.config/systemd/user/scripts/wallpaper.sh
+Icon=wallpaper
+Terminal=false
+Type=Application
+Categories=System;Utility
+Keywords=wallpaper;change;desktop;background;image;picture

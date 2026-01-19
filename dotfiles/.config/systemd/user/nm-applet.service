@@ -1,0 +1,9 @@
+[Unit]
+Description=Network Manager Applet
+After=graphical.target
+
+[Service]
+ExecStart=nm-applet
+
+[Install]
+WantedBy=autostart.target

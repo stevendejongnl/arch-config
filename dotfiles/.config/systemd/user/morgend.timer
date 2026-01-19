@@ -1,0 +1,8 @@
+[Unit]
+Description=Morning
+
+[Timer]
+OnBootSec=30s
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Stream PC
+Comment=Connect to Stream PC
+Exec=/home/stevendejong/.local/share/applications/scripts/streampc.sh
+Icon=multimedia-volume-control
+Terminal=false
+Type=Application
+Categories=System;Utility,AudioVideo;Player;

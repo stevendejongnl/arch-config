@@ -1,0 +1,4 @@
+#!/bin/sh
+
+notify-send "$(autorandr --current)"
+$HOME/.config/systemd/user/scripts/wallpaper.sh

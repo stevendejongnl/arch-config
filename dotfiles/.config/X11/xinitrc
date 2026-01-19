@@ -1,0 +1,34 @@
+xrdb $HOME/.config/X11/xresources
+
+export _JAVA_AWT_WM_NONREPARENTING=1
+
+dbus-update-activation-environment --systemd DBUS_SESSION_BUS_ADDRESS DISPLAY XAUTHORITY
+
+pgrep -x numlockx > /dev/null || numlockx &
+pgrep -x picom > /dev/null || picom &
+pgrep -x ntfd > /dev/null || ntfd &
+pgrep -x lxpolkit > /dev/null || lxpolkit &
+pgrep -f "update-statusbar.sh" > /dev/null || /home/stevendejong/.dwm/update-statusbar.sh &
+pgrep -x batify > /dev/null || batify &
+pgrep -x deja-dup > /dev/null || deja-dup &
+
+xsetroot -cursor_name left_ptr
+
+#xset +fp $HOME/.local/share/fonts
+#xset +fp /usr/share/fonts &
+fc-cache -fv
+xset fp rehash &
+
+# Hide cursor after x time
+unclutter -idle 3 &
+
+# Remap caps lock to escape
+setxkbmap -option caps:escape
+
+darkman set dark &
+brightnessctl --device='amdgpu_bl1' set 255 &
+brightnessctl --device='tpacpi::kbd_backlight' set 2 &
+
+
+exec dwm > $HOME/.logs/dwm.log 2>&1
+

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Bluetooth
+Comment=Bluetooth Rofi
+Exec=/usr/bin/rofi-bluetooth
+Icon=bluetooth
+Terminal=false
+Type=Application
+Categories=System;Utility;
+Keywords=bluetooth;rofi;menu;blueman;

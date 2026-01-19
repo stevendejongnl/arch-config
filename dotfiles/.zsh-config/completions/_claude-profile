@@ -1,0 +1,469 @@
+#compdef claude-profile
+
+autoload -U is-at-least
+
+_claude-profile() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
+":: :_claude-profile_commands" \
+"*::: :->claude-profile" \
+&& ret=0
+    case $state in
+    (claude-profile)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:claude-profile-command-$line[1]:"
+        case $line[1] in
+            (init)
+_arguments "${_arguments_options[@]}" : \
+'-n+[Name for the initial profile]:NAME:_default' \
+'--name=[Name for the initial profile]:NAME:_default' \
+'--install-completions[Install shell completions]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+'-f[Copy from current Claude config instead of prompting]' \
+'--from-current[Copy from current Claude config instead of prompting]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':name -- Profile name:_default' \
+&& ret=0
+;;
+(list)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(switch)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':name -- Profile name:_default' \
+&& ret=0
+;;
+(current)
+_arguments "${_arguments_options[@]}" : \
+'--short[Output only the profile name (for scripting)]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(status)
+_arguments "${_arguments_options[@]}" : \
+'--short[Output only the profile name (for scripting)]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(set-project)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':name -- Profile name:_default' \
+&& ret=0
+;;
+(unset-project)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(repair)
+_arguments "${_arguments_options[@]}" : \
+'--dry-run[Show what would be repaired without making changes]' \
+'-y[Skip confirmation prompt]' \
+'--yes[Skip confirmation prompt]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(completions)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_claude-profile__completions_commands" \
+"*::: :->completions" \
+&& ret=0
+
+    case $state in
+    (completions)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:claude-profile-completions-command-$line[1]:"
+        case $line[1] in
+            (install)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(generate)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':shell -- Shell type:(bash elvish fish powershell zsh)' \
+&& ret=0
+;;
+(uninstall)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_claude-profile__completions__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:claude-profile-completions-help-command-$line[1]:"
+        case $line[1] in
+            (install)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(generate)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(uninstall)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_claude-profile__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:claude-profile-help-command-$line[1]:"
+        case $line[1] in
+            (init)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(switch)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(current)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(status)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(set-project)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(unset-project)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(repair)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(completions)
+_arguments "${_arguments_options[@]}" : \
+":: :_claude-profile__help__completions_commands" \
+"*::: :->completions" \
+&& ret=0
+
+    case $state in
+    (completions)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:claude-profile-help-completions-command-$line[1]:"
+        case $line[1] in
+            (install)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(generate)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(uninstall)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+}
+
+(( $+functions[_claude-profile_commands] )) ||
+_claude-profile_commands() {
+    local commands; commands=(
+'init:Initialize profiles from current Claude config' \
+'add:Add a new profile' \
+'list:List all profiles' \
+'switch:Switch to a different profile' \
+'current:Show current active profile' \
+'status:Show effective profile (considering project overrides)' \
+'set-project:Set project-specific profile' \
+'unset-project:Remove project-specific profile' \
+'repair:Repair profiles with conflicting authentication methods' \
+'completions:Shell completion management' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'claude-profile commands' commands "$@"
+}
+(( $+functions[_claude-profile__add_commands] )) ||
+_claude-profile__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile add commands' commands "$@"
+}
+(( $+functions[_claude-profile__completions_commands] )) ||
+_claude-profile__completions_commands() {
+    local commands; commands=(
+'install:Install shell completions (auto-detects shell)' \
+'generate:Generate completions for specific shell' \
+'uninstall:Uninstall shell completions' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'claude-profile completions commands' commands "$@"
+}
+(( $+functions[_claude-profile__completions__generate_commands] )) ||
+_claude-profile__completions__generate_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile completions generate commands' commands "$@"
+}
+(( $+functions[_claude-profile__completions__help_commands] )) ||
+_claude-profile__completions__help_commands() {
+    local commands; commands=(
+'install:Install shell completions (auto-detects shell)' \
+'generate:Generate completions for specific shell' \
+'uninstall:Uninstall shell completions' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'claude-profile completions help commands' commands "$@"
+}
+(( $+functions[_claude-profile__completions__help__generate_commands] )) ||
+_claude-profile__completions__help__generate_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile completions help generate commands' commands "$@"
+}
+(( $+functions[_claude-profile__completions__help__help_commands] )) ||
+_claude-profile__completions__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile completions help help commands' commands "$@"
+}
+(( $+functions[_claude-profile__completions__help__install_commands] )) ||
+_claude-profile__completions__help__install_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile completions help install commands' commands "$@"
+}
+(( $+functions[_claude-profile__completions__help__uninstall_commands] )) ||
+_claude-profile__completions__help__uninstall_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile completions help uninstall commands' commands "$@"
+}
+(( $+functions[_claude-profile__completions__install_commands] )) ||
+_claude-profile__completions__install_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile completions install commands' commands "$@"
+}
+(( $+functions[_claude-profile__completions__uninstall_commands] )) ||
+_claude-profile__completions__uninstall_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile completions uninstall commands' commands "$@"
+}
+(( $+functions[_claude-profile__current_commands] )) ||
+_claude-profile__current_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile current commands' commands "$@"
+}
+(( $+functions[_claude-profile__help_commands] )) ||
+_claude-profile__help_commands() {
+    local commands; commands=(
+'init:Initialize profiles from current Claude config' \
+'add:Add a new profile' \
+'list:List all profiles' \
+'switch:Switch to a different profile' \
+'current:Show current active profile' \
+'status:Show effective profile (considering project overrides)' \
+'set-project:Set project-specific profile' \
+'unset-project:Remove project-specific profile' \
+'repair:Repair profiles with conflicting authentication methods' \
+'completions:Shell completion management' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'claude-profile help commands' commands "$@"
+}
+(( $+functions[_claude-profile__help__add_commands] )) ||
+_claude-profile__help__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile help add commands' commands "$@"
+}
+(( $+functions[_claude-profile__help__completions_commands] )) ||
+_claude-profile__help__completions_commands() {
+    local commands; commands=(
+'install:Install shell completions (auto-detects shell)' \
+'generate:Generate completions for specific shell' \
+'uninstall:Uninstall shell completions' \
+    )
+    _describe -t commands 'claude-profile help completions commands' commands "$@"
+}
+(( $+functions[_claude-profile__help__completions__generate_commands] )) ||
+_claude-profile__help__completions__generate_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile help completions generate commands' commands "$@"
+}
+(( $+functions[_claude-profile__help__completions__install_commands] )) ||
+_claude-profile__help__completions__install_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile help completions install commands' commands "$@"
+}
+(( $+functions[_claude-profile__help__completions__uninstall_commands] )) ||
+_claude-profile__help__completions__uninstall_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile help completions uninstall commands' commands "$@"
+}
+(( $+functions[_claude-profile__help__current_commands] )) ||
+_claude-profile__help__current_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile help current commands' commands "$@"
+}
+(( $+functions[_claude-profile__help__help_commands] )) ||
+_claude-profile__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile help help commands' commands "$@"
+}
+(( $+functions[_claude-profile__help__init_commands] )) ||
+_claude-profile__help__init_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile help init commands' commands "$@"
+}
+(( $+functions[_claude-profile__help__list_commands] )) ||
+_claude-profile__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile help list commands' commands "$@"
+}
+(( $+functions[_claude-profile__help__repair_commands] )) ||
+_claude-profile__help__repair_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile help repair commands' commands "$@"
+}
+(( $+functions[_claude-profile__help__set-project_commands] )) ||
+_claude-profile__help__set-project_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile help set-project commands' commands "$@"
+}
+(( $+functions[_claude-profile__help__status_commands] )) ||
+_claude-profile__help__status_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile help status commands' commands "$@"
+}
+(( $+functions[_claude-profile__help__switch_commands] )) ||
+_claude-profile__help__switch_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile help switch commands' commands "$@"
+}
+(( $+functions[_claude-profile__help__unset-project_commands] )) ||
+_claude-profile__help__unset-project_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile help unset-project commands' commands "$@"
+}
+(( $+functions[_claude-profile__init_commands] )) ||
+_claude-profile__init_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile init commands' commands "$@"
+}
+(( $+functions[_claude-profile__list_commands] )) ||
+_claude-profile__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile list commands' commands "$@"
+}
+(( $+functions[_claude-profile__repair_commands] )) ||
+_claude-profile__repair_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile repair commands' commands "$@"
+}
+(( $+functions[_claude-profile__set-project_commands] )) ||
+_claude-profile__set-project_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile set-project commands' commands "$@"
+}
+(( $+functions[_claude-profile__status_commands] )) ||
+_claude-profile__status_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile status commands' commands "$@"
+}
+(( $+functions[_claude-profile__switch_commands] )) ||
+_claude-profile__switch_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile switch commands' commands "$@"
+}
+(( $+functions[_claude-profile__unset-project_commands] )) ||
+_claude-profile__unset-project_commands() {
+    local commands; commands=()
+    _describe -t commands 'claude-profile unset-project commands' commands "$@"
+}
+
+if [ "$funcstack[1]" = "_claude-profile" ]; then
+    _claude-profile "$@"
+else
+    compdef _claude-profile claude-profile
+fi

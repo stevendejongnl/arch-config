@@ -1,0 +1,10 @@
+#!/bin/sh
+# distrobox_binary
+# name: ubuntu
+if [ -z "${CONTAINER_ID}" ]; then
+	exec "/usr/bin/distrobox-enter"  -n ubuntu  --  '/usr/bin/testcontainers-desktop'  "$@"
+elif [ -n "${CONTAINER_ID}" ] && [ "${CONTAINER_ID}" != "ubuntu" ]; then
+	exec distrobox-host-exec '/home/stevendejong/.local/bin/testcontainers-desktop' "$@"
+else
+	exec '/usr/bin/testcontainers-desktop' "$@"
+fi

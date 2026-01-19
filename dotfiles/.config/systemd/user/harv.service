@@ -1,0 +1,13 @@
+[Unit]
+Description=Smart Harvest time tracking
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.cargo/bin/harv sync --quiet --auto-start --auto-stop
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

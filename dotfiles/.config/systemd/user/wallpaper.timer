@@ -1,0 +1,11 @@
+[Unit]
+Description=Wallpaper
+
+[Timer]
+#Run 2 minutes after boot for the first time
+OnBootSec=30s
+#Run every 4 hours thereafter
+OnUnitActiveSec=4h
+
+[Install]
+WantedBy=timers.target

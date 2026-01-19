@@ -1,0 +1,9 @@
+[Unit]
+Description=Clipman
+After=graphical.target
+
+[Service]
+ExecStart=xfce4-clipman
+
+[Install]
+WantedBy=autostart.target

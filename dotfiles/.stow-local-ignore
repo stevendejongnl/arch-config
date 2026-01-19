@@ -1,0 +1,31 @@
+# Comments and blank lines are allowed.
+
+RCS
+.+,v
+
+CVS
+\.\#.+       # CVS conflict files / emacs lock files
+\.cvsignore
+
+\.svn
+_darcs
+\.hg
+
+\.git
+\.gitignore
+
+.+~          # emacs backup files
+\#.*\#       # emacs autosave files
+
+^/README.*
+^/LICENSE.*
+^/COPYING
+
+dotfiles.code-workspace
+
+# Machine-specific or conflicting directories to skip
+^/\.config/VSCodium        # VSCodium user settings (machine-specific)
+^/\.config/kitty           # Kitty terminal config (conflicts with tracked config)
+^/\.config/ntfd            # ntfd config (machine-specific)
+^/\.local/bin              # Local binaries (may have machine-specific scripts)
+^/\.local/share/applications  # Desktop entries (may be machine-specific)

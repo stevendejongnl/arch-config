@@ -1,0 +1,9 @@
+[Unit]
+Description=Solaar
+After=graphical.target
+
+[Service]
+ExecStart=solaar -w hide
+
+[Install]
+WantedBy=autostart.target

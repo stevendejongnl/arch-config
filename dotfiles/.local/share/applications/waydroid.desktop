@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Android (Waydroid)
+Comment=Run Android apps via Waydroid
+Exec=sh -c 'weston & sleep 5 && WAYLAND_DISPLAY=wayland-1 waydroid show-full-ui'
+Icon=phone
+Terminal=false
+Type=Application
+Categories=System;Emulator;

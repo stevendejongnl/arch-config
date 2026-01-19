@@ -1,0 +1,7 @@
+[openweathermap]
+enabled = true
+api_key = "file:~/.config/ntfd/openweathermap.txt"
+notification_timeout = 10
+notification_body = "Expected within the next 3 hours"
+sync_frequency = 1800
+display = "{{ temp_icon }} {{ temp_celsius }}°C {{ trend }} {{ forecast_icon }} {{ forecast_celsius }}°C"

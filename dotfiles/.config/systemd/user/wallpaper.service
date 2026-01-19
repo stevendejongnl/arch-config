@@ -1,0 +1,9 @@
+[Unit]
+Description=Wallpaper
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /home/stevendejong/.config/systemd/user/scripts/wallpaper.sh
+
+[Install]
+WantedBy=autostart.target

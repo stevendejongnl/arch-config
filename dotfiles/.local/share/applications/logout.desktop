@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Logout and Kill X11
+Comment=Logout and Kill X11
+Exec=sh -c "pkill dwm; pkill Xorg"
+Icon=system-log-out
+Terminal=false
+Type=Application
+Categories=System;Utility;
+Keywords=Logout;Reboot;Restart;Shutdown;

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Select Wallpaper
+Comment=Change the wallpaper by selecting an image
+Exec=/usr/bin/kitty --hold /bin/bash -c '$HOME/.config/systemd/user/scripts/wallpaper.sh --select'
+# Exec=/home/stevendejong/.config/systemd/user/scripts/wallpaper.sh --select
+Icon=wallpaper
+Terminal=false
+Type=Application
+Categories=System;Utility
+Keywords=wallpaper;change;desktop;background;image;picture

@@ -1,0 +1,67 @@
+SPACESHIP_TIME_SHOW=true
+SPACESHIP_DIR_TRUNC_REPO=false
+SPACESHIP_PROMPT_ASYNC=true
+SPACESHIP_EXEC_TIME_ELAPSED=1
+
+SPACESHIP_PROMPT_ORDER=(
+  time          # Time stampts section
+  exec_time     # Execution time
+  user          # Username section
+  host          # Hostname section
+  dir           # Current directory section
+  git           # Git section (git_branch + git_status)
+  node          # Node.js section
+  # ruby          # Ruby section
+  # xcode         # Xcode section
+  # swift         # Swift section
+  # golang        # Go section
+  docker        # Docker section
+  venv          # virtualenv section
+  # pyenv         # Pyenv section
+  line_sep      # Line break
+  # vi_mode       # Vi-mode indicator
+  char          # Prompt character
+)
+
+# Fix for async worker race condition
+# Override spaceship::worker::init with retry mechanism
+# This ensures the zpty pseudoterminal is fully initialized before sending commands
+spaceship::worker::init() {
+  if spaceship::is_prompt_async; then
+    SPACESHIP_JOBS=()
+    # Only stop worker if it actually exists
+    if [[ -n "${ASYNC_PTYS[spaceship]}" ]]; then
+      async_stop_worker "spaceship"
+    fi
+    async_start_worker "spaceship" -n -u
+
+    # Wait for worker to be ready with retry mechanism
+    local max_attempts=20
+    local attempt=0
+    while (( attempt < max_attempts )); do
+      # Check if worker exists in ASYNC_PTYS array
+      if [[ -n "${ASYNC_PTYS[spaceship]}" ]]; then
+        # Worker exists, safe to send commands
+        async_worker_eval "spaceship" setopt extendedglob 2>/dev/null || true
+        async_worker_eval "spaceship" spaceship::worker::renice 2>/dev/null || true
+        async_register_callback "spaceship" spaceship::core::async_callback
+        return 0
+      fi
+      sleep 0.01  # 10ms between attempts
+      (( attempt++ ))
+    done
+
+    # If we get here, worker failed to start - fall back gracefully
+    # Don't send commands to non-existent worker
+  fi
+}
+
+# Also override spaceship::worker::eval to check worker exists first
+spaceship::worker::eval() {
+  if spaceship::is_prompt_async; then
+    # Only eval if worker actually exists
+    if [[ -n "${ASYNC_PTYS[spaceship]}" ]]; then
+      async_worker_eval "spaceship" "$@" 2>/dev/null || true
+    fi
+  fi
+}

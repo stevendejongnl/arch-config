@@ -1,0 +1,234 @@
+#! /bin/zsh
+
+# Common aliases (previously from Oh-My-Zsh)
+alias -g ...='../..'
+alias -g ....='../../..'
+alias -g .....='../../../..'
+alias -g ......='../../../../..'
+
+alias l='ls -lah'
+alias la='ls -lAh'
+alias ll='ls -lh'
+alias ls='ls --color=auto'
+alias lsa='ls -lah'
+
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+
+alias md='mkdir -p'
+alias rd='rmdir'
+
+alias d='dirs -v'
+for index ({1..9}) alias "$index"="cd +${index}"; unset index
+
+alias _='sudo '
+alias please='sudo '
+
+# Common git aliases (previously from Oh-My-Zsh git plugin)
+alias g='git'
+alias ga='git add'
+alias gaa='git add --all'
+alias gb='git branch'
+alias gbd='git branch -d'
+alias gbD='git branch -D'
+alias gco='git checkout'
+alias gcb='git checkout -b'
+alias gcm='git checkout $(git_main_branch)'
+alias gcd='git checkout $(git_develop_branch)'
+alias gcp='git cherry-pick'
+alias gcl='git clone'
+alias gclean='git clean -fd'
+alias gc='git commit -v'
+alias 'gc!'='git commit -v --amend'
+alias gca='git commit -v -a'
+alias 'gca!'='git commit -v -a --amend'
+alias gcam='git commit -a -m'
+alias gcmsg='git commit -m'
+alias gd='git diff'
+alias gdca='git diff --cached'
+alias gf='git fetch'
+alias gfa='git fetch --all --prune'
+alias gl='git pull'
+alias glog='git log --oneline --decorate --graph'
+alias gloga='git log --oneline --decorate --graph --all'
+alias gp='git push'
+alias gpf='git push --force-with-lease'
+alias 'gpf!'='git push --force'
+alias gr='git remote'
+alias grb='git rebase'
+alias grba='git rebase --abort'
+alias grbc='git rebase --continue'
+alias grbi='git rebase -i'
+alias grh='git reset'
+alias grhh='git reset --hard'
+alias grs='git restore'
+alias grst='git restore --staged'
+alias gst='git status'
+alias gsta='git stash'
+alias gstaa='git stash apply'
+alias gstd='git stash drop'
+alias gstl='git stash list'
+alias gstp='git stash pop'
+
+# Helper functions for git aliases
+function git_main_branch() {
+  if git rev-parse --verify main &>/dev/null; then
+    echo main
+  else
+    echo master
+  fi
+}
+
+function git_develop_branch() {
+  if git rev-parse --verify develop &>/dev/null; then
+    echo develop
+  elif git rev-parse --verify dev &>/dev/null; then
+    echo dev
+  else
+    echo master
+  fi
+}
+
+source $HOME/scripts/mosaic.sh
+source $HOME/scripts/git.sh
+source $HOME/scripts/raspberry-pis.sh
+source $HOME/scripts/cleanup.sh
+
+alias reload-aliases='source ~/.aliases && echo "Aliases reloaded ✅"'
+alias unlock="$HOME/unlock"
+alias vpn="$HOME/.openvpn3/openvpn.sh"
+alias vpn3="$HOME/.openvpn3/openvpn3.sh"
+alias change-wallpaper="$HOME/.config/systemd/user/scripts/wallpaper.sh"
+alias used-ports="sudo lsof -i -P -n"
+alias used-ports-listen="sudo lsof -i -P -n | grep LISTEN"
+alias vim_homeassistant="vim scp://root@192.168.1.77:24//config/"
+alias convert="magick convert"
+alias disable-middle-mouse="/usr/bin/xinput set-button-map $(/usr/bin/xinput list --id-only 'ETPS/2 Elantech Touchpad') 1 1 3 4 5 6 7"
+alias watch-usb="$HOME/scripts/watch-usb.sh"
+alias morgenctl="echo 'Hello, good morning! Have a great day! ☀️YOU ARE AWESOME!🌟'"
+alias pling="paplay /usr/share/sounds/freedesktop/stereo/message.oga"
+
+# Claude aliases
+alias cps="cpswitch"
+alias cpw="cpswitch work && claude /new"
+alias cpp="cpswitch personal && claude /new"
+
+function _bluetoothreset(){
+  if lsmod | grep -q btusb; then
+    echo "Removing btusb"
+    sudo rmmod btusb
+    echo "Sleeping for 15 seconds"
+    sleep 15
+  fi
+
+  echo "Adding btusb"
+  sudo modprobe btusb
+}
+alias bluetoothreset="_bluetoothreset"
+alias btreset="_bluetoothreset"
+alias bt-reset="_bluetoothreset"
+alias got="git"
+alias gut="git"
+
+function cloudsuite_cli {
+  TRYDENT_DIR="$HOME/workspace/cloudsuite/trydent"
+  CSCONFIG="$TRYDENT_DIR/docker-compose.yml"
+  CSCONFIG_OVERRIDE="$TRYDENT_DIR/docker-compose.override.yml"
+  CSTESTCONFIG="$TRYDENT_DIR/docker-compose.tests.yml"
+  CSACONFIG="$HOME/workspace/cloudsuite/cloudsuite-app/docker-compose.yml"
+
+  POSITIONAL_ARGS=()
+
+  function help {
+    echo "
+    Usage:
+    -l|--log [-c|--container]
+    -r|--redis [-c|--command]
+    -m|--migrate
+    -tr|--trydent
+    -t|--test
+    -a|--app
+    -h|--help
+    "
+  }
+
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      -l|--log)
+        case $2 in
+          -c|--container)
+            echo "Start logging for ($3)"
+            docker logs -f $(docker compose -f $CSCONFIG -f $CSCONFIG_OVERRIDE ps -q $3)
+            return
+            ;;
+          *)
+            docker compose -f $CSCONFIG -f $CSCONFIG_OVERRIDE logs -f
+            return
+            ;;
+        esac
+        return
+        ;;
+      -r|--redis)
+        case $2 in
+          -c|--command)
+            echo "Redis cli ($3)"
+            # docker compose -f $CSCONFIG -f $CSCONFIG_OVERRIDE exec redis redis-cli $3
+            docker compose -f $CSCONFIG exec redis redis-cli $3
+            return
+            ;;
+          *)
+            # docker compose -f $CSCONFIG -f $CSCONFIG_OVERRIDE exec redis redis-cli
+            docker compose -f $CSCONFIG exec redis redis-cli
+            return
+            ;;
+        esac
+        return
+        ;;
+      -m|--migrate)
+        # docker compose -f $CSCONFIG -f $CSCONFIG_OVERRIDE exec trytond /srv/trytond/bin/trytond -d fixture --all -v
+        docker compose -f $CSCONFIG exec trytond /srv/trytond/bin/trytond -d fixture --all -v
+        return
+        ;;
+      -a|--app)
+        docker compose -f $CSACONFIG down && xhost +local:docker; docker-compose -f $CSACONFIG up -d
+        return
+        ;;
+      -tr|trydent)
+        docker compose -f $CSCONFIG ${@:2}
+        return
+        ;;
+      -t|--test)
+        docker compose -f $CSTESTCONFIG ${@:2}
+        return
+        ;;
+      -s|--sphinx)
+        # make -C $TRYDENT_DIR/dockers/sphinx build push
+        make -C $TRYDENT_DIR/dockers/sphinx build
+        docker compose -f $CSCONFIG -f $CSCONFIG_OVERRIDE down
+        docker volume rm vanilla-sphinx-data
+        docker compose -f $CSCONFIG -f $CSCONFIG_OVERRIDE up -d sphinx
+        docker compose -f $CSCONFIG -f $CSCONFIG_OVERRIDE exec sphinx /bin/sh -c './generate_config.py --sphinx_port "$SPHINX_PORT" --basepath /sphinx --logpath /var/log/sphinx --pidpath /sphinx/pid --salescenter > /sphinx/config/sphinx.conf'
+        docker compose -f $CSCONFIG -f $CSCONFIG_OVERRIDE exec sphinx indexer --rotate --config /sphinx/config/sphinx.conf --all
+        docker compose -f $CSCONFIG -f $CSCONFIG_OVERRIDE up -d webshop sphinx
+        return
+        ;;
+      -h|--help)
+        help
+        return
+        ;;
+      -*|--*)
+        echo "Unknown option $1"
+        return
+        ;;
+
+      *)
+        help
+        POSITIONAL_ARGS+=("$1")
+        shift
+        ;;
+    esac
+  done
+}
+
+alias cs="cloudsuite_cli"

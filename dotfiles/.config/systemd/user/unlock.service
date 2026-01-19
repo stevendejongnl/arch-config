@@ -1,0 +1,10 @@
+[Unit]
+Description=Unlock
+After=graphical.target
+
+[Service]
+Type=simple
+ExecStart=alacritty -e "/home/stevendejong/unlock"
+
+[Install]
+WantedBy=autostart.target

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Change Display
+Comment=Change the display with autorandr
+Exec=/usr/bin/autorandr --change
+Icon=monitor
+Terminal=false
+Type=Application
+Categories=System;Utility
+Keywords=monitor;change;display

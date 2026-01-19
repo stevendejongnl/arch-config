@@ -1,0 +1,9 @@
+[Unit]
+Description=Darkman
+After=graphical.target
+
+[Service]
+ExecStart=/usr/bin/darkman set dark
+
+[Install]
+WantedBy=autostart.target
