@@ -8,3 +8,6 @@ xinput set-button-map 12 1 1 3 4 5 6 7 &
 darkman set dark &
 systemctl --user restart wallpaper.service &
 systemctl --user start autostart.target &
+
+# Start statusbar updater
+$HOME/.dwm/update-statusbar.sh &

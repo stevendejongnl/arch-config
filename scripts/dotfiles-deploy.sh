@@ -78,6 +78,23 @@ find "$HOME_DIR/.config" -maxdepth 2 -type l 2>/dev/null | while read link; do
     fi
 done
 
+# Handle directories that need to be symlinks but exist as real directories
+# This can happen when applications or system create directories before stow runs
+log "Checking for real directories that should be symlinks..."
+for dir_path in ".local/share/applications"; do
+    full_path="$HOME_DIR/$dir_path"
+    if [ -d "$full_path" ] && [ ! -L "$full_path" ]; then
+        # It's a real directory, not a symlink
+        log "Converting $dir_path from real directory to symlink..."
+
+        # Back up the existing directory
+        backup_path="$full_path.pre-stow-$(date +%Y%m%d-%H%M%S)"
+        log "Backing up to $backup_path"
+        mv "$full_path" "$backup_path"
+        log "Removed real directory $dir_path (backed up to $(basename "$backup_path"))"
+    fi
+done
+
 # Deploy with stow
 log "Deploying dotfiles with GNU stow..."
 cd "$DOTFILES_DIR"
@@ -88,6 +105,33 @@ cd "$DOTFILES_DIR"
 if ! stow --verbose=1 --target="$HOME_DIR" .; then
     error "Stow failed. Check for conflicts with existing files."
 fi
+
+# Post-stow fixes: handle nested directories that stow couldn't symlink
+# This is needed because stow merges into existing directories (.local, .config, etc)
+# rather than replacing them with symlinks
+log "Fixing nested directory symlinks that stow may have missed..."
+for dir_path in ".local/share/applications"; do
+    full_path="$HOME_DIR/$dir_path"
+    dotfile_path="$DOTFILES_DIR/$dir_path"
+
+    if [ -d "$dotfile_path" ]; then
+        # If the target exists as a real directory (not a symlink), replace it
+        if [ -d "$full_path" ] && [ ! -L "$full_path" ]; then
+            # Back up the real directory
+            backup_path="$full_path.backup-$(date +%Y%m%d-%H%M%S)"
+            log "Backing up real directory $dir_path to $(basename "$backup_path")"
+            mv "$full_path" "$backup_path"
+
+            # Create symlink
+            ln -s "$dotfile_path" "$full_path"
+            log "Created symlink: $dir_path"
+        elif [ ! -e "$full_path" ]; then
+            # Target doesn't exist, create the symlink
+            ln -s "$dotfile_path" "$full_path"
+            log "Created symlink: $dir_path"
+        fi
+    fi
+done
 
 log "Dotfiles deployed successfully"
 
