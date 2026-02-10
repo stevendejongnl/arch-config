@@ -4,7 +4,9 @@ SLSTATUS_DIR="$HOME/.dwm/statusbar"
 OUTPUT=""
 
 get_claude_usage() {
-  OUTPUT+="$(printf '\x0C')🤖 $(claude-usage-statusbar) $(printf '\x01')  "
+  OUTPUT+="$(printf '\x0C')🤖 "
+  OUTPUT+="$(claude-usage-statusbar)"
+  OUTPUT+=" $(printf '\x01')  "
 }
 
 get_battery_state() {
