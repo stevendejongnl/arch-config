@@ -27,6 +27,7 @@ ESSENTIAL_SERVICES=(
     "darkman.service"
     "1password.service"
     "wallpaper.service"
+    "kbd-backlight-restore.service"
 )
 
 # Enable and start essential services

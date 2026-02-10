@@ -1,0 +1,14 @@
+[Unit]
+Description=Restore keyboard backlight after suspend
+After=suspend.target
+After=hibernate.target
+After=hybrid-sleep.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /home/stevendejong/.config/systemd/user/scripts/kbd-backlight-restore.sh
+
+[Install]
+WantedBy=suspend.target
+WantedBy=hibernate.target
+WantedBy=hybrid-sleep.target
