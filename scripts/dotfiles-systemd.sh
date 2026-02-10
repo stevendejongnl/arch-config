@@ -28,6 +28,7 @@ ESSENTIAL_SERVICES=(
     "1password.service"
     "wallpaper.service"
     "kbd-backlight-restore.service"
+    "kbd-backlight-lid-monitor.service"
 )
 
 # Enable and start essential services

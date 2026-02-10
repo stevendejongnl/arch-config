@@ -1,0 +1,12 @@
+[Unit]
+Description=Monitor lid state and restore keyboard backlight
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /home/stevendejong/.config/systemd/user/scripts/kbd-backlight-lid-monitor.sh
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target
