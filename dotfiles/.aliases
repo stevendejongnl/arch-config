@@ -104,10 +104,10 @@ alias used-ports="sudo lsof -i -P -n"
 alias used-ports-listen="sudo lsof -i -P -n | grep LISTEN"
 alias vim_homeassistant="vim scp://root@192.168.1.77:24//config/"
 alias convert="magick convert"
-alias disable-middle-mouse="/usr/bin/xinput set-button-map $(/usr/bin/xinput list --id-only 'ETPS/2 Elantech Touchpad') 1 1 3 4 5 6 7"
 alias watch-usb="$HOME/scripts/watch-usb.sh"
 alias morgenctl="echo 'Hello, good morning! Have a great day! ☀️YOU ARE AWESOME!🌟'"
 alias pling="paplay /usr/share/sounds/freedesktop/stereo/message.oga"
+alias mail="aerc"
 
 # Claude aliases
 alias cps="cpswitch"
@@ -132,11 +132,12 @@ alias got="git"
 alias gut="git"
 
 function cloudsuite_cli {
-  TRYDENT_DIR="$HOME/workspace/cloudsuite/trydent"
+  TRYDENT_DIR="$HOME/workspace/cloudsuite/platform/trydent"
   CSCONFIG="$TRYDENT_DIR/docker-compose.yml"
   CSCONFIG_OVERRIDE="$TRYDENT_DIR/docker-compose.override.yml"
   CSTESTCONFIG="$TRYDENT_DIR/docker-compose.tests.yml"
-  CSACONFIG="$HOME/workspace/cloudsuite/cloudsuite-app/docker-compose.yml"
+  CSACONFIG="$HOME/workspace/cloudsuite/frontend/cloudsuite-app/docker-compose.yml"
+
 
   POSITIONAL_ARGS=()
 
