@@ -3,3 +3,6 @@ system-packages-*.yaml
 
 config.yaml
 state/
+
+# Auto-generated statusbar cache files
+dotfiles/.dwm/statusbar/package-updates/last-run
