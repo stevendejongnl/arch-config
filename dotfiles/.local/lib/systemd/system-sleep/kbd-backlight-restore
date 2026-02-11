@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# System-level sleep hook to restore keyboard backlight after suspend/resume
+# This script is called by systemd before and after sleep
+# Called with arguments: kbd-backlight-restore pre|post suspend|hibernate|hybrid-sleep
+
+action="$1"
+sleep_type="$2"
+
+# Only run on resume (post-sleep)
+if [ "$action" != "post" ]; then
+    exit 0
+fi
+
+# Run the user's backlight restoration script
+/bin/bash /home/stevendejong/.config/systemd/user/scripts/kbd-backlight-restore.sh

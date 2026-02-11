@@ -1,0 +1,14 @@
+[Unit]
+Description=Disable middle mouse button on Elantech Trackpad
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/disable-trackpad-middle-click
+# Restart on failure for device hotplug scenarios
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target

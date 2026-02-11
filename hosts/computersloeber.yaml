@@ -30,12 +30,24 @@ exclude:
   - waydroid
   - caffeine-ng
 
-# Configuration backup settings
-config_backups:
-  enabled: true      # Auto-backup on sync
-  max_backups: 5     # Keep last 5 backups (0 = unlimited)
-
 # Settings
-flatpak_scope: user
-auto_prune: false
-backup_tool: timeshift
+flatpak_scope: user           # "user" or "system"
+auto_prune: false             # Auto-remove unmanaged packages during sync
+module_processing: parallel   # "parallel" (default) or "sequential"
+aur_helper: yay              # AUR helper to use (paru, yay, etc.)
+editor: nvim                  # Editor for config files (falls back to $EDITOR)
+
+# Config backups
+config_backups:
+  enabled: false         # Auto-backup configs before sync
+  max_backups: 5        # Keep last N backups (0 = unlimited)
+
+# System backups (Timeshift/Snapper)
+system_backups:
+  enabled: false         # Global toggle for system backups
+  backup_on_sync: true  # Create backup during dcli sync
+  backup_on_update: true # Create backup during dcli update
+  tool: timeshift       # Backup tool: timeshift or snapper
+  snapper_config: root  # Snapper config name (if using snapper)
+  max_backups: 5        # Keep last N backups (0 = unlimited)
+

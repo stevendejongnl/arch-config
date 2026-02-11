@@ -2,8 +2,8 @@ return {
   "VonHeikemen/lsp-zero.nvim",
   enabled = true,
   branch = "v3.x",
-  event = "InsertEnter",
-  dependencies = {      
+  event = { "BufReadPre", "BufNewFile" },
+  dependencies = {
     -- LSP Support
     {"neovim/nvim-lspconfig"},
     {"williamboman/mason.nvim"},
@@ -28,15 +28,18 @@ return {
     lsp_zero.on_attach(function(client, bufnr)
       local opts = {buffer = bufnr, remap = false}
 
-      vim.keymap.set("n", "<leader>vgd", function() vim.lsp.buf.definition() end, vim.tbl_extend("force", opts, {desc = "Go to Definition"}))
+      vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, vim.tbl_extend("force", opts, {desc = "Go to Definition"}))
+      vim.keymap.set("n", "gD", function() vim.lsp.buf.declaration() end, vim.tbl_extend("force", opts, {desc = "Go to Declaration"}))
+      vim.keymap.set("n", "gi", function() vim.lsp.buf.implementation() end, vim.tbl_extend("force", opts, {desc = "Go to Implementation"}))
+      vim.keymap.set("n", "gr", function() vim.lsp.buf.references() end, vim.tbl_extend("force", opts, {desc = "References"}))
       vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, vim.tbl_extend("force", opts, {desc = "Hover Documentation"}))
       vim.keymap.set("n", "<leader>vws", function() vim.lsp.buf.workspace_symbol() end, vim.tbl_extend("force", opts, {desc = "Workspace Symbol"}))
       vim.keymap.set("n", "<leader>vd", function() vim.diagnostic.open_float() end, vim.tbl_extend("force", opts, {desc = "Open Diagnostics"}))
-      vim.keymap.set("n", "[d", function() vim.diagnostic.goto_next() end, vim.tbl_extend("force", opts, {desc = "Next Diagnostic"}))
-      vim.keymap.set("n", "]d", function() vim.diagnostic.goto_prev() end, vim.tbl_extend("force", opts, {desc = "Previous Diagnostic"}))
+      vim.keymap.set("n", "[d", function() vim.diagnostic.goto_prev() end, vim.tbl_extend("force", opts, {desc = "Previous Diagnostic"}))
+      vim.keymap.set("n", "]d", function() vim.diagnostic.goto_next() end, vim.tbl_extend("force", opts, {desc = "Next Diagnostic"}))
       vim.keymap.set("n", "<leader>vca", function() vim.lsp.buf.code_action() end, vim.tbl_extend("force", opts, {desc = "Code Action"}))
-      vim.keymap.set("n", "<leader>vrr", function() vim.lsp.buf.references() end, vim.tbl_extend("force", opts, {desc = "References"}))
       vim.keymap.set("n", "<leader>vrn", function() vim.lsp.buf.rename() end, vim.tbl_extend("force", opts, {desc = "Rename"}))
+      vim.keymap.set("n", "<leader>vt", function() vim.lsp.buf.type_definition() end, vim.tbl_extend("force", opts, {desc = "Type Definition"}))
       vim.keymap.set("i", "<C-h>", function() vim.lsp.buf.signature_help() end, vim.tbl_extend("force", opts, {desc = "Signature Help"}))
     end)
 
@@ -46,7 +49,7 @@ return {
     require("mason").setup({})
     require("mason-lspconfig").setup({
       ensure_installed = {
-        -- "black",
+        "bashls",
         "cssls",
         "dockerls",
         "docker_compose_language_service",
@@ -56,10 +59,9 @@ return {
         "jqls",
         "jsonls",
         "lua_ls",
-        "pylsp",
-        "bashls",
+        "pyright",
         "stylelint_lsp",
-        -- "tsserver",
+        "ts_ls",
         "yamlls",
       },
       handlers = {
@@ -92,44 +94,38 @@ return {
     })
 
     local lspconfig = require("lspconfig")
+
+    -- Python: pyright for type checking, autocomplete, and go-to-definition
     lspconfig.pyright.setup({})
-  --   lspconfig.tsserver.setup({
-  --     handlers = {
-  --       ["textDocument/publishDiagnostics"] = function(
-  --         _,
-  --         result,
-  --         ctx,
-  --         config
-  --       )
-  --         if result.diagnostics == nil then
-  --           return
-  --         end
-  --
-  --         -- ignore some tsserver diagnostics
-  --         local idx = 1
-  --         while idx <= #result.diagnostics do
-  --           local entry = result.diagnostics[idx]
-  --
-  --           local formatter = require('format-ts-errors')[entry.code]
-  --           entry.message = formatter and formatter(entry.message) or entry.message
-  --
-  --           -- codes: https://github.com/microsoft/TypeScript/blob/main/src/compiler/diagnosticMessages.json
-  --           if entry.code == 80001 then
-  --             -- { message = "File is a CommonJS module; it may be converted to an ES module.", }
-  --             table.remove(result.diagnostics, idx)
-  --           else
-  --             idx = idx + 1
-  --           end
-  --         end
-  --
-  --         vim.lsp.diagnostic.on_publish_diagnostics(
-  --           _,
-  --           result,
-  --           ctx,
-  --           config
-  --         )
-  --       end,
-  --     },
-  --   })
+
+    -- TypeScript/JavaScript: ts_ls for autocomplete, go-to-definition, and diagnostics
+    lspconfig.ts_ls.setup({
+      handlers = {
+        ["textDocument/publishDiagnostics"] = function(_, result, ctx, config)
+          if result.diagnostics == nil then
+            return
+          end
+
+          -- Filter and format TypeScript diagnostics
+          local idx = 1
+          while idx <= #result.diagnostics do
+            local entry = result.diagnostics[idx]
+
+            local formatter = require('format-ts-errors')[entry.code]
+            entry.message = formatter and formatter(entry.message) or entry.message
+
+            -- codes: https://github.com/microsoft/TypeScript/blob/main/src/compiler/diagnosticMessages.json
+            if entry.code == 80001 then
+              -- { message = "File is a CommonJS module; it may be converted to an ES module.", }
+              table.remove(result.diagnostics, idx)
+            else
+              idx = idx + 1
+            end
+          end
+
+          vim.lsp.diagnostic.on_publish_diagnostics(_, result, ctx, config)
+        end,
+      },
+    })
   end,
 }

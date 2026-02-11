@@ -9,6 +9,7 @@ source $HOME/.zsh-config/fuzzy-find.zsh
 source $HOME/.zsh-config/workspace-navigation.zsh
 source $HOME/.zsh-config/nvm.zsh
 source $HOME/.zsh-config/tmate.zsh
+source $HOME/.zsh-config/ollama.zsh
 source ~/.safe-chain/scripts/init-posix.sh # Safe-chain Zsh initialization script
 
 [ -f /home/stevendejong/.config/cani/completions/_cani.zsh ] && source /home/stevendejong/.config/cani/completions/_cani.zsh
@@ -35,3 +36,7 @@ fpath=(~/.zsh-config/completions $fpath)
 
 # dialog-cli completion
 eval "$(register-python-argcomplete --shell zsh dialog-cli)"
+
+fpath+=~/.zfunc; autoload -Uz compinit; compinit
+
+zstyle ':completion:*' menu select

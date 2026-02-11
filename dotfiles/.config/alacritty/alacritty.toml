@@ -23,4 +23,4 @@ import = ["~/.config/alacritty/themes/dracula/dracula.toml"]
 [[keyboard.bindings]]
 key = "Return"
 mods = "Shift"
-chars = "\\x1b\r"
+chars = "\\x1b\\r"
