@@ -1,7 +1,18 @@
 return {
   "theprimeagen/harpoon",
-  enable = true,
+  enabled = true,
   branch = "harpoon2",
+  dependencies = { "nvim-lua/plenary.nvim" },
+  keys = {
+    { "<leader>a", desc = "Harpoon: Add File" },
+    { "<C-e>", desc = "Harpoon: Toggle Menu" },
+    { "<C-u>", desc = "Harpoon: Slot 1" },
+    { "<C-i>", desc = "Harpoon: Slot 2" },
+    { "<C-o>", desc = "Harpoon: Slot 3" },
+    { "<C-p>", desc = "Harpoon: Slot 4" },
+    { "<C-S-P>", desc = "Harpoon: Prev" },
+    { "<C-S-N>", desc = "Harpoon: Next" },
+  },
   config = function()
     local harpoon = require("harpoon")
 

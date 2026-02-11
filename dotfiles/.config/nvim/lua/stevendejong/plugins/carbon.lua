@@ -1,8 +1,10 @@
 return {
   "ellisonleao/carbon-now.nvim",
   enabled = true,
-  event = "InsertEnter",
   cmd = "CarbonNow",
+  keys = {
+    { "<leader>cs", ":CarbonNow<CR>", mode = "v", silent = true, desc = "Carbon screenshot" },
+  },
   opts = {
     bg = "#1F816D",
     padding_horizontal = "56px",
@@ -24,9 +26,4 @@ return {
     hidden_characters = false,
     width = 680,
   },
-  config = function()
-    require("carbon-now").setup()
-    vim.keymap.set("v", "<leader>cs", ":CarbonNow<CR>", { silent = true })
-  end,
 }
-

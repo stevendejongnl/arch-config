@@ -14,6 +14,8 @@ return {
       { "<leader>v", group = "LSP" },
       { "<leader>vc", group = "Code Actions" },
       { "<leader>vr", group = "Refactor" },
+      { "<leader>c", group = "Code" },
+      { "<leader>s", group = "Swap" },
     },
   },
   config = function(_, opts)
@@ -65,22 +67,31 @@ return {
         "  <leader>ghp    Preview inline     <C-y>       Confirm      ",
         "  <leader>ghb    Blame line         <C-Space>   Trigger      ",
         "  <leader>ghd    Diff this                                   ",
-        "  <leader>ghD    Diff this ~       EDITING                   ",
-        "                                    ───────                  ",
-        "  LSP                               J / K (v)   Move lines   ",
-        "  ───                               <leader>p   Paste (void) ",
-        "  gd             Go to definition   <leader>s   Replace word ",
-        "  gD             Go to declaration  <leader>x   chmod +x     ",
-        "  gi             Go to impl.        gc          Comment      ",
-        "  gr             References                                  ",
-        "  K              Hover docs         MISC                     ",
-        "  <leader>vws    Workspace symbol   ────                     ",
-        "  <leader>vd     Diagnostics        <leader>i   Line diag.   ",
-        "  <leader>vca    Code action        <leader>u   Undotree     ",
-        "  <leader>vrn    Rename             <leader>?   This sheet   ",
-        "  <leader>vt     Type definition    <C-f>       Tmux session ",
-        "  [d / ]d        Prev/Next diag.    Q           (disabled)   ",
-        "  <C-h> (i)      Signature help                              ",
+        "  <leader>ghD    Diff this ~       CODE / FORMAT             ",
+        "                                    ────────────             ",
+        "  LSP                               <leader>cf  Format       ",
+        "  ───                               gc          Comment      ",
+        "  gd             Go to definition   <leader>sa  Swap arg →   ",
+        "  gD             Go to declaration  <leader>sA  Swap arg ←   ",
+        "  gi             Go to impl.                                 ",
+        "  gr             References        EDITING                   ",
+        "  K              Hover docs         ───────                  ",
+        "  <leader>vws    Workspace symbol   J / K (v)   Move lines   ",
+        "  <leader>vd     Diagnostics        <leader>p   Paste (void) ",
+        "  <leader>vca    Code action        <leader>s   Replace word ",
+        "  <leader>vrn    Rename             <leader>x   chmod +x     ",
+        "  <leader>vt     Type definition                             ",
+        "  [d / ]d        Prev/Next diag.   TEXTOBJECTS               ",
+        "  <C-h> (i)      Signature help     ───────────              ",
+        "  grn            Rename (native)    af / if     Function      ",
+        "  grr            Refs (native)      ac / ic     Class         ",
+        "  gra            Action (native)    aa / ia     Argument      ",
+        "                                    ]f / [f     Next/Prev fn  ",
+        "  MISC                              ]c / [c     Next/Prev cls ",
+        "  ────                                                       ",
+        "  <leader>i   Line diagnostics    <leader>u   Undotree       ",
+        "  <leader>?   This cheatsheet     <C-f>       Tmux session   ",
+        "  Q           (disabled)                                     ",
         "",
         "                   Press q or <Esc> to close                  ",
       }
@@ -94,7 +105,7 @@ return {
       vim.bo[buf].buftype = "nofile"
 
       -- Calculate window size
-      local width = 64
+      local width = 66
       local height = #lines
       local ui = vim.api.nvim_list_uis()[1]
       local row = math.floor((ui.height - height) / 2)

@@ -15,9 +15,6 @@ require("lazy").setup({
     {
         import = "stevendejong.plugins",
     },
-    {
-        import = "stevendejong.plugins.lsp-zero",
-    },
 }, {
     concurrency = 5,
     install = {
