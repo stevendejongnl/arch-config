@@ -9,6 +9,16 @@
 .config/tmux/plugins
 .config/gtk-3.0/bookmarks
 
+# Alacritty backup files (created during config migration)
+.config/alacritty/*.bak
+
+# Systemd enable symlinks (managed by systemctl/dotfiles-systemd.sh)
+.config/systemd/user/*.target.wants/
+
+# Auto-generated desktop files and MIME cache
+.local/share/applications/*.desktop
+.local/share/applications/mimeinfo.cache
+
 .zsh-config/spaceship.zsh.zwc
 
 .openvpn3/autoload
