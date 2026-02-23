@@ -7,10 +7,8 @@ return {
     { "davidosomething/format-ts-errors.nvim" },
   },
   config = function()
-    local lspconfig = require("lspconfig")
-
     -- Shared on_attach: custom keybindings (Neovim 0.11 provides K, grn, grr, gra natively)
-    local on_attach = function(client, bufnr)
+    local on_attach = function(_, bufnr)
       local opts = { buffer = bufnr, remap = false }
 
       vim.keymap.set("n", "gd", vim.lsp.buf.definition, vim.tbl_extend("force", opts, { desc = "Go to Definition" }))
@@ -35,6 +33,11 @@ return {
       capabilities = blink.get_lsp_capabilities(capabilities)
     end
 
+    -- Apply capabilities to all servers via vim.lsp.config wildcard
+    vim.lsp.config("*", {
+      capabilities = capabilities,
+    })
+
     -- mason-lspconfig: install servers + auto-enable with defaults
     require("mason-lspconfig").setup({
       ensure_installed = {
@@ -56,7 +59,7 @@ return {
       automatic_enable = true,
     })
 
-    -- Apply on_attach and capabilities to all servers via LspAttach
+    -- Apply on_attach keybindings to all servers via LspAttach
     vim.api.nvim_create_autocmd("LspAttach", {
       callback = function(args)
         local client = vim.lsp.get_client_by_id(args.data.client_id)
@@ -66,11 +69,10 @@ return {
       end,
     })
 
-    -- Server-specific overrides
+    -- Server-specific overrides (vim.lsp.config merges with wildcard defaults)
 
     -- Lua: add Neovim runtime paths
-    lspconfig.lua_ls.setup({
-      capabilities = capabilities,
+    vim.lsp.config("lua_ls", {
       settings = {
         Lua = {
           runtime = { version = "LuaJIT" },
@@ -83,8 +85,7 @@ return {
     })
 
     -- Python: basedpyright with standard type checking
-    lspconfig.basedpyright.setup({
-      capabilities = capabilities,
+    vim.lsp.config("basedpyright", {
       settings = {
         basedpyright = {
           typeCheckingMode = "standard",
@@ -92,9 +93,16 @@ return {
       },
     })
 
+    -- Swift: sourcekit-lsp (installed via swiftly, not managed by Mason)
+    vim.lsp.config("sourcekit", {
+      cmd = { "sourcekit-lsp" },
+      filetypes = { "swift", "objc", "objcpp", "c", "cpp" },
+      root_markers = { "Package.swift", ".git", "compile_commands.json" },
+    })
+    vim.lsp.enable("sourcekit")
+
     -- TypeScript: vtsls with format-ts-errors diagnostics handler
-    lspconfig.vtsls.setup({
-      capabilities = capabilities,
+    vim.lsp.config("vtsls", {
       handlers = {
         ["textDocument/publishDiagnostics"] = function(_, result, ctx, config)
           if result.diagnostics == nil then

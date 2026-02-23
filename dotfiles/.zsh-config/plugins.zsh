@@ -32,28 +32,5 @@ fi
 
 zplug load
 
-# Lazy load direnv - initialize on first directory change or command use
-_direnv_lazy_load() {
-  # Remove this function and the chpwd hook to avoid re-triggering
-  autoload -Uz add-zsh-hook
-  add-zsh-hook -d chpwd _direnv_lazy_load
-  unfunction direnv _direnv_lazy_load
-
-  # Now actually load direnv
-  eval "$(direnv hook zsh)"
-
-  # If we're in a directory with .envrc, load it now
-  if [[ -f .envrc ]]; then
-    direnv allow
-  fi
-}
-
-# Hook into directory changes
-autoload -Uz add-zsh-hook
-add-zsh-hook chpwd _direnv_lazy_load
-
-# Also wrap the direnv command itself
-direnv() {
-  _direnv_lazy_load
-  direnv "$@"
-}
+# Initialize direnv properly
+eval "$(direnv hook zsh)"

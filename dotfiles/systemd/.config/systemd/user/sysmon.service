@@ -1,0 +1,12 @@
+[Unit]
+Description=sysmon daemon
+After=graphical-session.target
+
+[Service]
+ExecStart=%h/.cargo/bin/sysmon daemon --interval 30
+Restart=on-failure
+Environment=DISPLAY=:0
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%U/bus
+
+[Install]
+WantedBy=default.target

@@ -35,12 +35,18 @@ get_bluetooth() {
   OUTPUT+="$("$SLSTATUS_DIR"/bluetooth.sh)"
 }
 
+get_sysmon() {
+  OUTPUT+="$(sysmon status)"
+  OUTPUT+=" "
+}
+
 get_date() {
   # 0x11 = statuscmd byte for date (clickable)
   OUTPUT+="$(printf '\x11')$(printf '\x08')🕐 $(date '+%d-%m-%Y %H:%M:%S') $(printf '\x01')  "
 }
 
 get_claude_usage
+get_sysmon
 get_date
 get_battery_state
 # get_cpu_usage

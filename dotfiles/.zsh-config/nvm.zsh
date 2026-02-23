@@ -56,11 +56,21 @@ _activate_nvm_auto_switch() {
         nvm use
       fi
     elif [ -f package.json ]; then
-      nodeVersion=$(jq -r '.engines.node | select(.!=null)' package.json )
+      nodeVersion=$(jq -r '.engines.node | select(.!=null)' package.json 2>/dev/null)
 
-      if [ ! -z $nodeVersion ] && [[ ! $(nvm current) = "^v$nodeVersion" ]]; then
-        echo "found $nodeVersion in package.json engine"
-        nvm use ${nodeVersion:0:2}
+      if [ ! -z "$nodeVersion" ]; then
+        # Extract major version (e.g., "18.x" or ">=18" -> "18")
+        local majorVersion=$(echo "$nodeVersion" | grep -oE '[0-9]+' | head -1)
+
+        if [ ! -z "$majorVersion" ] && [[ ! $(nvm current) = "v${majorVersion}"* ]]; then
+          nvm use "${majorVersion}" 2>/dev/null || nvm install "${majorVersion}"
+        fi
+      else
+        # No version specified - use latest LTS
+        local ltsVersion=$(nvm version-remote --lts | tail -1)
+        if [[ ! $(nvm current) = "$ltsVersion" ]]; then
+          nvm use "$ltsVersion" 2>/dev/null || nvm install "$ltsVersion"
+        fi
       fi
     fi
   }

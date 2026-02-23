@@ -4,7 +4,7 @@ return {
   branch = "harpoon2",
   dependencies = { "nvim-lua/plenary.nvim" },
   keys = {
-    { "<leader>a", desc = "Harpoon: Add File" },
+    { "<leader>ha", desc = "Harpoon: Add File" },
     { "<C-e>", desc = "Harpoon: Toggle Menu" },
     { "<C-u>", desc = "Harpoon: Slot 1" },
     { "<C-i>", desc = "Harpoon: Slot 2" },
@@ -18,7 +18,7 @@ return {
 
     harpoon:setup()
 
-    vim.keymap.set("n", "<leader>a", function() harpoon:list():add() end, { desc = "Harpoon: Add File" })
+    vim.keymap.set("n", "<leader>ha", function() harpoon:list():add() end, { desc = "Harpoon: Add File" })
     vim.keymap.set("n", "<C-e>", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end, { desc = "Harpoon: Toggle Menu" })
 
     vim.keymap.set("n", "<C-u>", function() harpoon:list():select(1) end, { desc = "Harpoon: Slot 1" })

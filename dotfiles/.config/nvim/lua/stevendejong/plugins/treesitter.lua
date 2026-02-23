@@ -21,6 +21,7 @@ return {
       "python",
       "query",
       "rust",
+      "swift",
       "toml",
       "tsx",
       "typescript",

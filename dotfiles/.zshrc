@@ -17,7 +17,7 @@ source ~/.safe-chain/scripts/init-posix.sh # Safe-chain Zsh initialization scrip
 # NVM is loaded via ~/.zsh-config/nvm.zsh - no need to load again here
 [ -s $HOME/.rsvm/rsvm.sh ] && \. "$HOME/.rsvm/rsvm.sh" # This loads RSVM
 
-eval "$(zoxide init --cmd cd zsh)"
+[[ -o interactive ]] && eval "$(zoxide init --cmd cd zsh)"
 
 # Lazy load thefuck - only initialize when first used
 fuck() {

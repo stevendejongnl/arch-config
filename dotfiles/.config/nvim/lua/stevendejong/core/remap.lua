@@ -40,6 +40,9 @@ vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><
 -- Make file executable
 vim.keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true, desc = "Make File Executable" })
 
+vim.keymap.set("n", "<leader>jb", "<c-o>", { desc = "Go Back" })
+vim.keymap.set("n", "<leader>jf", "<c-i>", { desc = "Go Forward" })
+
 -- vim.keymap.set("n", "<Up>", "<Nop>")
 -- vim.keymap.set("n", "<Left>", "<Nop>")
 -- vim.keymap.set("n", "<Right>", "<Nop>")

@@ -10,3 +10,8 @@ packages:
 - thunderbird
 - aerc
 - w3m
+- smbclient
+- cifs-utils
+- gvfs-smb
+- sshfs
+- tea
