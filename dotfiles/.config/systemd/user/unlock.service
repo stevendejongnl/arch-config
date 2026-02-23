@@ -1,10 +1,10 @@
 [Unit]
-Description=Unlock
-After=graphical.target
+Description=Unlock 1Password
+After=1password.service
 
 [Service]
-Type=simple
-ExecStart=alacritty -e "/home/stevendejong/unlock"
+Type=oneshot
+ExecStart=/home/stevendejong/unlock
 
 [Install]
 WantedBy=autostart.target
