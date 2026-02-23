@@ -2,7 +2,8 @@
 
 get_battery_state() {
   # Get battery info from acpi (redirect stderr to suppress errors)
-  battery_info=$(acpi -b 2>/dev/null | head -n 1)
+  # Show first non-wireless battery (ignores HIDpp devices like mouse/keyboard)
+  battery_info=$(acpi -b 2>/dev/null | grep -v "hidpp" | head -n 1)
 
   # Fallback: if acpi fails completely
   if [ -z "$battery_info" ]; then
