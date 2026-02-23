@@ -8,7 +8,7 @@ pgrep -x numlockx > /dev/null || numlockx &
 pgrep -x picom > /dev/null || picom &
 pgrep -x ntfd > /dev/null || ntfd &
 pgrep -x lxpolkit > /dev/null || lxpolkit &
-pgrep -f "update-statusbar.sh" > /dev/null || /home/stevendejong/.dwm/update-statusbar.sh &
+pgrep -f "update-statusbar.sh" > /dev/null || (sleep 2; pgrep -x upower > /dev/null && /home/stevendejong/.dwm/update-statusbar.sh) &
 pgrep -x batify > /dev/null || batify &
 pgrep -x deja-dup > /dev/null || deja-dup &
 
