@@ -1,0 +1,11 @@
+[Unit]
+Description=libinput gestures daemon
+After=graphical.target
+
+[Service]
+ExecStart=/bin/sg input -c '/usr/bin/libinput-gestures'
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=autostart.target
