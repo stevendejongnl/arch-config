@@ -1,9 +1,15 @@
 [Unit]
 Description=Network Manager Applet
-After=graphical.target
+After=default.target
 
 [Service]
+ExecStartPre=/bin/bash -c 'for i in $(seq 30); do xdpyinfo -display :0 >/dev/null 2>&1 && exit 0; sleep 0.5; done; exit 1'
 ExecStart=nm-applet
+TimeoutStartSec=30
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=%h/.Xauthority
+Restart=on-failure
+RestartSec=3
 
 [Install]
-WantedBy=autostart.target
+WantedBy=default.target

@@ -1,9 +1,16 @@
 [Unit]
 Description=Wallpaper
+After=default.target
 
 [Service]
 Type=oneshot
+ExecStartPre=/bin/bash -c 'for i in $(seq 30); do xdpyinfo -display :0 >/dev/null 2>&1 && exit 0; sleep 0.5; done; exit 1'
 ExecStart=/bin/bash /home/stevendejong/.config/systemd/user/scripts/wallpaper.sh
+TimeoutStartSec=60
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=%h/.Xauthority
+StandardOutput=journal
+StandardError=journal
 
 [Install]
-WantedBy=autostart.target
+WantedBy=default.target
