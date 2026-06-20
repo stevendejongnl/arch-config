@@ -1,0 +1,8 @@
+[Unit]
+Description=Notify autostart failure for %i
+
+[Service]
+Type=oneshot
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=%h/.Xauthority
+ExecStart=notify-send -u critical -i dialog-error "Autostart failed" "%i failed to start — check: journalctl --user -u %i"

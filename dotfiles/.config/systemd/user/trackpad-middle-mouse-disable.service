@@ -1,14 +1,17 @@
 [Unit]
 Description=Disable middle mouse button on Elantech Trackpad
 After=graphical-session.target
-PartOf=graphical-session.target
+OnFailure=autostart-failure@%n.service
 
 [Service]
 Type=oneshot
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=%h/.Xauthority
+ExecStartPre=/bin/bash -c 'for i in $(seq 20); do xdpyinfo -display :0 >/dev/null 2>&1 && exit 0; sleep 0.5; done; exit 1'
 ExecStart=%h/.local/bin/disable-trackpad-middle-click
-# Restart on failure for device hotplug scenarios
+TimeoutStartSec=60
 Restart=on-failure
-RestartSec=2
+RestartSec=5
 
 [Install]
-WantedBy=graphical-session.target
+WantedBy=autostart.target

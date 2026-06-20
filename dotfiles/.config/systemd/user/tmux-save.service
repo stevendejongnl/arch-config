@@ -1,0 +1,11 @@
+[Unit]
+Description=Save tmux sessions on logout/shutdown
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/true
+ExecStop=/bin/sh -c '[ -S "/tmp/tmux-1000/default" ] && /home/stevendejong/.config/tmux/plugins/tmux-resurrect/scripts/save.sh quiet || true'
+TimeoutStopSec=10
+
+[Install]
+WantedBy=default.target
