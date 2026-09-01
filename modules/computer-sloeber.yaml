@@ -1,5 +1,261 @@
-# Computer Sloeber packages
+# Computer Sloeber (work laptop) packages
+# Everything installed on computersloeber that isn't in base/dwm/dotfiles.
+# Prune freely — this is the "kitchen sink" list for the work machine.
 
 description: Computer Sloeber Packages
 
-packages: []
+packages:
+  # --- kernel / hardware (laptop-specific) ---
+  - linux
+  - linux-headers
+  - linux-firmware-qlogic
+  - libfprint-2-tod1-elan     # fingerprint reader
+  - fprintd
+  - fwupd
+  - light                     # backlight
+  - lact                      # AMD GPU control
+  - openrgb
+  - solaar                    # Logitech devices
+  - powertop
+  - smartmontools
+  - lshw
+  - evtest
+  - android-udev
+  - usbmuxd                   # iOS devices
+
+  # --- 32-bit (wine / games) ---
+  - lib32-freetype2
+  - lib32-gcc-libs
+  - lib32-glibc
+  - lib32-libpng
+  - lib32-mesa
+  - wine
+
+  # --- virtualization / containers ---
+  - qemu-full
+  - virt-manager
+  - virt-viewer
+  - docker
+  - docker-buildx
+  - docker-compose
+  - distrobox
+  - toolbox
+  - minikube
+  - lvm2
+  - nfs-utils
+
+  # --- cloud / infra / k8s ---
+  - kubectl
+  - rancher-cli-bin
+  - glab
+  - cloudflared
+  - skopeo
+  - mkcert
+  - htpasswd
+
+  # --- dev ---
+  - cmake
+  - meson
+  - ninja
+  - make
+  - gperf
+  - rvm
+  - leiningen
+  - python313
+  - python-pipx
+  - python-build
+  - python-installer
+  - python-html5lib
+  - ipython
+  - neovim-qt
+  - lazygit
+  - gitleaks
+  - cloc
+  - act
+  - entr
+  - expac
+  - mongo-c-driver
+  - openssl-1.1
+  - dbeaver
+  - redisinsight
+  - mqtt-explorer
+  - pass-git-helper
+  - ollama
+  - expect
+  - scrcpy
+  - pep
+
+  # --- maker / CAD / 3D printing / electronics ---
+  - kicad
+  - prusa-slicer
+  - orca-slicer-bin
+  - sweethome3d
+  - sweethome3d-3dmodels-contributions
+  - sweethome3d-furniture-library
+  - inkscape
+  - gimp
+  - arduino-cli
+  - arduino-avr-core
+  - arduino-language-server
+  - qmk
+  - nodemcu-pyflasher
+  - rpi-imager
+  - dymo-bluetooth
+
+  # --- printing / scanning ---
+  - sane
+  - gutenprint
+  - cnijfilter2-mg7500        # Canon MG7500
+  - gsfonts
+
+  # --- desktop apps ---
+  - google-chrome
+  - spotify
+  - telegram-desktop
+  - obsidian
+  - vlc
+  - claude-desktop-official-bin
+  - figma-linux-bin
+  - etcher-bin
+  - seafile-client
+  - remmina
+  - copyq
+  - moonlight-qt
+  - timer-for-harvest
+  - qtpass
+  - rofi-rbw
+
+  # --- pdf / docs / images ---
+  - pdfarranger
+  - xournalpp
+  - ghex
+  - pandoc-cli
+  - feh
+  - qrtool
+  - chafa
+
+  # --- vpn / network tools ---
+  - openvpn
+  - qopenvpn
+  - nm-connection-editor
+  - wireguird
+  - dnsmasq
+  - nmap
+  - arp-scan
+  - dhcping
+  - mdns-scan
+  - nss-mdns
+  - net-tools
+  - inetutils
+  - openbsd-netcat
+  - socat
+  - ntp
+  - ppp
+  - ifplugd
+  - lynx
+  - wget
+
+  # --- audio ---
+  - helvum
+  - qpwgraph
+  - playerctl
+  - scream-git
+  - batify2
+  - cable
+
+  # --- xfce / wm bits ---
+  - xfce4-clipman-plugin
+  - lxappearance-obconf
+  - dunst
+  - cage
+  - weston
+  - wl-clipboard
+  - wmctrl
+  - xclip
+  - xsel
+
+  # --- themes / fonts ---
+  - dracula-cursors-git
+  - dracula-gtk-theme
+  - dracula-icons-theme
+  - dracula-rofi-git
+  - orchis-theme
+  - orchis-dracula-theme-git
+  - gtk-engine-murrine
+  - kvantum
+  - kvantum-qt5
+  - ttf-jetbrains-mono
+  - ttf-ubuntu-nerd
+  - ttf-ubuntu-mono-nerd
+  - noto-fonts-cjk
+  - noto-fonts-extra
+
+  # --- file / disk utils ---
+  - file-roller
+  - gnome-disk-utility
+  - gnome-characters
+  - gdu
+  - ncdu
+  - plocate
+  - gptfdisk
+  - dosfstools
+  - testdisk
+  - ddrescue
+  - 7zip
+  - unzip
+  - zip
+  - cabextract
+  - xdelta3
+  - archivetools
+  - tumbler-folder-thumbnailer
+  - tumbler-stl-thumbnailer
+
+  # --- misc cli ---
+  - bat
+  - fd
+  - ripgrep
+  - fastfetch
+  - htop
+  - nvtop
+  - tldr
+  - gum
+  - dialog
+  - yad
+  - bc
+  - calc
+  - pv
+  - progress
+  - moreutils
+  - inotify-tools
+  - lsof
+  - iptables
+  - downgrade
+  - kdeconnect
+  - seahorse
+  - flatpak
+  - libinput-gestures
+  - gkrellm-git
+  - zsh-autosuggestions
+  - xorg-docs
+  - peek
+  - screenkey
+
+  # --- xorg (kept subset) ---
+  - xorg-server-devel
+  - xorg-server-xephyr
+  - xorg-server-xnest
+  - xorg-server-xvfb
+  - xorg-xwayland
+  - xorg-xrdb
+  - xorg-xset
+  - xorg-setxkbmap
+  - xorg-xauth
+  - xorg-xkbcomp
+  - xorg-xdpyinfo
+  - xorg-xev
+  - xorg-xkill
+  - xorg-xwininfo
+  - xorg-xlsclients
+  - xorg-xmodmap
+  - xorg-xpr
+  - xorg-xcursorgen
