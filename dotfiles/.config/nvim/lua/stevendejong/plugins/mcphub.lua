@@ -1,7 +1,7 @@
 return {
   "ravitemer/mcphub.nvim",
   dependencies = { "nvim-lua/plenary.nvim" },
-  build = "source ~/.nvm/nvm.sh && nvm use --lts && npm install -g mcp-hub@latest",
+  build = "mkdir -p ~/.npm-global && source ~/.nvm/nvm.sh && nvm use --lts && npm install -g --prefix ~/.npm-global mcp-hub@latest",
   config = function()
     -- Use explicit path to mcp-hub in latest LTS Node version
     -- This bypasses nvm's lazy-loading, ensuring mcp-hub is available when Neovim starts

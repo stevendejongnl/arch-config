@@ -261,3 +261,30 @@ function gs() {
   [ -z "$def" ] && { echo "no default branch found"; return 1; }
   git reset --hard && git clean -fd && git checkout "$def" && git reset --hard "origin/$def" && git pull --ff-only
 }
+
+# dcli merge (capture manually installed/removed packages) -> commit -> push.
+# The full loop that yay/pacman installs and removes never do on their own.
+function shipit() {
+  local repo="$HOME/.config/arch-config"
+  (
+    cd "$repo" || return 1
+
+    echo "==> dcli merge"
+    dcli merge || return 1
+
+    if [ -z "$(git status --porcelain)" ]; then
+      echo "==> nothing changed, nothing to ship"
+      return 0
+    fi
+
+    echo "==> changes:"
+    git status --short
+
+    echo "==> committing"
+    git add -A
+    git commit -m "chore: shipit $(date +%Y-%m-%d_%H:%M)" || return 1
+
+    echo "==> pushing"
+    git push origin main
+  )
+}
