@@ -118,6 +118,23 @@ log "Linking tracked ~/.local files..."
 link_tracked_files ".local/bin"
 link_tracked_files ".local/share/applications"
 
+# tmux plugins (tmux.conf uses tpm + a plugin list). tpm and the plugins are
+# not vendored — bootstrap them so tmux looks the same on every machine.
+if grep -q "@plugin" "$HOME_DIR/.config/tmux/tmux.conf" 2>/dev/null; then
+    TPM_DIR="$HOME_DIR/.config/tmux/plugins/tpm"
+    [ -d "$TPM_DIR/.git" ] || git clone -q https://github.com/tmux-plugins/tpm "$TPM_DIR" \
+        && log "tpm installed"
+    # tmux.conf sources '~/.tmux/plugins/tpm/tpm'
+    mkdir -p "$HOME_DIR/.tmux"
+    [ -e "$HOME_DIR/.tmux/plugins" ] || ln -sfn "$HOME_DIR/.config/tmux/plugins" "$HOME_DIR/.tmux/plugins"
+    if [ -x "$TPM_DIR/scripts/install_plugins.sh" ]; then
+        TERM=${TERM:-xterm-256color} tmux -L dotfiles-deploy -f "$HOME_DIR/.config/tmux/tmux.conf" new-session -d 2>/dev/null || true
+        "$TPM_DIR/scripts/install_plugins.sh" >/dev/null 2>&1 || log "tmux plugin install had issues (run 'prefix + I' in tmux)"
+        tmux -L dotfiles-deploy kill-server 2>/dev/null || true
+        log "tmux plugins installed"
+    fi
+fi
+
 log "Dotfiles deployed successfully"
 
 # Run systemd service configuration if available
