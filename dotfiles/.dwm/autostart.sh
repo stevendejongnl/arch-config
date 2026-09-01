@@ -6,7 +6,7 @@
 autorandr --change &
 
 # sleep 5
-darkman set dark &
+gsettings set org.gnome.desktop.interface color-scheme prefer-dark &  # locked dark (modules/dark-mode.yaml)
 systemctl --user restart wallpaper.service &
 systemctl --user start autostart.target &
 

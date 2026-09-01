@@ -36,7 +36,7 @@ setxkbmap -option caps:escape
 # Disable middle mouse button on Elantech Touchpad
 $HOME/.local/bin/disable-trackpad-middle-click &
 
-darkman set dark &
+gsettings set org.gnome.desktop.interface color-scheme prefer-dark &  # locked dark (modules/dark-mode.yaml)
 #brightnessctl --device='amdgpu_bl1' set 255 &
 brightnessctl --device='tpacpi::kbd_backlight' set 2 &
 

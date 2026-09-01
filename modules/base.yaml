@@ -71,7 +71,6 @@ packages:
   - bluez-qt            # Bluetooth tools for Qt-based environments
   - bluez-tools         # Bluetooth command-line tools
   - caffeine-ng         # Prevents system from sleeping
-  - darkman             # Automatic dark mode switcher
   - pavucontrol         # PulseAudio volume control
   - tmate               # Instant terminal sharing
   - tmux                # Terminal multiplexer

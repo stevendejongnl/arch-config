@@ -1,0 +1,13 @@
+# Force a permanent dark theme (no darkman day/night switching).
+
+description: Locked dark mode
+
+packages:
+  - darkman          # kept for `darkman set dark`; the auto-switch service stays disabled
+  - adwaita-qt5      # dark Qt5 widget style (QT_STYLE_OVERRIDE=Adwaita-Dark)
+  - adwaita-qt6      # dark Qt6 widget style
+
+conflicts: []
+
+# Applies the dark settings and disables darkman's scheduler.
+post_install_hook: "scripts/dark-mode.sh"
