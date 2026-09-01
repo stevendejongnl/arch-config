@@ -28,6 +28,7 @@ ESSENTIAL_SERVICES=(
     # disabled (locked dark, no day/night switching).
     "1password.service"
     "wallpaper.service"
+    "wallpaper.timer"
     "kbd-backlight-restore.service"
     "kbd-backlight-lid-monitor.service"
 )
