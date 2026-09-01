@@ -366,3 +366,7 @@ Backups allow safe recovery if configuration changes cause issues. The backup to
 - **Test module changes** - After modifying modules, verify the merged package list is correct before running dcli sync
 - **Script execution** - Custom scripts in `scripts/` are executed as dcli hooks during sync operations
 - **Backups before sync** - dcli creates automatic backups before applying changes, enabling safe rollback
+
+## MR / PR Descriptions
+
+Never include a "Test plan" section. Summary of changes only.

@@ -97,8 +97,7 @@ source $HOME/scripts/cleanup.sh
 
 alias reload-aliases='source ~/.aliases && echo "Aliases reloaded ✅"'
 alias unlock="$HOME/unlock"
-alias vpn="$HOME/.openvpn3/openvpn.sh"
-alias vpn3="$HOME/.openvpn3/openvpn3.sh"
+alias vpn="$HOME/.local/bin/vpn"
 alias change-wallpaper="$HOME/.config/systemd/user/scripts/wallpaper.sh"
 alias vim="nvim"
 alias used-ports="sudo lsof -i -P -n"
@@ -114,9 +113,9 @@ alias mail="aerc"
 alias tmate-ssh='tmate display -p "#{tmate_ssh}" | xclip -selection clipboard && tmate display -p "#{tmate_ssh}"'
 
 # Claude aliases
-alias cps="cpswitch"
-alias cpw="cpswitch work && claude /new"
-alias cpp="cpswitch personal && claude /new"
+alias ccs="cpswitch"
+ccw() { export CLAUDE_PROFILE=work; claude "$@"; }
+ccp() { export CLAUDE_PROFILE=personal; claude "$@"; }
 
 function _bluetoothreset(){
   if lsmod | grep -q btusb; then
@@ -237,3 +236,28 @@ function cloudsuite_cli {
 }
 
 alias cs="cloudsuite_cli"
+
+genpass() {
+  local len="${1:-16}"
+  < /dev/urandom tr -dc 'A-Za-z0-9!@#$%^&*()-_=+' | head -c "$len"
+  echo
+}
+
+function argon2hash() {
+  local password="${1:-}"
+  if [[ -z "$password" ]]; then
+    read -rs "password?Password: "
+    echo
+  fi
+  local salt
+  salt=$(< /dev/urandom tr -dc 'A-Za-z0-9' | head -c 16)
+  printf '%s' "$password" | argon2 "$salt" -id -t 3 -m 16 -p 4 -e
+}
+
+function gs() {
+  local def
+  def=$(git symbolic-ref --quiet refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+  [ -z "$def" ] && def=$(git remote show origin 2>/dev/null | sed -n 's/.*HEAD branch: //p')
+  [ -z "$def" ] && { echo "no default branch found"; return 1; }
+  git reset --hard && git clean -fd && git checkout "$def" && git reset --hard "origin/$def" && git pull --ff-only
+}

@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# Orange-colored Nerd Font battery glyph (U+F240). Icon color is fixed
+# regardless of battery state — the percentage after it picks up state color.
+# Bytes: \x0A (orange) + glyph UTF-8 + \x01 (reset) to isolate icon color.
+ICON=$(printf '\x0a\xef\x89\x80\x01')
+
 get_battery_state() {
   # Get battery info from acpi (redirect stderr to suppress errors)
   # Prioritize: charging > non-zero > fallback to any
@@ -15,8 +20,7 @@ get_battery_state() {
 
   # Fallback: if acpi fails completely
   if [ -z "$battery_info" ]; then
-    printf '\x09'  # Yellow - warning
-    echo "🔋 N/A $(printf '\x01')  "
+    echo "$ICON$(printf '\x09') N/A $(printf '\x01')  "
     return
   fi
 
@@ -30,8 +34,7 @@ get_battery_state() {
 
     # Still invalid? Show unknown
     if ! echo "$percentage" | grep -Eq '^[0-9]+$'; then
-      printf '\x09'  # Yellow - warning
-      echo "🔋 ??% $(printf '\x01')  "
+      echo "$ICON$(printf '\x09') ??% $(printf '\x01')  "
       return
     fi
   fi
@@ -54,47 +57,35 @@ get_battery_state() {
 
   # EDGE CASE: 0% while charging (brief transition state)
   if [ "$percentage" -eq 0 ] && [ "$state" = "Charging" ]; then
-    printf '\x09'  # Yellow - transitioning
-    echo "⚡ 0% (initializing) $(printf '\x01')  "
+    echo "$ICON$(printf '\x09') 0% (initializing) $(printf '\x01')  "
     return
   fi
 
   # EDGE CASE: 0% not charging (critical failure)
   if [ "$percentage" -eq 0 ]; then
-    printf '\x0B'  # Red - critical
-    echo "🔋 0% (CRITICAL) $(printf '\x01')  "
+    echo "$ICON$(printf '\x0B') 0% (CRITICAL) $(printf '\x01')  "
     return
   fi
 
-  # Enhanced icon logic
-  icon="🔋"
+  # Pick value color based on state + percentage (icon stays orange).
   if [ "$state" = "Charging" ]; then
-    icon="⚡"
-  elif [ "$state" = "NotCharging" ] && [ "$percentage" -eq 100 ]; then
-    icon="🔌"  # Full and plugged in
-  fi
-
-  # Color coding based on state and percentage
-  if [ "$state" = "Charging" ]; then
-    # Charging: always teal
-    printf '\x08'
+    value_color=$(printf '\x0C')   # green - charging
   elif [ "$state" = "Discharging" ]; then
-    # Discharging: color based on percentage
     if [ "$percentage" -lt 15 ]; then
-      printf '\x0B'  # Critical - red
+      value_color=$(printf '\x0B') # red - critical
     elif [ "$percentage" -lt 30 ]; then
-      printf '\x0A'  # High warning - orange
+      value_color=$(printf '\x0A') # orange - high warning
     elif [ "$percentage" -lt 50 ]; then
-      printf '\x09'  # Medium - yellow
+      value_color=$(printf '\x09') # yellow - medium
     else
-      printf '\x08'  # Good - teal
+      value_color=$(printf '\x08') # teal - good
     fi
   else
-    # Not charging (plugged but not charging): always teal
-    printf '\x08'
+    # Not charging (plugged, full): green
+    value_color=$(printf '\x0C')
   fi
 
-  echo "$icon $percentage% $(printf '\x01')  "
+  echo "$ICON$value_color $percentage% $(printf '\x01')  "
 }
 
 get_battery_state

@@ -15,3 +15,6 @@ packages:
 - gvfs-smb
 - sshfs
 - tea
+- davfs2
+- hcloud
+- firefox

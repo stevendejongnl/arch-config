@@ -1,11 +1,13 @@
 [Unit]
 Description=Syncthing - Open Source Continuous File Synchronization
 Documentation=man:syncthing(1)
+After=default.target
 StartLimitIntervalSec=60
 StartLimitBurst=4
 
 [Service]
 ExecStart=/usr/bin/syncthing serve --no-browser --no-restart --logflags=0
+TimeoutStartSec=20
 Restart=on-failure
 RestartSec=1
 SuccessExitStatus=3 4
@@ -21,4 +23,4 @@ NoNewPrivileges=true
 #AmbientCapabilities=CAP_CHOWN CAP_FOWNER
 
 [Install]
-WantedBy=autostart.target
+WantedBy=default.target

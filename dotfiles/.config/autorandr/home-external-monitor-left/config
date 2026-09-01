@@ -1,11 +1,11 @@
 output HDMI-1
 off
 output DP-1
-crtc 0
+crtc 1
 mode 1920x1080
 pos 0x0
-primary
 rate 60.00
+x-prop-broadcast_rgb Automatic
 x-prop-colorspace Default
 x-prop-max_bpc 16
 x-prop-non_desktop 0
@@ -14,9 +14,10 @@ x-prop-underscan off
 x-prop-underscan_hborder 0
 x-prop-underscan_vborder 0
 output eDP-1
-crtc 1
+crtc 0
 mode 1920x1080
 pos 1920x0
+primary
 rate 60.00
 x-prop-colorspace Default
 x-prop-max_bpc 16

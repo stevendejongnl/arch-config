@@ -1,48 +1,24 @@
 # Claude Profile Management with CLAUDE_CONFIG_DIR isolation
-# Auto-switch profile based on .claude-profile in project
+# Precedence: shell-local $CLAUDE_PROFILE > project .claude-profile > global active profile
 
-# Track the last used profile to detect changes
-_CLAUDE_LAST_PROFILE=""
-
-# Wrapper function for claude command
 claude() {
-  # Check for project-specific profile
-  local project_profile=$(claude-profile status --short 2>/dev/null)
+  local shell_profile="${CLAUDE_PROFILE:-}"
   local active_profile=$(claude-profile current --short 2>/dev/null)
+  local status_profile=$(claude-profile status --short 2>/dev/null)
 
-  # Auto-switch if project profile differs from active
-  if [ -n "$project_profile" ] && [ "$project_profile" != "$active_profile" ]; then
-    echo "Switching Claude profile to: $project_profile" >&2
-    if ! claude-profile switch "$project_profile" 2>&1 | sed 's/^/  /'; then
-      echo "Failed to switch profile, using active profile: $active_profile" >&2
-      project_profile="$active_profile"
-    fi
-  fi
+  local project_profile=""
+  [ -n "$status_profile" ] && [ "$status_profile" != "$active_profile" ] && project_profile="$status_profile"
 
-  # Determine effective profile (project override or active)
-  local effective_profile="${project_profile:-$active_profile}"
+  local effective_profile="${shell_profile:-${project_profile:-$active_profile}}"
 
-  # Check if profile changed since last run
-  if [ -n "$_CLAUDE_LAST_PROFILE" ] && [ "$_CLAUDE_LAST_PROFILE" != "$effective_profile" ]; then
-    echo "Profile changed from $_CLAUDE_LAST_PROFILE to $effective_profile" >&2
-    echo "Note: If you're in an active Claude session, you may need to start a new conversation" >&2
-    echo "      to pick up the new authentication. Use 'claude /new' or exit and restart." >&2
-  fi
-  _CLAUDE_LAST_PROFILE="$effective_profile"
-
-  # Set CLAUDE_CONFIG_DIR to point to account directory
   if [ -n "$effective_profile" ]; then
     export CLAUDE_CONFIG_DIR="$HOME/.claude/accounts/$effective_profile"
-
-    # Verify account directory exists
     if [ ! -d "$CLAUDE_CONFIG_DIR" ]; then
-      echo "Warning: Account directory not found for profile '$effective_profile'" >&2
-      echo "Run 'claude-profile migrate' to set up account isolation" >&2
+      echo "Warning: $CLAUDE_CONFIG_DIR missing for profile '$effective_profile'" >&2
       unset CLAUDE_CONFIG_DIR
     fi
   fi
 
-  # Run actual claude command with isolated config
   command claude "$@"
 }
 
@@ -76,6 +52,7 @@ cpswitch() {
 }
 
 # Aliases for convenience
+alias opusplan='claude --model opusplan'
 alias cprofile='claude-profile'
 alias cplist='claude-profile list'
 alias cpstatus='claude-profile status'

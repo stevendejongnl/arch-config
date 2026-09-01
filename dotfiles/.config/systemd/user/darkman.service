@@ -1,9 +1,10 @@
 [Unit]
 Description=Darkman
-After=graphical.target
+After=graphical-session.target
 
 [Service]
-ExecStart=/usr/bin/darkman set dark
+Type=simple
+ExecStart=/usr/bin/darkman run
 
 [Install]
-WantedBy=autostart.target
+WantedBy=graphical-session.target

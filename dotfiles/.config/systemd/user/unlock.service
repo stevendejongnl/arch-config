@@ -1,10 +1,14 @@
 [Unit]
 Description=Unlock 1Password
 After=1password.service
+BindsTo=1password.service
 
 [Service]
 Type=oneshot
 ExecStart=/home/stevendejong/unlock
+TimeoutStartSec=30
+StandardOutput=journal
+StandardError=journal
 
 [Install]
-WantedBy=autostart.target
+WantedBy=default.target

@@ -6,7 +6,7 @@ return {
     -- Use explicit path to mcp-hub in latest LTS Node version
     -- This bypasses nvm's lazy-loading, ensuring mcp-hub is available when Neovim starts
     require("mcphub").setup({
-      cmd = vim.fn.expand("~/.nvm/versions/node/v24.13.0/bin/mcp-hub"),
+      cmd = vim.fn.expand("~/.npm-global/bin/mcp-hub"),
       cmdArgs = {},
     })
   end,

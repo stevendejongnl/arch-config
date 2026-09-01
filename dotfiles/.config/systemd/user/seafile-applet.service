@@ -1,0 +1,14 @@
+[Unit]
+Description=Seafile Desktop Client Applet (Background)
+After=graphical-session-pre.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/seafile-applet-bg
+Restart=on-failure
+RestartSec=5
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:%h/.local/bin"
+
+[Install]
+WantedBy=graphical-session.target

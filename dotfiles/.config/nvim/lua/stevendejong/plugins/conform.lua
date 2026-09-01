@@ -1,6 +1,6 @@
 return {
   "stevearc/conform.nvim",
-  event = "BufWritePre",
+  event = "VeryLazy",
   cmd = "ConformInfo",
   keys = {
     {
@@ -27,10 +27,6 @@ return {
       python = { "ruff_format", "black", stop_after_first = true },
       sh = { "shfmt" },
       bash = { "shfmt" },
-    },
-    format_on_save = {
-      timeout_ms = 2000,
-      lsp_format = "fallback",
     },
   },
 }

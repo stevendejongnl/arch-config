@@ -107,6 +107,13 @@ npx() {
   npx "$@"
 }
 
+# Lazy loading wrapper for gemini command
+gemini() {
+  unset -f nvm node npm npx gemini
+  _load_nvm
+  gemini "$@"
+}
+
 # Activate early .nvmrc detection on directory change
 autoload -U add-zsh-hook
 add-zsh-hook chpwd _check_nvmrc_and_load

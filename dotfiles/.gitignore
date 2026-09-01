@@ -4,6 +4,9 @@
 
 .dwm/slstatus/package-updates/last-run
 .dwm/slstatus/package-updates/status
+.dwm/statusbar/harvest/.env
+.dwm/statusbar/harvest/state
+.dwm/statusbar/harvest/last-run
 .config/nvim/plugin/packer_compiled.lua
 .config/nvim/pack
 .config/tmux/plugins

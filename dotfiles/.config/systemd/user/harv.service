@@ -5,7 +5,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=%h/.cargo/bin/harv sync --quiet --auto-start --auto-stop
+ExecStart=%h/.rsvm/current/cargo/bin/harv sync --quiet --auto-start --auto-stop
 StandardOutput=journal
 StandardError=journal
 

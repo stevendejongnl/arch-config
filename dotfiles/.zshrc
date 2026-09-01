@@ -1,5 +1,24 @@
+# Auto-rebuild combined CA bundle if mitmproxy cert has changed
+() {
+  local mitm_cert=~/.mitmproxy/mitmproxy-ca-cert.pem
+  local combined=~/.mitmproxy/combined-ca-bundle.pem
+  local fp_file=~/.mitmproxy/.combined-bundle-fingerprint
+
+  if [[ -f "$mitm_cert" ]]; then
+    local current_fp=$(openssl x509 -in "$mitm_cert" -noout -fingerprint 2>/dev/null)
+    local stored_fp=$(cat "$fp_file" 2>/dev/null)
+    if [[ "$current_fp" != "$stored_fp" || ! -f "$combined" ]]; then
+      cat "$mitm_cert" /etc/ca-certificates/extracted/tls-ca-bundle.pem > "$combined"
+      echo "$current_fp" > "$fp_file"
+    fi
+    export CURL_CA_BUNDLE="$combined"
+  else
+    unset CURL_CA_BUNDLE
+  fi
+}
 export ANDROID_HOME=/home/stevendejong/Android/Sdk
 export PATH=$HOME/bin:$HOME/.local/bin:$HOME/.local/share/JetBrains/Toolbox/scripts:/usr/local/bin:$HOME/.lmstudio/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$PATH
+export SSH_AUTH_SOCK=/home/stevendejong/.1password/agent.sock
 
 source $HOME/.zsh-config/autocompletion.zsh
 source $HOME/.zsh-config/base.zsh
@@ -10,7 +29,6 @@ source $HOME/.zsh-config/workspace-navigation.zsh
 source $HOME/.zsh-config/nvm.zsh
 source $HOME/.zsh-config/tmate.zsh
 source $HOME/.zsh-config/ollama.zsh
-source ~/.safe-chain/scripts/init-posix.sh # Safe-chain Zsh initialization script
 
 [ -f /home/stevendejong/.config/cani/completions/_cani.zsh ] && source /home/stevendejong/.config/cani/completions/_cani.zsh
 
@@ -40,3 +58,27 @@ eval "$(register-python-argcomplete --shell zsh dialog-cli)"
 fpath+=~/.zfunc; autoload -Uz compinit; compinit
 
 zstyle ':completion:*' menu select
+
+# Claude Code transparency audit — routes through mitmproxy dashboard
+alias claude-audit='NODE_EXTRA_CA_CERTS="$HOME/.mitmproxy/mitmproxy-ca-cert.pem" HTTPS_PROXY=http://localhost:8082 claude'
+
+# bun completions
+[ -s "/home/stevendejong/.bun/_bun" ] && source "/home/stevendejong/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+source /home/stevendejong/.safe-chain/scripts/init-posix.sh # Safe-chain Zsh initialization script
+export PATH="$HOME/.npm-global/bin:$PATH"
+
+# sentry
+fpath=("/home/stevendejong/.local/share/zsh/site-functions" $fpath)
+source ~/.mcp-env
+
+gs() {
+  local def
+  def=$(git symbolic-ref --quiet refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+  [ -z "$def" ] && def=$(git remote show origin 2>/dev/null | sed -n 's/.*HEAD branch: //p')
+  [ -z "$def" ] && { echo "no default branch found"; return 1; }
+  git reset --hard && git clean -fd && git checkout "$def" && git reset --hard "origin/$def" && git pull --ff-only
+}

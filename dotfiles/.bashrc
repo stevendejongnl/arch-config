@@ -13,7 +13,7 @@ export NVM_DIR="$HOME/.nvm"
 . "$HOME/.cargo/env"
 export PATH="$PATH:$HOME/.local/share/JetBrains/Toolbox/scripts"
 
-source ~/.safe-chain/scripts/init-posix.sh # Safe-chain bash initialization script
 # Added by LM Studio CLI (lms)
 export PATH="$PATH:/home/stevendejong/.lmstudio/bin"
 # End of LM Studio CLI section
+source /home/stevendejong/.safe-chain/scripts/init-posix.sh # Safe-chain bash initialization script

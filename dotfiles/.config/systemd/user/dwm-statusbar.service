@@ -1,0 +1,11 @@
+[Unit]
+Description=dwm statusbar update loop
+After=graphical-session.target
+
+[Service]
+ExecStart=/home/stevendejong/.dwm/update-statusbar.sh
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target

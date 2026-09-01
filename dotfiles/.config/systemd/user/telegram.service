@@ -1,9 +1,0 @@
-[Unit]
-Description=Telegram
-After=graphical.target
-
-[Service]
-ExecStart=/usr/bin/telegram-desktop -startintray %U
-
-[Install]
-WantedBy=autostart.target

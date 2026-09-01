@@ -1,0 +1,14 @@
+[Unit]
+Description=Seafile WebDAV Mount
+After=network-online.target mnt-seafile-auth.service
+Wants=network-online.target
+Requires=mnt-seafile-auth.service
+
+[Mount]
+What=https://seafile.madebysteven.nl/seafdav/
+Where=/mnt/seafile
+Type=davfs
+Options=uid=1000,gid=1000,file_mode=0770,dir_mode=0770,_netdev,user,noauto
+
+[Install]
+WantedBy=default.target

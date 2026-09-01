@@ -10,5 +10,7 @@ darkman set dark &
 systemctl --user restart wallpaper.service &
 systemctl --user start autostart.target &
 
+watch-screenshots &
+
 # Start statusbar updater loop
 nohup bash -c 'while true; do xsetroot -name "$($HOME/.dwm/statusbar/statusbar.sh)"; sleep 1; done' > /tmp/statusbar.log 2>&1 &

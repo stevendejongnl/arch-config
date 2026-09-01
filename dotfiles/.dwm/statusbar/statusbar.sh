@@ -3,15 +3,9 @@
 SLSTATUS_DIR="$HOME/.dwm/statusbar"
 OUTPUT=""
 
-get_claude_usage() {
-  OUTPUT+="$(printf '\x0C')🤖 "
-  OUTPUT+="$(claude-usage-statusbar)"
-  OUTPUT+=" $(printf '\x01')  "
-}
-
 get_battery_state() {
   # 0x10 = statuscmd byte for battery (clickable)
-  OUTPUT+="$(printf '\x10')$("$SLSTATUS_DIR"/battery.sh)"
+  OUTPUT+="$(printf '\x10')$("$SLSTATUS_DIR"/battery.sh) "
 }
 
 get_cpu_usage() {
@@ -36,18 +30,22 @@ get_bluetooth() {
 }
 
 get_sysmon() {
-  OUTPUT+="$(sysmon status)"
-  OUTPUT+=" "
+  OUTPUT+="$(sysmon status) "
 }
 
 get_date() {
   # 0x11 = statuscmd byte for date (clickable)
-  OUTPUT+="$(printf '\x11')$(printf '\x08')🕐 $(date '+%d-%m-%Y %H:%M:%S') $(printf '\x01')  "
+  # Yellow clock glyph (U+F017), norm-colored time
+  OUTPUT+="$(printf '\x11')$(printf '\x09')$(printf '\xef\x80\x97') $(printf '\x01')$(date '+%d-%m-%Y %H:%M:%S') $(printf '\x01')  "
 }
 
-get_claude_usage
+get_harvest() {
+  OUTPUT+="$("$SLSTATUS_DIR"/harvest.sh)"
+}
+
 get_sysmon
 get_date
+get_harvest
 get_battery_state
 # get_cpu_usage
 # get_memory_usage

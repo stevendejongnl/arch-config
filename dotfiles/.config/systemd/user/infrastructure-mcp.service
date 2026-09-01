@@ -1,0 +1,15 @@
+[Unit]
+Description=Infrastructure MCP Server
+After=network.target
+
+[Service]
+WorkingDirectory=/home/stevendejong/workspace/personal/infrastructure/infrastructure-docs/mcp-server
+ExecStart=/home/stevendejong/.local/bin/uv run python server.py
+Restart=always
+RestartSec=3
+EnvironmentFile=/home/stevendejong/workspace/personal/infrastructure/infrastructure-docs/mcp-server/.env
+Environment=PATH=/home/stevendejong/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=SSH_AUTH_SOCK=/home/stevendejong/.1password/agent.sock
+
+[Install]
+WantedBy=default.target

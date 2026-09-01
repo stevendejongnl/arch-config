@@ -1,0 +1,13 @@
+[Unit]
+Description=Retrieve Seafile WebDAV credentials from 1password
+Before=mnt-seafile.mount
+Wants=1password.service
+After=1password.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/bash -c 'PASS=$(op item get gy4oj2ukp26uvwg2agffb4i6vi --account TLDOUDAXCBEUNE2EKZTXJPS35E --reveal --format json | jq -r ".fields[] | select(.label==\"password\") | .value"); mkdir -p ~/.davfs2; echo "https://seafile.madebysteven.nl/seafdav/ steven@steven-dejong.nl $PASS" > ~/.davfs2/secrets; chmod 600 ~/.davfs2/secrets'
+
+[Install]
+WantedBy=default.target

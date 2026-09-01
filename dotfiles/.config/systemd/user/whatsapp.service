@@ -1,9 +1,0 @@
-[Unit]
-Description=WhatsApp
-After=graphical.target
-
-[Service]
-ExecStart=/usr/bin/whatsapp-for-linux
-
-[Install]
-WantedBy=autostart.target

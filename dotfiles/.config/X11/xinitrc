@@ -4,19 +4,27 @@ export _JAVA_AWT_WM_NONREPARENTING=1
 
 dbus-update-activation-environment --systemd DBUS_SESSION_BUS_ADDRESS DISPLAY XAUTHORITY
 
+systemctl --user import-environment DISPLAY XAUTHORITY DBUS_SESSION_BUS_ADDRESS
+systemctl --user start xsession.service
+
 pgrep -x numlockx > /dev/null || numlockx &
 pgrep -x picom > /dev/null || picom &
-pgrep -x ntfd > /dev/null || ntfd &
+#pgrep -x ntfd > /dev/null || ntfd &
 pgrep -x lxpolkit > /dev/null || lxpolkit &
-pgrep -f "update-statusbar.sh" > /dev/null || (sleep 2; pgrep -x upower > /dev/null && /home/stevendejong/.dwm/update-statusbar.sh) &
+pgrep -f "update-statusbar.sh" > /dev/null || (
+  for i in {1..50}; do
+    pgrep -x upower > /dev/null && break
+    sleep 0.1
+  done
+  /home/stevendejong/.dwm/update-statusbar.sh
+) &
 pgrep -x batify > /dev/null || batify &
-pgrep -x deja-dup > /dev/null || deja-dup &
+#pgrep -x deja-dup > /dev/null || deja-dup &
 
 xsetroot -cursor_name left_ptr
 
 #xset +fp $HOME/.local/share/fonts
 #xset +fp /usr/share/fonts &
-fc-cache -fv
 xset fp rehash &
 
 # Hide cursor after x time
@@ -29,9 +37,13 @@ setxkbmap -option caps:escape
 $HOME/.local/bin/disable-trackpad-middle-click &
 
 darkman set dark &
-brightnessctl --device='amdgpu_bl1' set 255 &
+#brightnessctl --device='amdgpu_bl1' set 255 &
 brightnessctl --device='tpacpi::kbd_backlight' set 2 &
 
 
-exec dwm > $HOME/.logs/dwm.log 2>&1
+while true; do
+  dwm > $HOME/.logs/dwm.log 2>&1
+done
 
+# Clean up autostart services when X session ends
+systemctl --user stop xsession.service

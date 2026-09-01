@@ -1,0 +1,13 @@
+[Unit]
+Description=Fingerprint failure monitor
+Documentation=man:fprintd(1)
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/fingerprint-monitor
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

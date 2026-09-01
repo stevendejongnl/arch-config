@@ -1,9 +1,0 @@
-[Unit]
-Description=nextcloud
-After=graphical.target
-
-[Service]
-ExecStart=nextcloud --background
-
-[Install]
-WantedBy=autostart.target

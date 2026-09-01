@@ -1,0 +1,11 @@
+[Unit]
+Description=X11 Graphical Session
+Wants=graphical-session-pre.target graphical-session.target
+Requires=graphical-session-pre.target graphical-session.target
+After=graphical-session-pre.target graphical-session.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/true
+ExecStop=/bin/true

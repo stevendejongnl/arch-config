@@ -1,9 +1,0 @@
-[Unit]
-Description=Caffeine
-After=graphical.target
-
-[Service]
-ExecStart=/usr/bin/caffeine
-
-[Install]
-WantedBy=autostart.target
