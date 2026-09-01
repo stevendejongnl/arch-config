@@ -164,7 +164,6 @@ packages:
   # --- xfce / wm bits ---
   - xfce4-clipman-plugin
   - lxappearance-obconf
-  - dunst
   - cage
   - weston
   - wl-clipboard

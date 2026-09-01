@@ -136,6 +136,7 @@ packages:
   - xdotool
   - flameshot
   - feh                # wallpaper.sh
+  - dunst              # notification daemon (notify-send)
   - rofi-bluetooth-git
   - wireplumber        # pipewire session manager
   - openssh
