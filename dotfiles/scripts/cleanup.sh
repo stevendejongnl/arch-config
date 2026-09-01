@@ -459,7 +459,8 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
   exit $?
 fi
 
-# Info message when sourced interactively
-if [[ $- == *i* ]]; then
+# Info message when sourced interactively (once per shell)
+if [[ $- == *i* && -z "${_CLEANUP_HELP_SHOWN:-}" ]]; then
+  export _CLEANUP_HELP_SHOWN=1
   printf 'Defined function cleanup(). Run "cleanup -n" to dry-run, then "cleanup" to execute.\n'
 fi

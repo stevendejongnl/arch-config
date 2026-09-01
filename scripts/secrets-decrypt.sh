@@ -50,26 +50,14 @@ if [ -d "$SECRETS_DIR/ssh" ]; then
     mkdir -p "$HOME/.ssh"
     chmod 700 "$HOME/.ssh"
 
-    log "Deploying SSH keys..."
-    rsync -a --ignore-errors "$SECRETS_DIR/ssh/" "$HOME/.ssh/" || log "Warning: Some SSH files failed to copy"
+    log "Deploying SSH config (auth is agent-only — no private keys on disk)..."
+    rsync -a --ignore-errors "$SECRETS_DIR/ssh/" "$HOME/.ssh/" || log "Warning: some SSH files failed to copy"
 
-    # Set correct permissions for private keys
-    if [ -f "$HOME/.ssh/id_rsa" ]; then
-        chmod 600 "$HOME/.ssh/id_rsa"
-        log "SSH private key permissions set to 600"
-    fi
+    # Retire any on-disk default identity — the Bitwarden agent is the only source.
+    rm -f "$HOME/.ssh/id_rsa" "$HOME/.ssh/id_rsa.pub"
 
-    if [ -f "$HOME/.ssh/id_rsa.pub" ]; then
-        chmod 644 "$HOME/.ssh/id_rsa.pub"
-        log "SSH public key permissions set to 644"
-    fi
-
-    if [ -f "$HOME/.ssh/config" ]; then
-        chmod 600 "$HOME/.ssh/config"
-        log "SSH config permissions set to 600"
-    fi
-
-    log "SSH keys deployed successfully"
+    [ -f "$HOME/.ssh/config" ] && chmod 600 "$HOME/.ssh/config"
+    log "SSH config deployed"
 fi
 
 # Deploy application credentials
@@ -90,13 +78,3 @@ if [ -d "$SECRETS_DIR/credentials" ]; then
 fi
 
 log "Secrets deployment complete"
-
-# Verify SSH key is accessible
-if [ -f "$HOME/.ssh/id_rsa" ]; then
-    log "Verifying SSH key accessibility..."
-    if ssh -T git@github.com 2>&1 | grep -q "authentication"; then
-        log "SSH authentication working"
-    else
-        log "Warning: SSH authentication may need verification"
-    fi
-fi

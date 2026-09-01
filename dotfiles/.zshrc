@@ -53,7 +53,7 @@ export PATH=$PATH:/home/stevendejong/.local/bin
 fpath=(~/.zsh-config/completions $fpath)
 
 # dialog-cli completion
-eval "$(register-python-argcomplete --shell zsh dialog-cli)"
+command -v register-python-argcomplete >/dev/null && eval "$(register-python-argcomplete --shell zsh dialog-cli)"
 
 fpath+=~/.zfunc; autoload -Uz compinit; compinit
 
@@ -68,12 +68,12 @@ alias claude-audit='NODE_EXTRA_CA_CERTS="$HOME/.mitmproxy/mitmproxy-ca-cert.pem"
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
-source /home/stevendejong/.safe-chain/scripts/init-posix.sh # Safe-chain Zsh initialization script
+[ -f "$HOME/.safe-chain/scripts/init-posix.sh" ] && source "$HOME/.safe-chain/scripts/init-posix.sh" # Safe-chain
 export PATH="$HOME/.npm-global/bin:$PATH"
 
 # sentry
 fpath=("/home/stevendejong/.local/share/zsh/site-functions" $fpath)
-source ~/.mcp-env
+[ -f "$HOME/.mcp-env" ] && source ~/.mcp-env
 
 gs() {
   local def
