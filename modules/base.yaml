@@ -65,6 +65,7 @@ packages:
   - neovim
   - btop
   - alacritty
+  - xterm               # fallback terminal (dmenu_run, scripts)
   - autorandr
   - bind                # DNS server and tools
   - bluez-qt            # Bluetooth tools for Qt-based environments
@@ -95,9 +96,53 @@ packages:
   - thunar-shares-plugin  # Network shares support for Thunar
   - thunar-volman       # Volume management for Thunar
   - ungoogled-chromium-bin
-  - whatsapp-for-linux
+  - zapzap             # WhatsApp desktop client
+  - slack-desktop
   - jetbrains-toolbox
   - barrier            # Keyboard and mouse sharing
+
+  # Password managers
+  - 1password
+  - 1password-cli
+  - bitwarden
+  - bitwarden-cli
+
+  # Storage / removable media / boot
+  - grub
+  - gvfs               # Thunar trash, mounts, MTP
+  - udisks2            # removable drive mounting
+  - tumbler            # Thunar thumbnails
+  - ntfs-3g
+  - mtools
+  - os-prober
+
+  # Media / fonts
+  - ffmpeg
+  - noto-fonts
+  - ttf-dejavu
+  - ttf-liberation
+
+  # Bluetooth
+  - bluez
+
+  # Dev
+  - go
+  - clang
+  - github-cli
+
+  # WM helpers
+  - brightnessctl
+  - numlockx
+  - xdotool
+  - flameshot
+  - rofi-bluetooth-git
+  - wireplumber        # pipewire session manager
+  - openssh
+  - thefuck
+  - usbutils
+
+  # dcli itself
+  - dcli-arch-git
 
   # AI Tools
   - claude-code

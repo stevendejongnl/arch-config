@@ -20,8 +20,20 @@ enabled_modules:
 # sequential: Process modules one-by-one in enabled_modules order (more control)
 module_processing: parallel
 
-# Host-specific packages
-packages: []
+# Host-specific packages (not on the work laptop)
+packages:
+  - linux                        # mainline kernel (alongside linux-lts)
+  - linux-headers
+  - qemu-desktop                 # laptop uses qemu-full
+  - gparted
+  - grub-customizer
+  - grub-theme-tela-color-1080p-git
+  - rustup                       # laptop uses the 'rust' package
+  - timeshift-autosnap           # pre-upgrade snapshot pacman hook
+  - terminus-font
+  - xorg-fonts-misc
+  - libisoburn                   # xorriso, bootable USB creation
+  - bluez-qt5
 
 # Exclude packages from base or modules
 exclude: []
