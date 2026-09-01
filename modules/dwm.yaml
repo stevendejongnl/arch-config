@@ -1,7 +1,24 @@
 description: DWM
 
 # List of packages in this module
-packages: []
+packages:
+  # build toolchain for the suckless repo (dwm/dmenu/slock)
+  - base-devel
+  - libx11
+  - libxft
+  - libxinerama
+  # fonts dwm renders the bar with
+  - ttf-jetbrains-mono-nerd
+  - noto-fonts-emoji
+  # statusbar script dependencies (.dwm/statusbar/*.sh)
+  - jq              # harvest.sh
+  - pamixer         # pipewire.sh
+  - acpi            # battery.sh
+  - pacman-contrib  # package-updates.sh (checkupdates)
+  - bluez-utils     # bluetooth.sh (bluetoothctl)
+  - libpulse        # pipewire.sh (pactl)
+  - procps-ng       # cpu-usage.sh / memory-usage.sh (top, free)
+  - xorg-xsetroot   # update-statusbar.sh
 
 # Modules that conflict with this one
 conflicts: []
