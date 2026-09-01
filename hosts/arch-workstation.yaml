@@ -34,9 +34,12 @@ packages:
   - xorg-fonts-misc
   - libisoburn                   # xorriso, bootable USB creation
   - bluez-qt5
+  - gvim
 
 # Exclude packages from base or modules
-exclude: []
+exclude:
+  - claude-code   # installed outside pacman on this host
+  - vim           # gvim (installed) already provides vim
 
 # Configuration backup settings
 config_backups:
