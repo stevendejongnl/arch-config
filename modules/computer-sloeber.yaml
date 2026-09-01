@@ -130,7 +130,6 @@ packages:
   - xournalpp
   - ghex
   - pandoc-cli
-  - feh
   - qrtool
   - chafa
 

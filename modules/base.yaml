@@ -135,6 +135,7 @@ packages:
   - numlockx
   - xdotool
   - flameshot
+  - feh                # wallpaper.sh
   - rofi-bluetooth-git
   - wireplumber        # pipewire session manager
   - openssh
