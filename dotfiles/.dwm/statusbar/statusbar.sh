@@ -45,8 +45,15 @@ get_harvest() {
 
 get_sysmon
 get_date
-get_harvest
-get_battery_state
+
+# Harvest timer: only when this machine has the API creds (work laptop).
+[ -f "$SLSTATUS_DIR/harvest/.env" ] && get_harvest
+
+# Battery: only on machines that actually have one (skips desktops).
+for _bat in /sys/class/power_supply/BAT*; do
+  [ -e "$_bat" ] && { get_battery_state; break; }
+done
+
 # get_cpu_usage
 # get_memory_usage
 get_package_updates
