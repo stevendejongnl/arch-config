@@ -18,7 +18,7 @@
 }
 export ANDROID_HOME=/home/stevendejong/Android/Sdk
 export PATH=$HOME/bin:$HOME/.local/bin:$HOME/.local/share/JetBrains/Toolbox/scripts:/usr/local/bin:$HOME/.lmstudio/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$PATH
-export SSH_AUTH_SOCK=/home/stevendejong/.1password/agent.sock
+export SSH_AUTH_SOCK="$HOME/.bitwarden-ssh-agent.sock"
 
 source $HOME/.zsh-config/autocompletion.zsh
 source $HOME/.zsh-config/base.zsh
@@ -81,4 +81,9 @@ gs() {
   [ -z "$def" ] && def=$(git remote show origin 2>/dev/null | sed -n 's/.*HEAD branch: //p')
   [ -z "$def" ] && { echo "no default branch found"; return 1; }
   git reset --hard && git clean -fd && git checkout "$def" && git reset --hard "origin/$def" && git pull --ff-only
+}
+
+# Attach to persistent claude session on claude-server (screen, not tmux)
+claude-attach() {
+  ssh -t claude-server 'screen -dRR claude claude -n "Claude Server"'
 }

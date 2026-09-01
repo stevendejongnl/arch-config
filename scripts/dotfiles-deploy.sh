@@ -69,18 +69,19 @@ find "$HOME_DIR" -maxdepth 1 -type l 2>/dev/null | while read link; do
     fi
 done
 
-# Also clean up .config / .local symlinks with old relative paths, and any
-# now-dangling symlinks that pointed at the retired ~/dotfiles checkout.
+# Also clean up .config / .local symlinks that still point at the retired
+# standalone ~/dotfiles checkout (target has "dotfiles/" but not
+# "arch-config/dotfiles/"). Nothing else is touched — app runtime symlinks
+# like Chromium's SingletonLock must be left alone.
 for base in "$HOME_DIR/.config" "$HOME_DIR/.local"; do
     find "$base" -maxdepth 3 -type l 2>/dev/null | while read -r link; do
         target=$(readlink "$link" 2>/dev/null || true)
-        if echo "$target" | grep -q "dotfiles/" && ! echo "$target" | grep -q "arch-config/dotfiles/"; then
-            log "Removing stale symlink: $link → $target"
-            rm -f "$link"
-        elif [ ! -e "$link" ]; then
-            log "Removing dangling symlink: $link → $target"
-            rm -f "$link"
-        fi
+        case "$target" in
+            *arch-config/dotfiles/*) : ;;
+            */dotfiles/*|dotfiles/*)
+                log "Removing stale ~/dotfiles symlink: $link → $target"
+                rm -f "$link" ;;
+        esac
     done
 done
 
