@@ -39,6 +39,7 @@ packages:
 # Exclude packages from base or modules
 exclude:
   - claude-code   # installed outside pacman on this host
+  - xxd           # provided by gvim
   - vim           # gvim (installed) already provides vim
 
 # Configuration backup settings
