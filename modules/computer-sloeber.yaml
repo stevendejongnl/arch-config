@@ -158,7 +158,6 @@ packages:
   # --- audio ---
   - helvum
   - qpwgraph
-  - playerctl
   - scream-git
   - batify2
   - cable

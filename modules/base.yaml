@@ -115,7 +115,8 @@ packages:
   - mtools
   - os-prober
 
-  # Media / fonts
+  # Media / audio / fonts
+  - playerctl          # tmux + statusbar "now playing"
   - ffmpeg
   - noto-fonts
   - ttf-dejavu
