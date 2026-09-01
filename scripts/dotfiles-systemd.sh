@@ -24,7 +24,8 @@ systemctl --user daemon-reload
 
 # Essential services to auto-enable
 ESSENTIAL_SERVICES=(
-    "darkman.service"
+    # darkman.service intentionally omitted — the dark-mode module keeps it
+    # disabled (locked dark, no day/night switching).
     "1password.service"
     "wallpaper.service"
     "kbd-backlight-restore.service"

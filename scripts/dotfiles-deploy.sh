@@ -69,13 +69,19 @@ find "$HOME_DIR" -maxdepth 1 -type l 2>/dev/null | while read link; do
     fi
 done
 
-# Also clean up .config symlinks with old relative paths
-find "$HOME_DIR/.config" -maxdepth 2 -type l 2>/dev/null | while read link; do
-    target=$(readlink "$link" 2>/dev/null || true)
-    if [ -n "$target" ] && echo "$target" | grep -q "^\.\./dotfiles/"; then
-        log "Removing old symlink: $(basename "$link") → $target"
-        rm -f "$link"
-    fi
+# Also clean up .config / .local symlinks with old relative paths, and any
+# now-dangling symlinks that pointed at the retired ~/dotfiles checkout.
+for base in "$HOME_DIR/.config" "$HOME_DIR/.local"; do
+    find "$base" -maxdepth 3 -type l 2>/dev/null | while read -r link; do
+        target=$(readlink "$link" 2>/dev/null || true)
+        if echo "$target" | grep -q "dotfiles/" && ! echo "$target" | grep -q "arch-config/dotfiles/"; then
+            log "Removing stale symlink: $link → $target"
+            rm -f "$link"
+        elif [ ! -e "$link" ]; then
+            log "Removing dangling symlink: $link → $target"
+            rm -f "$link"
+        fi
+    done
 done
 
 # Deploy with stow
