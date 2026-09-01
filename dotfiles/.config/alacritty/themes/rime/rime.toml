@@ -1,0 +1,34 @@
+# Rime — a cyan-accented dark theme (Poimandres base, Oxocarbon/Cyberdream accents)
+# https://git.madebysteven.nl/stevendejong/rime
+
+[colors.primary]
+background = "#12141c"
+foreground = "#d3d6e6"
+
+[colors.cursor]
+text = "#12141c"
+cursor = "#3ee6e0"
+
+[colors.selection]
+text = "#12141c"
+background = "#3ee6e0"
+
+[colors.normal]
+black   = "#12141c"
+red     = "#ff5c78"
+green   = "#7fd88f"
+yellow  = "#ffd473"
+blue    = "#82aaff"
+magenta = "#ff6ac1"
+cyan    = "#3ee6e0"
+white   = "#d3d6e6"
+
+[colors.bright]
+black   = "#7a7f99"
+red     = "#ff85a1"
+green   = "#9dffb0"
+yellow  = "#ffe29a"
+blue    = "#a6c8ff"
+magenta = "#ff94d5"
+cyan    = "#5de4c7"
+white   = "#f2f4f8"

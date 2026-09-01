@@ -21,5 +21,44 @@
     "workbench.colorTheme": "Atom One Dark",
     "[json]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "workbench.colorCustomizations": {
+        "[Atom One Dark]": {
+            "editor.background": "#12141c",
+            "editor.foreground": "#d3d6e6",
+            "sideBar.background": "#1a1d29",
+            "sideBar.foreground": "#d3d6e6",
+            "activityBar.background": "#12141c",
+            "activityBar.foreground": "#3ee6e0",
+            "activityBarBadge.background": "#3ee6e0",
+            "activityBarBadge.foreground": "#12141c",
+            "statusBar.background": "#12141c",
+            "statusBar.foreground": "#7a7f99",
+            "titleBar.activeBackground": "#12141c",
+            "titleBar.activeForeground": "#d3d6e6",
+            "tab.activeBorderTop": "#3ee6e0",
+            "editorCursor.foreground": "#3ee6e0",
+            "focusBorder": "#3ee6e0",
+            "list.activeSelectionBackground": "#20242f",
+            "list.activeSelectionForeground": "#3ee6e0",
+            "terminal.background": "#12141c",
+            "terminal.foreground": "#d3d6e6",
+            "terminal.ansiBlack": "#12141c",
+            "terminal.ansiRed": "#ff5c78",
+            "terminal.ansiGreen": "#7fd88f",
+            "terminal.ansiYellow": "#ffd473",
+            "terminal.ansiBlue": "#82aaff",
+            "terminal.ansiMagenta": "#ff6ac1",
+            "terminal.ansiCyan": "#3ee6e0",
+            "terminal.ansiWhite": "#d3d6e6",
+            "terminal.ansiBrightBlack": "#7a7f99",
+            "terminal.ansiBrightRed": "#ff85a1",
+            "terminal.ansiBrightGreen": "#9dffb0",
+            "terminal.ansiBrightYellow": "#ffe29a",
+            "terminal.ansiBrightBlue": "#a6c8ff",
+            "terminal.ansiBrightMagenta": "#ff94d5",
+            "terminal.ansiBrightCyan": "#5de4c7",
+            "terminal.ansiBrightWhite": "#f2f4f8"
+        }
     }
 }

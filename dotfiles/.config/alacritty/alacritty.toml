@@ -18,7 +18,7 @@ WINIT_X11_SCALE_FACTOR = "1.0"
 size = 11
 
 [general]
-import = ["~/.config/alacritty/themes/dracula/dracula.toml"]
+import = ["~/.config/alacritty/themes/rime/rime.toml"]
 
 [[keyboard.bindings]]
 key = "Return"

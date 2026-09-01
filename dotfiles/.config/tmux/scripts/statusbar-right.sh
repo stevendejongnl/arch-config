@@ -1,9 +1,9 @@
 #!/bin/sh
 # Right side of the tmux status bar: "now playing" (only while Playing) + clock.
-# Self-styled; wired as a single dracula custom: segment.
+# Rime theme — https://git.madebysteven.nl/stevendejong/rime
 
-green='#[fg=#282a36,bg=#50fa7b,nobold,nounderscore,noitalics]'
-purple='#[fg=#282a36,bg=#bd93f9,nobold,nounderscore,noitalics]'
+green='#[fg=#12141c,bg=#7fd88f,nobold,nounderscore,noitalics]'
+purple='#[fg=#12141c,bg=#3ee6e0,nobold,nounderscore,noitalics]'
 reset='#[fg=default,bg=default]'
 
 if command -v playerctl >/dev/null 2>&1 && [ "$(playerctl status 2>/dev/null)" = "Playing" ]; then
