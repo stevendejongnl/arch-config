@@ -9,8 +9,11 @@ description: workstation
 # import:
 #   - hosts/shared/laptop-common.yaml
 
-# Enabled modules
-enabled_modules: []
+# Enabled modules  (base + declared-packages are auto-loaded)
+enabled_modules:
+  - dwm
+  - dotfiles
+  - secrets
 
 # Module processing mode
 # parallel: Collect and install all modules at once (faster, default)
