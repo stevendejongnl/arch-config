@@ -36,6 +36,15 @@ packages:
   - libisoburn                   # xorriso, bootable USB creation
   - bluez-qt5
   - gvim
+  # Virtualization (laptop uses qemu-full which bundles these)
+  - libvirt
+  - virt-manager
+  - dnsmasq                       # libvirt default NAT network
+  - swtpm                         # emulated TPM 2.0 (Windows 11 guests)
+  - edk2-ovmf                     # UEFI firmware for guests
+  # clipman/solaar.service (dotfiles, all hosts) need these binaries
+  - xfce4-clipman-plugin
+  - solaar
 
 # Exclude packages from base or modules
 exclude:
