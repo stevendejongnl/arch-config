@@ -26,3 +26,6 @@
 
 .openvpn3/autoload
 nohup.out
+
+# runtime cache (churns constantly)
+.dwm/statusbar/package-updates/status
