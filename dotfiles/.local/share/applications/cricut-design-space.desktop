@@ -1,7 +1,0 @@
-[Desktop Entry]
-Name=Cricut Design Space
-Exec=sh -c 'waydroid app launch com.cricut.designspace'
-Icon=phone
-Terminal=false
-Type=Application
-Categories=AndroidApp;
