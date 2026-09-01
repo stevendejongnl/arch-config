@@ -1,7 +1,6 @@
 description: Packages installed via dcli install or dcli search commands
 packages:
 - okular
-- xxd
 - vim
 - actionlint
 - shellcheck
