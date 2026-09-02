@@ -13,6 +13,7 @@ description: 'Work Laptop'
 enabled_modules:
   - dwm
   - dark-mode
+  - power-management
   - computer-sloeber
   - dotfiles              # Deploy dotfiles with stow symlinks
   - secrets               # Unlock and deploy encrypted secrets
