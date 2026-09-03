@@ -1,6 +1,142 @@
-/* Rime accent override — https://git.madebysteven.nl/stevendejong/rime */
+/* Rime full palette override — https://git.madebysteven.nl/stevendejong/rime */
 @define-color accent_color #3ee6e0;
 @define-color accent_bg_color #3ee6e0;
 @define-color accent_fg_color #12141c;
 @define-color theme_selected_bg_color #3ee6e0;
 @define-color theme_selected_fg_color #12141c;
+
+@define-color window_bg_color #12141c;
+@define-color window_fg_color #d3d6e6;
+@define-color view_bg_color #1a1d29;
+@define-color view_fg_color #d3d6e6;
+@define-color headerbar_bg_color #1a1d29;
+@define-color headerbar_fg_color #d3d6e6;
+@define-color headerbar_border_color #2a2f3d;
+@define-color headerbar_backdrop_color #12141c;
+@define-color headerbar_shade_color #2a2f3d;
+@define-color popover_bg_color #1a1d29;
+@define-color popover_fg_color #d3d6e6;
+@define-color card_bg_color #20242f;
+@define-color card_fg_color #d3d6e6;
+@define-color dialog_bg_color #1a1d29;
+@define-color dialog_fg_color #d3d6e6;
+@define-color sidebar_bg_color #1a1d29;
+@define-color sidebar_fg_color #d3d6e6;
+@define-color sidebar_border_color #2a2f3d;
+@define-color borders #2a2f3d;
+@define-color unfocused_borders #2a2f3d;
+@define-color theme_bg_color #12141c;
+@define-color theme_fg_color #d3d6e6;
+@define-color theme_base_color #1a1d29;
+@define-color theme_text_color #d3d6e6;
+@define-color theme_unfocused_bg_color #12141c;
+@define-color theme_unfocused_fg_color #7a7f99;
+@define-color theme_unfocused_base_color #1a1d29;
+@define-color theme_unfocused_text_color #7a7f99;
+@define-color insensitive_bg_color #1a1d29;
+@define-color insensitive_fg_color #7a7f99;
+@define-color insensitive_base_color #1a1d29;
+@define-color success_color #7fd88f;
+@define-color warning_color #ffd473;
+@define-color error_color #ff5c78;
+@define-color destructive_color #ff5c78;
+@define-color destructive_bg_color #ff5c78;
+@define-color destructive_fg_color #12141c;
+
+/* Adwaita's own bg/border logic uses these on top of the named colors above */
+window, .background {
+  background-color: #12141c;
+  color: #d3d6e6;
+}
+
+headerbar, .titlebar,
+toolbar, .toolbar, .primary-toolbar,
+menubar, .menubar {
+  background-color: #1a1d29;
+  background-image: none;
+  color: #d3d6e6;
+  border-color: #2a2f3d;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+menubar menuitem, menubar > menuitem > label {
+  color: #d3d6e6;
+}
+
+.path-bar button, .path-bar {
+  background-color: #1a1d29;
+  background-image: none;
+  color: #d3d6e6;
+}
+
+button {
+  background-color: #20242f;
+  color: #d3d6e6;
+  border-color: #2a2f3d;
+}
+
+button:hover {
+  background-color: #2a2f3d;
+}
+
+button.suggested-action, button.default {
+  background-color: #3ee6e0;
+  color: #12141c;
+}
+
+button.destructive-action {
+  background-color: #ff5c78;
+  color: #12141c;
+}
+
+entry, textview text {
+  background-color: #1a1d29;
+  color: #d3d6e6;
+  border-color: #2a2f3d;
+}
+
+menu, .menu, .context-menu, popover, popover.background {
+  background-color: #1a1d29;
+  color: #d3d6e6;
+  border-color: #2a2f3d;
+}
+
+separator {
+  background-color: #2a2f3d;
+}
+
+scrollbar slider {
+  background-color: #2a2f3d;
+}
+
+scrollbar slider:hover {
+  background-color: #3ee6e0;
+}
+
+/* File managers (Thunar etc): icon/tree view content area not covered by .background */
+iconview,
+treeview,
+treeview.view,
+.view,
+notebook,
+notebook stack,
+scrolledwindow,
+scrolledwindow viewport,
+scrolledwindow undershoot {
+  background-color: #12141c;
+  color: #d3d6e6;
+}
+
+treeview:selected,
+iconview:selected,
+.view:selected,
+treeview.view:selected,
+.view content:selected {
+  background-color: #3ee6e0;
+  color: #12141c;
+}
+
+paned > separator {
+  background-color: #2a2f3d;
+}

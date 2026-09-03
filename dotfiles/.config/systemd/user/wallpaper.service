@@ -12,6 +12,3 @@ Environment=DISPLAY=:0
 Environment=XAUTHORITY=%h/.Xauthority
 StandardOutput=journal
 StandardError=journal
-
-[Install]
-WantedBy=autostart.target

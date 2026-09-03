@@ -159,3 +159,18 @@ packages:
   - git-crypt    # Transparent git encryption for secrets
   - stow         # Symlink farm manager for dotfiles deployment
   - rsync        # Fast incremental file transfer for backups
+
+  # Rime theme (git.madebysteven.nl/stevendejong/rime) — installed via
+  # post_install_hook below. qt6ct/qt5ct are needed for its Qt component.
+  - qt6ct
+  - qt5ct
+
+  # Icon theme matching the rime palette (vinceliuice/Colloid-icon-theme,
+  # Dracula scheme, Purple accent)
+  - colloid-dracula-theme-git
+
+conflicts: []
+
+# Clones/updates ~/workspace/rime and runs `./rime install --all`
+# (terminal, tmux, rofi, dunst, GTK, Qt, Chromium, VSCodium, dark-mode, dwm)
+post_install_hook: "scripts/rime-theme.sh"
