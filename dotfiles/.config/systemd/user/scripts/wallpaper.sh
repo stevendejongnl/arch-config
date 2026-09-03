@@ -11,9 +11,14 @@ WALLPAPERS_DIR="$HOME/Pictures/wallpapers"
 ONLINE_DIR="$WALLPAPERS_DIR/online"
 LOG_FILE="$WALLPAPERS_DIR/log.txt"
 CATEGORIES_FILE="$HOME/.config/wallpaper/categories.conf"
+LOCK_FILE="$WALLPAPERS_DIR/.wallpaper.lock"
 ONLINE_KEEP=20   # prune cached online wallpapers beyond this count
 
 mkdir -p "$WALLPAPERS_DIR" "$ONLINE_DIR"
+
+# Prevent overlapping runs (e.g. OnFailure retry racing the original run)
+exec 9>"$LOCK_FILE"
+flock -n 9 || { echo "$(date '+%Y-%m-%d %H:%M:%S') already running, skip" >> "$LOG_FILE"; exit 0; }
 
 log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG_FILE"; }
 

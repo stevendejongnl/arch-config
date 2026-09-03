@@ -17,3 +17,9 @@ export PATH="$PATH:$HOME/.local/share/JetBrains/Toolbox/scripts"
 export PATH="$PATH:/home/stevendejong/.lmstudio/bin"
 # End of LM Studio CLI section
 source /home/stevendejong/.safe-chain/scripts/init-posix.sh # Safe-chain bash initialization script
+
+# Added by JetBrains Context CLI installer
+case ":$PATH:" in
+    *":/home/stevendejong/.jbcontext/bin:"*) ;;
+    *) export PATH="$PATH:/home/stevendejong/.jbcontext/bin" ;;
+esac

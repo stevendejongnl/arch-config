@@ -174,10 +174,7 @@ packages:
   # --- themes / fonts ---
   - dracula-cursors-git
   - dracula-gtk-theme
-  - dracula-icons-theme
   - dracula-rofi-git
-  - orchis-theme
-  - orchis-dracula-theme-git
   - gtk-engine-murrine
   - kvantum
   - kvantum-qt5

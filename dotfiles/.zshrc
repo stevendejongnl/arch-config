@@ -87,3 +87,9 @@ gs() {
 claude-attach() {
   ssh -t claude-server 'screen -dRR claude claude -n "Claude Server"'
 }
+
+# Added by JetBrains Context CLI installer
+case ":$PATH:" in
+    *":/home/stevendejong/.jbcontext/bin:"*) ;;
+    *) export PATH="$PATH:/home/stevendejong/.jbcontext/bin" ;;
+esac
