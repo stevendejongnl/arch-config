@@ -99,6 +99,7 @@ packages:
   - slack-desktop
   - jetbrains-toolbox
   - barrier            # Keyboard and mouse sharing
+  - pep                 # System tray keep-awake tool (systemd-inhibit)
   - kdeconnect          # Cross-device link (phone/desktop) over LAN
   - plasma-browser-integration  # Native host for browser "send tab" via kdeconnect
 

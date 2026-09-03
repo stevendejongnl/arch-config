@@ -83,7 +83,6 @@ packages:
   - ollama
   - expect
   - scrcpy
-  - pep
 
   # --- maker / CAD / 3D printing / electronics ---
   - kicad
