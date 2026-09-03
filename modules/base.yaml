@@ -161,9 +161,8 @@ packages:
   - rsync        # Fast incremental file transfer for backups
 
   # Rime theme (git.madebysteven.nl/stevendejong/rime) — installed via
-  # post_install_hook below. qt6ct/qt5ct are needed for its Qt component.
-  - qt6ct
-  - qt5ct
+  # post_install_hook below. Its Qt component needs qt6ct/qt5ct, declared
+  # in modules/dark-mode.yaml (always-enabled on both hosts).
 
   # Icon theme matching the rime palette (vinceliuice/Colloid-icon-theme,
   # Dracula scheme, Purple accent)

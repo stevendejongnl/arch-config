@@ -1,0 +1,15 @@
+# TLP-based power management for laptops.
+# No governor/battery-charge management runs by default without this
+# (powertop alone only analyzes, it doesn't act).
+
+description: TLP laptop power management
+
+packages:
+  - tlp
+  - tlp-rdw     # radio device wizard: auto-disable wifi/bt/wwan on dock, etc.
+
+conflicts: []
+# Note: don't also enable power-profiles-daemon in another module — both
+# manage the same CPU/battery knobs and will fight if both run.
+
+post_install_hook: "scripts/power-management.sh"

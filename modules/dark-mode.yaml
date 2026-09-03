@@ -4,8 +4,8 @@ description: Locked dark mode
 
 packages:
   - darkman          # kept for `darkman set dark`; the auto-switch service stays disabled
-  - adwaita-qt5      # dark Qt5 widget style (QT_STYLE_OVERRIDE=Adwaita-Dark)
-  - adwaita-qt6      # dark Qt6 widget style
+  - qt6ct            # Qt6 config utility — custom rime palette (adwaita-qt has no accent hook)
+  - qt5ct            # Qt5 config utility — same rime palette
 
 conflicts: []
 
