@@ -7,6 +7,9 @@
 # - Deny (Escape or "Laptop only") -> force laptop-only profile.
 set -euo pipefail
 
+force=0
+[[ "${1:-}" == "--force" ]] && force=1
+
 export DISPLAY="${DISPLAY:-:0}"
 export XAUTHORITY="${XAUTHORITY:-$HOME/.Xauthority}"
 
@@ -25,10 +28,16 @@ if [[ ${#external[@]} -eq 0 ]]; then
     exit 0
 fi
 
-# Already sitting on one of the currently-matching external profiles - don't re-prompt.
-for p in "${external[@]}"; do
-    [[ "$p" == "$current" ]] && exit 0
-done
+# Already sitting on one of the currently-matching external profiles - don't re-prompt,
+# unless manually invoked with --force (e.g. the "Change Display" launcher).
+if [[ "$force" -eq 0 ]]; then
+    for p in "${external[@]}"; do
+        [[ "$p" == "$current" ]] && exit 0
+    done
+fi
+
+# Force laptop-only immediately so nothing shows dual/extended while we ask.
+autorandr --load laptop
 
 choice=$(printf '%s\n' "${external[@]}" "Laptop only (deny)" \
     | rofi -dmenu -p "Monitor connected - use profile?")

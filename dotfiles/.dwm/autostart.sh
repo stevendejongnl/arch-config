@@ -3,7 +3,7 @@
 # Skip on dwm restart — session file only exists during restoreafterrestart
 [ -f /tmp/dwm-session ] && exit 0
 
-autorandr --change &
+"$HOME/.config/systemd/user/scripts/autorandr-prompt.sh" &
 
 # sleep 5
 gsettings set org.gnome.desktop.interface color-scheme prefer-dark &  # locked dark (modules/dark-mode.yaml)

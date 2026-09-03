@@ -225,7 +225,6 @@ packages:
   - lsof
   - iptables
   - downgrade
-  - kdeconnect
   - seahorse
   - flatpak
   - libinput-gestures
