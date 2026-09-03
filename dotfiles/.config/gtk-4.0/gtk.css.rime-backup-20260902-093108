@@ -1,6 +1,0 @@
-/* Rime accent override — https://git.madebysteven.nl/stevendejong/rime */
-@define-color accent_color #3ee6e0;
-@define-color accent_bg_color #3ee6e0;
-@define-color accent_fg_color #12141c;
-@define-color theme_selected_bg_color #3ee6e0;
-@define-color theme_selected_fg_color #12141c;
