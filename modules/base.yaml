@@ -168,6 +168,10 @@ packages:
   # Dracula scheme, Purple accent)
   - colloid-dracula-theme-git
 
+  # GTK widget theme (dotfiles' gtk-3.0/4.0 settings.ini sets
+  # gtk-theme-name=Dracula on every host, so this needs to be everywhere too)
+  - dracula-gtk-theme
+
 conflicts: []
 
 # Clones/updates ~/workspace/rime and runs `./rime install --all`

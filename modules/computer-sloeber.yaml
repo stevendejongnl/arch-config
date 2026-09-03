@@ -172,9 +172,10 @@ packages:
   - xsel
 
   # --- themes / fonts ---
+  # dracula-gtk-theme moved to base.yaml (shared dotfiles set gtk-theme-name
+  # on both hosts). dracula-rofi-git dropped — rofi's config.rasi is rime's
+  # own self-contained theme now, no Dracula reference left.
   - dracula-cursors-git
-  - dracula-gtk-theme
-  - dracula-rofi-git
   - gtk-engine-murrine
   - kvantum
   - kvantum-qt5
