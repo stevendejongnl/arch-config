@@ -100,6 +100,7 @@ packages:
   - jetbrains-toolbox
   - barrier            # Keyboard and mouse sharing
   - kdeconnect          # Cross-device link (phone/desktop) over LAN
+  - plasma-browser-integration  # Native host for browser "send tab" via kdeconnect
 
   # Password managers
   - 1password
