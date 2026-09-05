@@ -8,7 +8,7 @@ Desktop workstation, currently the active host (`config.yaml`). Inspected 2026-0
 | **BIOS** | American Megatrends Inc., version 4021 (2021-08-09) |
 | **Firmware** | UEFI, GPT partition table |
 | **CPU** | AMD Ryzen 7 5800X — 8 cores / 16 threads, up to 3.8GHz |
-| **RAM** | 32GB total. Exact module speed/manufacturer needs `sudo dmidecode -t memory` (not run here — no passwordless sudo in this session). |
+| **RAM** | 32GB — 4×8GB DDR4-3600 Corsair Vengeance (CMK16GX4M2D3600C18), all 4 DIMM slots populated (A1/A2/B1/B2) |
 | **GPU** | AMD Radeon RX 6600/6600 XT (Navi 23), 8GB VRAM — `amdgpu` in-kernel driver, no extra setup needed |
 | **Display** | Dual monitor: DP-3 and HDMI-1, both 1920×1080 |
 | **Network** | Intel Wi-Fi 6 AX200 (`iwlwifi`, in-kernel) · Realtek RTL8125 2.5GbE (`r8169`, in-kernel) · Intel I211 Gigabit (`igb`, in-kernel) — all three NICs work out of the box, no DKMS/AUR driver needed |
