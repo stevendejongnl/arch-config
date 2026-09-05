@@ -1,0 +1,40 @@
+# Host configuration for vivobook
+# Personal laptop (ASUS VivoBook X712JA), dual-boot with Windows 11
+
+host: vivobook
+description: 'Personal laptop (ASUS VivoBook X712JA)'
+
+# Enabled modules  (base + declared-packages are auto-loaded)
+enabled_modules:
+  - dwm
+  - dark-mode
+  - power-management     # TLP battery-threshold config matters here — see docs/HARDWARE-vivobook.md
+  - dotfiles
+  - secrets
+
+module_processing: parallel
+
+# Host-specific packages
+packages:
+  - rtl8821ce-dkms        # WiFi: Realtek RTL8821CE needs this out-of-tree driver (AUR).
+                          # NOT the same chip as upd72020x-fw (RTL8723BU) already in base.yaml.
+                          # Use a USB WiFi dongle or Ethernet during install until this is built.
+
+# Exclude packages from base or modules
+# Only 8GB RAM (2x4GB, both slots full) vs computersloeber/arch-workstation —
+# consider trimming heavier base.yaml packages (jetbrains-toolbox, slack-desktop,
+# jdk/jdk17-openjdk, android-tools) if things feel sluggish. Left enabled for now.
+exclude: []
+
+config_backups:
+  enabled: true
+  max_backups: 5
+
+system_backups:
+  enabled: true
+  backup_on_sync: true
+  backup_on_update: true
+  tool: timeshift
+
+flatpak_scope: user
+auto_prune: false
