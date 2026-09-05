@@ -19,4 +19,4 @@ Personal laptop, dual-boot Arch Linux + Windows 11. Inspected 2026-09-05.
 
 1. **RAID vs AHCI**: NVMe disk shows up as a RAID device in Windows (Intel RST), common ASUS default. Needs AHCI mode for a clean Linux install — check this before partitioning.
 2. **WiFi driver**: RTL8821CE has no in-kernel driver; `rtl8821ce-dkms` must be built after first boot. Have a wired/USB fallback ready.
-3. **RAM headroom**: 8GB is noticeably less than computersloeber (Ryzen 7 Pro, likely 16GB+) — the full `base.yaml` package set (Docker, JDK, JetBrains Toolbox, full DWM stack) may feel heavier here. Consider trimming via `exclude` in `hosts/vivobook.yaml`, or upgrading RAM first.
+3. **RAM headroom**: 8GB is noticeably less than computersloeber (Ryzen 7 5700U, 24GB — 16GB+8GB DDR4-3200) or arch-workstation (Ryzen 7 5800X, 32GB) — the full `base.yaml` package set (Docker, JDK, JetBrains Toolbox, full DWM stack) may feel heavier here. Consider trimming via `exclude` in `hosts/vivobook.yaml`, or upgrading RAM first.
