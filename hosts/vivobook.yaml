@@ -7,6 +7,7 @@ description: 'Personal laptop (ASUS VivoBook X712JA)'
 # Enabled modules  (base + declared-packages are auto-loaded)
 enabled_modules:
   - dwm
+  - networkmanager
   - dark-mode
   - power-management     # TLP battery-threshold config matters here — see docs/HARDWARE-vivobook.md
   - dotfiles

@@ -30,8 +30,6 @@ packages:
   - lxappearance        # Appearance settings manager
   - lxsession           # LXDE session manager
   - mesa-utils          # Mesa utilities (e.g., glxinfo)
-  - networkmanager      # Network management service
-  - network-manager-applet  # NetworkManager system tray applet
   - paccache-hook       # Tool to manage pacman cache
   - sudo
   - upd72020x-fw        # Firmware for Realtek RTL8723BU Wi-Fi/BT chipsets

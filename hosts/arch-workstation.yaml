@@ -12,6 +12,7 @@ description: workstation
 # Enabled modules  (base + declared-packages are auto-loaded)
 enabled_modules:
   - dwm
+  - networkmanager
   - dark-mode
   - dotfiles
   - secrets

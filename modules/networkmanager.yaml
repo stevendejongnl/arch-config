@@ -1,0 +1,16 @@
+# NetworkManager is the network stack on every host (nm-applet in the dwm tray,
+# nmcli/nmtui on the CLI). archinstall may leave a fresh machine on
+# systemd-networkd + iwd — scripts/networkmanager.sh reconciles that: NM takes
+# over, iwd stays only as NM's wifi backend.
+
+description: NetworkManager network stack
+
+packages:
+  - networkmanager          # network management daemon
+  - network-manager-applet  # nm-applet system-tray icon
+
+conflicts: []
+# Don't enable systemd-networkd / connman / netctl anywhere else — they fight
+# NetworkManager over the same interfaces.
+
+post_install_hook: "scripts/networkmanager.sh"

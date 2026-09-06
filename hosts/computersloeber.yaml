@@ -12,6 +12,7 @@ description: 'Work Laptop'
 # Enabled modules
 enabled_modules:
   - dwm
+  - networkmanager
   - dark-mode
   - power-management
   - computer-sloeber
