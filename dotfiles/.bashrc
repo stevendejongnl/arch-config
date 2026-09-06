@@ -10,13 +10,16 @@ PS1='[\u@\h \W]\$ '
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-. "$HOME/.cargo/env"
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 export PATH="$PATH:$HOME/.local/share/JetBrains/Toolbox/scripts"
 
 # Added by LM Studio CLI (lms)
 export PATH="$PATH:/home/stevendejong/.lmstudio/bin"
 # End of LM Studio CLI section
-source /home/stevendejong/.safe-chain/scripts/init-posix.sh # Safe-chain bash initialization script
+
+# safe-chain (npm/npx/pip/... malware guard); binary lives in ~/.npm-global/bin
+export PATH="$HOME/.npm-global/bin:$PATH"
+[ -f "$HOME/.safe-chain/scripts/init-posix.sh" ] && source "$HOME/.safe-chain/scripts/init-posix.sh" # Safe-chain
 
 # Added by JetBrains Context CLI installer
 case ":$PATH:" in

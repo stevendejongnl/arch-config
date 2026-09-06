@@ -14,6 +14,11 @@ _load_nvm() {
 
     # Now that NVM is loaded, activate the smart directory switching
     _activate_nvm_auto_switch
+
+    # nvm just put its own (unwrapped) npm/npx on PATH — re-apply the safe-chain
+    # command wrappers on top of them. (safe-chain is sourced before this file,
+    # so at startup nvm's lazy `npm`/`npx` win and trigger this load.)
+    [ -f "$HOME/.safe-chain/scripts/init-posix.sh" ] && \. "$HOME/.safe-chain/scripts/init-posix.sh"
   fi
 }
 

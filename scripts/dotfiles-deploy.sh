@@ -118,6 +118,56 @@ log "Linking tracked ~/.local files..."
 link_tracked_files ".local/bin"
 link_tracked_files ".local/share/applications"
 
+# ~/.xinitrc: a bare `startx` (e.g. bash login shell, or run by hand) only
+# reads ~/.xinitrc. Point it at the real session script so dwm comes up no
+# matter which shell or invocation started X.
+if [ -L "$HOME_DIR/.xinitrc" ] || [ ! -e "$HOME_DIR/.xinitrc" ]; then
+    ln -sfn "$HOME_DIR/.config/X11/xinitrc" "$HOME_DIR/.xinitrc"
+    log "Linked ~/.xinitrc -> ~/.config/X11/xinitrc"
+fi
+
+# Login shell should be zsh (the dwm-launch logic lives in ~/.zprofile).
+ZSH_BIN="$(command -v zsh || true)"
+if [ -n "$ZSH_BIN" ] && [ "$(getent passwd "$USER" | cut -d: -f7)" != "$ZSH_BIN" ]; then
+    log "Setting login shell to $ZSH_BIN"
+    grep -qxF "$ZSH_BIN" /etc/shells || echo "$ZSH_BIN" | sudo tee -a /etc/shells >/dev/null
+    sudo chsh -s "$ZSH_BIN" "$USER" || log "chsh failed (set login shell to zsh manually)"
+fi
+
+# nvm: dev Node is managed per-project via nvm (~/.zsh-config/nvm.zsh auto-switches
+# on .nvmrc). Not a pacman package — install upstream into ~/.nvm if missing.
+# PROFILE=/dev/null keeps the installer from editing .bashrc/.zshrc (the loader
+# lines are already tracked). ~/.npmrc must stay free of a `prefix`/`globalconfig`
+# setting — nvm refuses to load otherwise.
+NVM_VERSION="v0.40.7"
+if [ ! -s "$HOME_DIR/.nvm/nvm.sh" ]; then
+    log "Installing nvm $NVM_VERSION -> ~/.nvm"
+    PROFILE=/dev/null bash -c \
+      "curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh | bash" \
+      >/dev/null 2>&1 || log "nvm install failed (network?) — install manually"
+fi
+if [ -s "$HOME_DIR/.nvm/nvm.sh" ]; then
+    # shellcheck disable=SC1091
+    export NVM_DIR="$HOME_DIR/.nvm"; . "$NVM_DIR/nvm.sh"
+    nvm which default >/dev/null 2>&1 || {
+        log "Installing default Node (latest LTS) via nvm"
+        nvm install --lts >/dev/null 2>&1 && nvm alias default 'lts/*' >/dev/null 2>&1
+    }
+
+    # safe-chain (npm/npx/pip/... malware guard). Installed into ~/.npm-global
+    # with an explicit --prefix so it survives `nvm use` (nvm's own global dir is
+    # per-Node-version). The shell loaders are already tracked (.bashrc/.zshrc
+    # source ~/.safe-chain/scripts/init-posix.sh via a guarded line).
+    # One-time manual step on a fresh box: `safe-chain setup` (generates
+    # ~/.safe-chain/{scripts,certs}), then delete the raw `source …init-posix.sh`
+    # lines it appends to ~/.bashrc and ~/.zshrc.
+    if command -v npm >/dev/null 2>&1 && [ ! -x "$HOME_DIR/.npm-global/bin/safe-chain" ]; then
+        log "Installing @aikidosec/safe-chain -> ~/.npm-global"
+        npm install -g --prefix "$HOME_DIR/.npm-global" @aikidosec/safe-chain >/dev/null 2>&1 \
+          || log "safe-chain install failed — run: npm i -g --prefix ~/.npm-global @aikidosec/safe-chain && safe-chain setup"
+    fi
+fi
+
 # tmux plugins (tmux.conf uses tpm + a plugin list). tpm and the plugins are
 # not vendored — bootstrap them so tmux looks the same on every machine.
 if grep -q "@plugin" "$HOME_DIR/.config/tmux/tmux.conf" 2>/dev/null; then

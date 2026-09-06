@@ -240,7 +240,6 @@ packages:
   - xorg-server-xvfb
   - xorg-xwayland
   - xorg-xrdb
-  - xorg-xset
   - xorg-setxkbmap
   - xorg-xauth
   - xorg-xkbcomp

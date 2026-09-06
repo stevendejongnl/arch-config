@@ -18,7 +18,7 @@ pgrep -f "update-statusbar.sh" > /dev/null || (
   done
   /home/stevendejong/.dwm/update-statusbar.sh
 ) &
-pgrep -x batify > /dev/null || batify &
+command -v batify > /dev/null && { pgrep -x batify > /dev/null || batify & }
 #pgrep -x deja-dup > /dev/null || deja-dup &
 
 xsetroot -cursor_name left_ptr
@@ -26,6 +26,12 @@ xsetroot -cursor_name left_ptr
 #xset +fp $HOME/.local/share/fonts
 #xset +fp /usr/share/fonts &
 xset fp rehash &
+
+# No X-level screen blanking / DPMS. Idle-suspend is handled separately by pep
+# (systemd-inhibit); pep does NOT stop the X server blanking the screen.
+xset s off
+xset s noblank
+xset -dpms
 
 # Hide cursor after x time
 unclutter -idle 3 &
@@ -41,8 +47,9 @@ gsettings set org.gnome.desktop.interface color-scheme prefer-dark &  # locked d
 brightnessctl --device='tpacpi::kbd_backlight' set 2 &
 
 
+mkdir -p "$HOME/.logs"
 while true; do
-  dwm > $HOME/.logs/dwm.log 2>&1
+  dwm > "$HOME/.logs/dwm.log" 2>&1
 done
 
 # Clean up autostart services when X session ends

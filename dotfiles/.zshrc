@@ -26,6 +26,11 @@ source $HOME/.zsh-config/sudo.zsh
 source $HOME/.zsh-config/plugins.zsh
 source $HOME/.zsh-config/fuzzy-find.zsh
 source $HOME/.zsh-config/workspace-navigation.zsh
+# safe-chain must load BEFORE nvm.zsh: nvm's lazy npm/npx wrappers need to win at
+# startup (they trigger the nvm load), and nvm.zsh re-applies safe-chain on top
+# once real npm/npx exist. safe-chain binary lives in ~/.npm-global/bin.
+export PATH="$HOME/.npm-global/bin:$PATH"
+[ -f "$HOME/.safe-chain/scripts/init-posix.sh" ] && source "$HOME/.safe-chain/scripts/init-posix.sh" # Safe-chain
 source $HOME/.zsh-config/nvm.zsh
 source $HOME/.zsh-config/tmate.zsh
 source $HOME/.zsh-config/ollama.zsh
@@ -68,8 +73,6 @@ alias claude-audit='NODE_EXTRA_CA_CERTS="$HOME/.mitmproxy/mitmproxy-ca-cert.pem"
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
-[ -f "$HOME/.safe-chain/scripts/init-posix.sh" ] && source "$HOME/.safe-chain/scripts/init-posix.sh" # Safe-chain
-export PATH="$HOME/.npm-global/bin:$PATH"
 
 # sentry
 fpath=("/home/stevendejong/.local/share/zsh/site-functions" $fpath)

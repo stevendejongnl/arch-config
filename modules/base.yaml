@@ -48,6 +48,7 @@ packages:
   - xorg-xinit          # Xorg initialization program
   - xorg-xinput         # Xorg input device configuration tool
   - xorg-xrandr         # Xorg screen resizing and rotation tool
+  - xorg-xset           # Xorg user preferences (screensaver/DPMS off in xinitrc)
   - xorg-xsetroot       # Xorg root window parameter setting tool
   - xorg-xprop          # Xorg window property utility
   - xorg-xbacklight     # Xorg backlight control utility
@@ -132,6 +133,9 @@ packages:
   - go
   - clang
   - github-cli
+  - nodejs-lts-jod     # required by bitwarden-cli; dev Node is managed by nvm
+                       # (bootstrapped in scripts/dotfiles-deploy.sh, loaded via
+                       # ~/.zsh-config/nvm.zsh / ~/.bashrc)
 
   # WM helpers
   - brightnessctl
