@@ -1,0 +1,15 @@
+# GRUB bootloader with the personal "Nova" theme
+# (github.com/stevendejongnl/grub-nova). Enable on hosts that should boot via
+# GRUB with a themed menu + os-prober (Windows dual-boot). archinstall may have
+# provisioned systemd-boot instead — scripts/grub-theme.sh migrates to GRUB and
+# keeps systemd-boot as a fallback.
+
+description: GRUB bootloader + Nova theme
+
+# grub / efibootmgr / os-prober already come from base.yaml — this module is
+# just the bootloader-switch + theme hook.
+packages: []
+
+conflicts: []
+
+post_install_hook: "scripts/grub-theme.sh"
