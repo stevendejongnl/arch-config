@@ -29,3 +29,7 @@ nohup.out
 
 # runtime cache (churns constantly)
 .dwm/statusbar/package-updates/status
+
+# rime theme installer: per-run backups + generated Chrome theme extension
+*.rime-backup-*
+.local/share/rime-chrome-theme/
