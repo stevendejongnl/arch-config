@@ -16,9 +16,10 @@ module_processing: parallel
 
 # Host-specific packages
 packages:
-  - rtl8821ce-dkms        # WiFi: Realtek RTL8821CE needs this out-of-tree driver (AUR).
+  - rtl8821ce-dkms-git    # WiFi: Realtek RTL8821CE out-of-tree driver (AUR).
+                          # The in-kernel rtw88_8821ce driver now handles this chip too —
+                          # only keep this if rtw88 gives you trouble (drops, weak signal).
                           # NOT the same chip as upd72020x-fw (RTL8723BU) already in base.yaml.
-                          # Use a USB WiFi dongle or Ethernet during install until this is built.
 
 # Exclude packages from base or modules
 # Only 8GB RAM (2x4GB, both slots full) vs computersloeber/arch-workstation —
