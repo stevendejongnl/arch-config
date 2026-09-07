@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Global pre-push — second layer independent of Claude hooks
+set -euo pipefail
+
+remote_name="$1"
+remote_url="$2"
+
+# Reject embedded credentials in the push URL
+if echo "$remote_url" | grep -qE 'https?://[^@[:space:]]+:[^@[:space:]]+@'; then
+    echo "ERROR: push blocked — embedded credentials in remote URL" >&2
+    exit 1
+fi
+
+branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+timeout 2s notify-send "git push" "→ ${remote_name} (${remote_url}) on ${branch}" 2>/dev/null || true
+exit 0
