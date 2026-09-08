@@ -60,7 +60,15 @@ fpath=(~/.zsh-config/completions $fpath)
 # dialog-cli completion
 command -v register-python-argcomplete >/dev/null && eval "$(register-python-argcomplete --shell zsh dialog-cli)"
 
-fpath+=~/.zfunc; autoload -Uz compinit; compinit
+fpath+=~/.zfunc
+# ponytail: the one compinit call. Rebuild the dump at most once/day; -C skips
+# the security audit + recompile on every other startup.
+autoload -Uz compinit
+if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
+  compinit
+else
+  compinit -C
+fi
 
 zstyle ':completion:*' menu select
 
@@ -90,6 +98,13 @@ gs() {
 claude-attach() {
   ssh -t claude-server 'screen -dRR claude claude -n "Claude Server"'
 }
+
+# arch-config sync check: fetch (throttled to once / few hours) + report if the
+# repo is behind origin. Interactive + real terminal only; never blocks or errors
+# out a shell. `archsync pull` / `archsync status` for the rest.
+if [[ -o interactive && -t 1 ]] && command -v archsync >/dev/null; then
+  archsync check || true
+fi
 
 # Added by JetBrains Context CLI installer
 case ":$PATH:" in

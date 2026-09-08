@@ -23,10 +23,15 @@ zplug "junegunn/fzf-git.sh", from:github
 
 zplug "spaceship-prompt/spaceship-prompt", use:spaceship.zsh, from:github, as:theme
 
-if ! zplug check --verbose; then
-    printf "Install? [y/N]: "
-    if read -q; then
-        echo; zplug install
+# ponytail: only run the slow check when a plugin dir is actually missing.
+# `zplug check` hits the filesystem for every plugin on every startup (~50ms+);
+# skip it on the common path. Run `zplug check && zplug install` by hand to add plugins.
+if [[ ! -d ~/.zplug/repos/zsh-users/zsh-completions ]]; then
+    if ! zplug check --verbose; then
+        printf "Install? [y/N]: "
+        if read -q; then
+            echo; zplug install
+        fi
     fi
 fi
 

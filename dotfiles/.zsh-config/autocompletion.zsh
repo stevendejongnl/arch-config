@@ -1,14 +1,10 @@
 # Add custom completion directory
 fpath=(~/.zfunc $fpath)
 
-# initialize autocompletion with caching
-# Only rebuild completion cache once per day
-autoload -U compinit
-if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
-  compinit
-else
-  compinit -C
-fi
+# ponytail: compinit is called once, at the end of ~/.zshrc, AFTER plugins.zsh
+# loads zsh-completions. Calling it here too just made compinit/compdump run
+# 3x on every startup (~1.6s). Just prep the autoload here.
+autoload -Uz compinit
 
 # history setup
 setopt SHARE_HISTORY
