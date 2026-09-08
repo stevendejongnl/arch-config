@@ -9,6 +9,9 @@ systemctl --user start xsession.service
 
 pgrep -x numlockx > /dev/null || numlockx &
 pgrep -x picom > /dev/null || picom &
+# dunst provides org.freedesktop.Notifications; D-Bus lazy-activation races
+# DISPLAY readiness at login and silently fails, so start it directly here.
+pgrep -x dunst > /dev/null || dunst &
 #pgrep -x ntfd > /dev/null || ntfd &
 pgrep -x lxpolkit > /dev/null || lxpolkit &
 pgrep -f "update-statusbar.sh" > /dev/null || (
