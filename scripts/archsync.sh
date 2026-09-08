@@ -10,6 +10,7 @@
 #   archsync fetch    force fetch now, ignore throttle
 #   archsync pull     fetch + fast-forward pull now
 #   archsync push     fetch + push local commits now
+#   archsync sync [msg]   stage all + commit + push (refuses if behind/diverged)
 #   archsync --selftest   run the built-in tests
 
 set -euo pipefail
@@ -154,10 +155,30 @@ cmd_fetch() { _do_fetch && printf 'fetched\n' || { printf 'fetch failed\n' >&2; 
 cmd_pull()  { _do_fetch || true; _pull; }
 cmd_push()  { _do_fetch || true; _push; }
 
+# stage everything, commit, push. arg = commit message (optional).
+cmd_sync() {
+  [[ -d "$REPO/.git" ]] || { printf 'archsync: %s is not a git repo\n' "$REPO" >&2; return 1; }
+  _do_fetch || true
+  local state; state=$(_branch_state)
+  case "$state" in
+    behind\ *|diverged\ *)
+      printf '%s%s - resolve first (archsync pull), then re-run%s\n' "$c_yellow" "$state" "$c_reset"
+      return 1 ;;
+  esac
+  if _is_dirty; then
+    local msg="${1:-sync $(hostname -s) $(date '+%Y-%m-%d %H:%M')}"
+    _git add -A
+    _git commit -q -m "$msg" || { printf 'commit failed\n' >&2; return 1; }
+    printf '%s✓ committed:%s %s\n' "$c_green" "$c_reset" "$msg"
+  fi
+  _push
+}
+
 selftest() {
   local tmp; tmp=$(mktemp -d)
   trap 'rm -rf "${tmp:-}"' EXIT
   export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null
+  export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@t GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@t
   local pass=0 fail=0
   _ok()   { printf '  ok   %s\n' "$1"; pass=$((pass+1)); }
   _bad()  { printf '  FAIL %s\n' "$1"; fail=$((fail+1)); }
@@ -209,6 +230,26 @@ selftest() {
   echo x > "$tmp/b/dirtyfile"
   _is_dirty && _ok "detects dirty tree" || _bad "dirty tree not detected"
 
+  # 6b. sync: commit dirty tree + push (b is at 'diverged' here -> reset to origin first)
+  git -C "$tmp/b" reset -q --hard origin/main
+  echo change > "$tmp/b/newfile"
+  cmd_sync "test sync msg" >/dev/null 2>&1
+  if [[ "$(_branch_state)" == uptodate ]] && ! _is_dirty \
+     && [[ "$(git -C "$tmp/b" log -1 --pretty=%s)" == "test sync msg" ]]; then
+    _ok "sync commits + pushes dirty tree"
+  else
+    _bad "sync: state='$(_branch_state)' dirty=$(_is_dirty && echo y || echo n)"
+  fi
+
+  # 6c. sync refuses when behind
+  git -C "$tmp/a" pull -q --ff-only origin main
+  git -C "$tmp/a" -c user.email=t@t -c user.name=t commit -q --allow-empty -m remote3
+  git -C "$tmp/a" push -q origin main
+  _do_fetch >/dev/null
+  echo x >> "$tmp/b/newfile"
+  cmd_sync >/dev/null 2>&1 && _bad "sync should refuse when behind" || _ok "sync refuses when behind"
+  git -C "$tmp/b" checkout -q -- newfile  # clean up for later tests
+
   # 7. fetch throttle: fresh stamp -> stale check false
   touch "$STAMP"
   _fetch_is_stale && _bad "fresh stamp reported stale" || _ok "throttle: fresh stamp skips fetch"
@@ -227,8 +268,9 @@ main() {
     fetch)       cmd_fetch ;;
     pull)        cmd_pull ;;
     push)        cmd_push ;;
+    sync)        shift; cmd_sync "$@" ;;
     --selftest)  selftest ;;
-    -h|--help)   sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//' ;;
+    -h|--help)   sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//' ;;
     *) printf 'archsync: unknown command %s (try --help)\n' "$1" >&2; return 2 ;;
   esac
 }
