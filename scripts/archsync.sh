@@ -5,10 +5,11 @@
 # origin at most once every ARCHSYNC_TTL_HOURS, then reports whether the local
 # main branch is behind / ahead / diverged / dirty. If behind, it offers to pull.
 #
-#   archsync check    fetch (throttled) + report; prompt to pull if behind (default)
+#   archsync check    fetch (throttled) + report; prompt to pull/push (default)
 #   archsync status   report only, no network, no prompt
 #   archsync fetch    force fetch now, ignore throttle
 #   archsync pull     fetch + fast-forward pull now
+#   archsync push     fetch + push local commits now
 #   archsync --selftest   run the built-in tests
 
 set -euo pipefail
@@ -104,15 +105,19 @@ cmd_check() {
   _fetch_is_stale && _do_fetch || true
   local state; state=$(_branch_state)
   _report "$state"
-  # only prompt when behind/diverged AND we have a terminal
+  # only prompt when there's an action AND we have a terminal
+  [[ -t 0 && -t 1 ]] || return 0
+  local ans
   case "$state" in
     behind\ *|diverged\ *)
-      if [[ -t 0 && -t 1 ]]; then
-        printf 'Pull now? [y/N] '
-        local ans; read -r ans
-        [[ "$ans" == [yY]* ]] && _pull || true
-      fi
-      ;;
+      printf 'Pull now? [y/N] '
+      read -r ans
+      [[ "$ans" == [yY]* ]] && _pull || true ;;
+    ahead\ *)
+      _is_dirty && return 0   # commit first; don't nag mid-work
+      printf 'Push now? [y/N] '
+      read -r ans
+      [[ "$ans" == [yY]* ]] && _push || true ;;
   esac
 }
 
@@ -129,8 +134,25 @@ cmd_status() {
   fi
 }
 
+_push() {
+  local state; state=$(_branch_state)
+  case "$state" in
+    ahead\ *)
+      if _git push --quiet origin "$BRANCH"; then
+        printf '%s✓ pushed %s commit(s)%s\n' "$c_green" "${state#ahead }" "$c_reset"
+        return 0
+      fi
+      printf '%s✗ push failed%s\n' "$c_red" "$c_reset"; return 1 ;;
+    uptodate)  printf 'nothing to push\n' ;;
+    behind\ *) printf '%sbehind origin - pull first: archsync pull%s\n' "$c_yellow" "$c_reset"; return 1 ;;
+    diverged\ *) printf '%sdiverged - resolve manually in %s%s\n' "$c_red" "$REPO" "$c_reset"; return 1 ;;
+    *) printf '%scannot compare to origin%s\n' "$c_dim" "$c_reset"; return 1 ;;
+  esac
+}
+
 cmd_fetch() { _do_fetch && printf 'fetched\n' || { printf 'fetch failed\n' >&2; return 1; }; }
 cmd_pull()  { _do_fetch || true; _pull; }
+cmd_push()  { _do_fetch || true; _push; }
 
 selftest() {
   local tmp; tmp=$(mktemp -d)
@@ -169,11 +191,19 @@ selftest() {
   git -C "$tmp/b" -c user.email=t@t -c user.name=t commit -q --allow-empty -m local1
   [[ "$(_branch_state)" == "ahead 1" ]] && _ok "detects ahead" || _bad "ahead: got '$(_branch_state)'"
 
+  # 4b. push resolves ahead
+  _push >/dev/null
+  [[ "$(_branch_state)" == uptodate ]] && _ok "push resolves ahead" || _bad "post-push: got '$(_branch_state)'"
+
   # 5. both sides move -> diverged
+  git -C "$tmp/a" pull -q --ff-only origin main
   git -C "$tmp/a" -c user.email=t@t -c user.name=t commit -q --allow-empty -m remote2
   git -C "$tmp/a" push -q origin main
+  git -C "$tmp/b" -c user.email=t@t -c user.name=t commit -q --allow-empty -m local2
   _do_fetch >/dev/null
   case "$(_branch_state)" in diverged\ 1\ 1) _ok "detects diverged" ;; *) _bad "diverged: got '$(_branch_state)'" ;; esac
+  # push refuses when diverged
+  _push >/dev/null 2>&1 && _bad "push should refuse when diverged" || _ok "push refuses when diverged"
 
   # 6. dirty tree detected
   echo x > "$tmp/b/dirtyfile"
@@ -196,6 +226,7 @@ main() {
     status)      cmd_status ;;
     fetch)       cmd_fetch ;;
     pull)        cmd_pull ;;
+    push)        cmd_push ;;
     --selftest)  selftest ;;
     -h|--help)   sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//' ;;
     *) printf 'archsync: unknown command %s (try --help)\n' "$1" >&2; return 2 ;;
