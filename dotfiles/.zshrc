@@ -20,6 +20,10 @@ export ANDROID_HOME=/home/stevendejong/Android/Sdk
 export PATH=$HOME/bin:$HOME/.local/bin:$HOME/.local/share/JetBrains/Toolbox/scripts:/usr/local/bin:$HOME/.lmstudio/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$PATH
 export SSH_AUTH_SOCK="$HOME/.bitwarden-ssh-agent.sock"
 
+# Also source here (not just .zprofile) so non-login shells (e.g. tools that
+# spawn a plain interactive zsh, like Claude Code) still get these vars.
+[ -f "$HOME/.auth_tokens" ] && source "$HOME/.auth_tokens"
+
 source $HOME/.zsh-config/autocompletion.zsh
 source $HOME/.zsh-config/base.zsh
 source $HOME/.zsh-config/sudo.zsh
