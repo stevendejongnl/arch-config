@@ -19,6 +19,14 @@ c_reset=$'\e[0m'; c_dim=$'\e[2m'; c_yellow=$'\e[33m'; c_green=$'\e[32m'; c_red=$
 
 _git() { git -C "$REPO" "$@"; }
 
+# short hostname without depending on the `hostname` binary (not in the
+# Arch base install; `inetutils`). Falls back through $HOST / $HOSTNAME.
+_hostname() {
+  local n="${HOST:-${HOSTNAME:-}}"
+  [[ -n "$n" ]] || n="$(uname -n)"
+  printf '%s' "${n%%.*}"
+}
+
 # true if $STAMP is missing or older than TTL_HOURS
 _fetch_is_stale() {
   [[ -f "$STAMP" ]] || return 0
@@ -160,7 +168,7 @@ cmd_sync() {
       return 1 ;;
   esac
   if _is_dirty; then
-    local msg="${1:-sync $(hostname -s) $(date '+%Y-%m-%d %H:%M')}"
+    local msg="${1:-sync $(_hostname) $(date '+%Y-%m-%d %H:%M')}"
     _git add -A
     _git commit -q -m "$msg" || { printf 'commit failed\n' >&2; return 1; }
     printf '%s✓ committed:%s %s\n' "$c_green" "$c_reset" "$msg"
