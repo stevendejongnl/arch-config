@@ -1,0 +1,17 @@
+# Bluetooth stack. `bluez` itself is pulled in by base; this module owns the
+# service-enable plus the btusb autosuspend workaround for Intel combo cards
+# (arch-workstation's AX200 fails to initialise with a -110 timeout and never
+# shows up in BlueZ unless USB autosuspend is disabled for the radio).
+#
+# Not enabled on the laptops by default — TLP there may legitimately want to
+# suspend the BT radio for battery. Opt in per host via enabled_modules.
+
+description: Bluetooth service + Intel AX200 autosuspend fix
+
+packages:
+  - bluez
+  - bluez-utils
+
+conflicts: []
+
+post_install_hook: "scripts/bluetooth.sh"

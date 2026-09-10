@@ -14,6 +14,7 @@ enabled_modules:
   - dwm
   - networkmanager
   - dark-mode
+  - bluetooth            # BT service + btusb no-autosuspend fix for the AX200
   - dotfiles
   - secrets
 

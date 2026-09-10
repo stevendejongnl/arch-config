@@ -1,17 +1,11 @@
 #!/usr/bin/env bash
 # archsync - keep the arch-config repo in sync across machines.
 #
-# Run `archsync check` at session start (the .zshrc hook does this): it fetches
-# origin at most once every ARCHSYNC_TTL_HOURS, then reports whether the local
-# main branch is behind / ahead / diverged / dirty. If behind, it offers to pull.
+# The .zshrc hook runs `archsync check` at session start: it fetches origin at
+# most once every ARCHSYNC_TTL_HOURS, then reports whether the local main branch
+# is behind / ahead / diverged / dirty. If behind, it offers to pull.
 #
-#   archsync check    fetch (throttled) + report; prompt to pull/push (default)
-#   archsync status   report only, no network, no prompt
-#   archsync fetch    force fetch now, ignore throttle
-#   archsync pull     fetch + fast-forward pull now
-#   archsync push     fetch + push local commits now
-#   archsync sync [msg]   stage all + commit + push (refuses if behind/diverged)
-#   archsync --selftest   run the built-in tests
+# Run with no arguments to print help.  See `archsync help`.
 
 set -euo pipefail
 
@@ -261,8 +255,35 @@ selftest() {
   [[ $fail -eq 0 ]]
 }
 
+cmd_help() {
+  cat <<EOF
+archsync - keep the arch-config repo ($REPO) in sync across machines.
+
+usage: archsync [command] [args]
+
+commands:
+  help              show this help (default when no command is given)
+  check             fetch (throttled to once / ${TTL_HOURS}h) + report; prompt
+                    to pull or push when there's something to do
+  status            report only - no network, no prompt
+  fetch             force a fetch now, ignoring the throttle
+  pull              fetch + fast-forward pull now
+  push              fetch + push local commits now
+  sync [msg]        stage all + commit + push in one go
+                    (refuses if the branch is behind / diverged)
+  --selftest        run the built-in tests
+
+env:
+  ARCHSYNC_REPO         repo path        (default: \$HOME/.config/arch-config)
+  ARCHSYNC_TTL_HOURS    fetch throttle   (default: 4)
+
+The .zshrc session hook runs \`archsync check\`.
+EOF
+}
+
 main() {
-  case "${1:-check}" in
+  case "${1:-help}" in
+    help|-h|--help) cmd_help ;;
     check)       cmd_check ;;
     status)      cmd_status ;;
     fetch)       cmd_fetch ;;
@@ -270,8 +291,7 @@ main() {
     push)        cmd_push ;;
     sync)        shift; cmd_sync "$@" ;;
     --selftest)  selftest ;;
-    -h|--help)   sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//' ;;
-    *) printf 'archsync: unknown command %s (try --help)\n' "$1" >&2; return 2 ;;
+    *) printf 'archsync: unknown command %s (try: archsync help)\n' "$1" >&2; return 2 ;;
   esac
 }
 
