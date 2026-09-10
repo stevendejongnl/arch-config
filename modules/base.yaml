@@ -139,6 +139,7 @@ packages:
   - brightnessctl
   - numlockx
   - xdotool
+  - xorg-xkill         # click-to-kill a hung X client
   - flameshot
   - feh                # wallpaper.sh
   - dunst              # notification daemon (notify-send)
