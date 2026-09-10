@@ -64,8 +64,8 @@ fi
 if [ -d "$SECRETS_DIR/credentials" ]; then
     log "Deploying application credentials..."
 
-    if [ -f "$SECRETS_DIR/credentials/auth_tokens" ]; then
-        rsync -a "$SECRETS_DIR/credentials/auth_tokens" "$HOME/.auth_tokens" || log "Warning: auth_tokens failed to copy"
+    if [ -f "$SECRETS_DIR/credentials/.auth_tokens" ]; then
+        rsync -a "$SECRETS_DIR/credentials/.auth_tokens" "$HOME/.auth_tokens" || log "Warning: auth_tokens failed to copy"
         chmod 600 "$HOME/.auth_tokens" 2>/dev/null || true
         log "Auth tokens deployed"
     fi
