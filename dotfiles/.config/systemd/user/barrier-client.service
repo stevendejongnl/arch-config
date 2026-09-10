@@ -9,7 +9,11 @@ ConditionHost=computersloeber
 
 [Service]
 ExecStartPre=/bin/bash -c 'for i in $(seq 60); do xdpyinfo -display :0 >/dev/null 2>&1 && exit 0; sleep 0.5; done; exit 1'
-ExecStart=barrierc -f --no-tray --no-restart --name computersloeber --disable-crypto 192.168.1.146:24800
+# Server (StreamPC / arch-workstation) has two NICs -- .109 on the Intel port,
+# .146 on the Realtek port -- only one is cabled at a time. Probe both, use
+# whichever answers on 24800; Restart=on-failure re-probes if neither does
+# (e.g. cable moved to the other NIC).
+ExecStart=/bin/bash -c 'for ip in 192.168.1.109 192.168.1.146; do nc -z -w1 "$ip" 24800 && exec barrierc -f --no-tray --no-restart --name computersloeber --disable-crypto "$ip:24800"; done; exit 1'
 TimeoutStartSec=45
 Environment=DISPLAY=:0
 Environment=XAUTHORITY=%h/.Xauthority
