@@ -2,7 +2,11 @@
 Description=Barrier (keyboard/mouse sharing client)
 After=graphical-session.target network-online.target
 Wants=network-online.target
-OnFailure=autostart-failure@%n.service
+# No OnFailure notify here: the workstation is dual-boot and routinely
+# sits in Windows with no barrier server running, which makes port-probe
+# failure a normal, expected, and frequent state (retried every RestartSec)
+# rather than something worth paging for. Restart=always keeps retrying
+# silently; check `systemctl --user status barrier-client` manually if needed.
 # Only autostart on the client machine — arch-workstation runs the
 # server side, managed separately (see barrier.service).
 ConditionHost=computersloeber
@@ -13,16 +17,19 @@ ExecStartPre=/bin/bash -c 'for i in $(seq 60); do xdpyinfo -display :0 >/dev/nul
 # .146 on the Realtek port -- only one is cabled at a time. Probe both, use
 # whichever answers on 24800; Restart=on-failure re-probes if neither does
 # (e.g. cable moved to the other NIC).
-# Off the home LAN (e.g. at work), both IPs are simply unreachable -- ARP
-# won't resolve even if the client's own subnet coincidentally looks the
-# same (192.168.1.x at work too). Treat that as "not home", exit 0 (no
-# restart spam, no OnFailure); only exit 1 -- a real failure -- when we're
-# on-LAN (ARP resolves) but the barrier port itself doesn't answer.
+# Off the home LAN (e.g. at work), both IPs are simply unreachable -- ping
+# fails even if the client's own subnet coincidentally looks the same
+# (192.168.1.x at work too). Treat that as "not home", exit 0 (no restart
+# spam, no OnFailure); only exit 1 -- a real failure -- when the host itself
+# answers ping (on-LAN, powered on) but the barrier port doesn't.
+# Note: intentionally NOT using `ip neigh` -- ARP cache entries go STALE
+# rather than disappearing when a host is powered off, which falsely
+# counted as "on LAN" and fired spurious OnFailure alerts while the
+# workstation was simply off.
 ExecStart=/bin/bash -c '\
   on_lan=0; \
   for ip in 192.168.1.109 192.168.1.146; do \
-    ping -c1 -W1 "$ip" >/dev/null 2>&1; \
-    ip neigh show "$ip" | grep -qE "REACHABLE|STALE|DELAY|PERMANENT" && on_lan=1; \
+    ping -c1 -W1 "$ip" >/dev/null 2>&1 && on_lan=1; \
   done; \
   if [ "$on_lan" -eq 0 ]; then exit 0; fi; \
   for ip in 192.168.1.109 192.168.1.146; do \
