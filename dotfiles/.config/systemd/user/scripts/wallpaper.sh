@@ -25,7 +25,7 @@ log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG_FILE"; }
 set_wallpaper() {
     local file="$1"
     feh --bg-fill "$file"
-    notify-send -i monitor 'Wallpaper' "changed to $(basename "$file")"
+    timeout 3 notify-send -i monitor 'Wallpaper' "changed to $(basename "$file")" || log "notify-send timed out/failed, skipping"
     log "set: $file"
 }
 

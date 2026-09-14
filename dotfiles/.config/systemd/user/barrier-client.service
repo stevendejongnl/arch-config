@@ -13,12 +13,31 @@ ExecStartPre=/bin/bash -c 'for i in $(seq 60); do xdpyinfo -display :0 >/dev/nul
 # .146 on the Realtek port -- only one is cabled at a time. Probe both, use
 # whichever answers on 24800; Restart=on-failure re-probes if neither does
 # (e.g. cable moved to the other NIC).
-ExecStart=/bin/bash -c 'for ip in 192.168.1.109 192.168.1.146; do nc -z -w1 "$ip" 24800 && exec barrierc -f --no-tray --no-restart --name computersloeber --disable-crypto "$ip:24800"; done; exit 1'
+# Off the home LAN (e.g. at work), both IPs are simply unreachable -- ARP
+# won't resolve even if the client's own subnet coincidentally looks the
+# same (192.168.1.x at work too). Treat that as "not home", exit 0 (no
+# restart spam, no OnFailure); only exit 1 -- a real failure -- when we're
+# on-LAN (ARP resolves) but the barrier port itself doesn't answer.
+ExecStart=/bin/bash -c '\
+  on_lan=0; \
+  for ip in 192.168.1.109 192.168.1.146; do \
+    ping -c1 -W1 "$ip" >/dev/null 2>&1; \
+    ip neigh show "$ip" | grep -qE "REACHABLE|STALE|DELAY|PERMANENT" && on_lan=1; \
+  done; \
+  if [ "$on_lan" -eq 0 ]; then exit 0; fi; \
+  for ip in 192.168.1.109 192.168.1.146; do \
+    nc -z -w1 "$ip" 24800 && exec barrierc -f --no-tray --no-restart --name computersloeber --disable-crypto "$ip:24800"; \
+  done; \
+  exit 1'
 TimeoutStartSec=45
 Environment=DISPLAY=:0
 Environment=XAUTHORITY=%h/.Xauthority
-Restart=on-failure
-RestartSec=3
+# on-failure alone won't retry the off-LAN case (that now exits 0, clean);
+# Restart=always keeps re-probing so it connects as soon as we're back on
+# the LAN, without spamming — off-LAN loops silently since exit 0 skips
+# OnFailure entirely.
+Restart=always
+RestartSec=15
 
 [Install]
 WantedBy=autostart.target
