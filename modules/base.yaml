@@ -100,7 +100,13 @@ packages:
   - barrier            # Keyboard and mouse sharing
   - pep                 # System tray keep-awake tool (systemd-inhibit)
   - kdeconnect          # Cross-device link (phone/desktop) over LAN
-  - plasma-browser-integration  # Native host for browser "send tab" via kdeconnect
+  - plasma-browser-integration  # native host for the Plasma Chrome/Firefox extension.
+                       # Pulls in plasma-workspace, whose
+                       # org.kde.plasma.Notifications D-Bus service (plasma_waitforname)
+                       # would hijack org.freedesktop.Notifications and hang every
+                       # notify call ~25s in our non-Plasma session. Neutralised by
+                       # dotfiles/.local/share/dbus-1/services/*.Notifications.service
+                       # (redirect activation to dunst) + dunst in autostart.target.wants.
 
   # Password managers
   - 1password

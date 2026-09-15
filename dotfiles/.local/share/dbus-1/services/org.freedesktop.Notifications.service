@@ -1,0 +1,8 @@
+[D-BUS Service]
+# Correctly-named activation file for the notification service.
+# Wins over both /usr/share/dbus-1/services/org.knopwob.dunst.service (rejected
+# by dbus-broker: filename != Name=) and .../org.kde.plasma.Notifications.service
+# (Exec=plasma_waitforname, hangs forever in a non-Plasma session).
+Name=org.freedesktop.Notifications
+Exec=/usr/bin/dunst
+SystemdService=dunst.service

@@ -1,0 +1,8 @@
+[D-BUS Service]
+# Shadow of /usr/share/dbus-1/services/org.kde.plasma.Notifications.service
+# (same basename => this user copy wins). Upstream points Exec at
+# plasma_waitforname which hangs forever without a Plasma shell. Redirect to
+# dunst so notification activation works in the dwm session.
+Name=org.freedesktop.Notifications
+Exec=/usr/bin/dunst
+SystemdService=dunst.service
