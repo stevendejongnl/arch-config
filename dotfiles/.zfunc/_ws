@@ -1,0 +1,7 @@
+#compdef ws
+
+_ws_completion() {
+  eval $(env _TYPER_COMPLETE_ARGS="${words[1,$CURRENT]}" _WS_COMPLETE=complete_zsh ws)
+}
+
+compdef _ws_completion ws

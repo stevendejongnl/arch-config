@@ -1,0 +1,631 @@
+#compdef harv
+
+autoload -U is-at-least
+
+_harv() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" : \
+'-v[Enable verbose logging]' \
+'--verbose[Enable verbose logging]' \
+'-q[Suppress non-essential output]' \
+'--quiet[Suppress non-essential output]' \
+'-n[Show what would happen without making changes]' \
+'--dry-run[Show what would happen without making changes]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
+":: :_harv_commands" \
+"*::: :->harv" \
+&& ret=0
+    case $state in
+    (harv)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:harv-command-$line[1]:"
+        case $line[1] in
+            (sync)
+_arguments "${_arguments_options[@]}" : \
+'--repo=[Override repository path]:REPO:_default' \
+'--auto-start[Automatically start timer without prompting]' \
+'--auto-stop[Automatically stop existing timer without prompting]' \
+'-v[Enable verbose logging]' \
+'--verbose[Enable verbose logging]' \
+'-q[Suppress non-essential output]' \
+'--quiet[Suppress non-essential output]' \
+'-n[Show what would happen without making changes]' \
+'--dry-run[Show what would happen without making changes]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(status)
+_arguments "${_arguments_options[@]}" : \
+'-v[Enable verbose logging]' \
+'--verbose[Enable verbose logging]' \
+'-q[Suppress non-essential output]' \
+'--quiet[Suppress non-essential output]' \
+'-n[Show what would happen without making changes]' \
+'--dry-run[Show what would happen without making changes]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(stop)
+_arguments "${_arguments_options[@]}" : \
+'-v[Enable verbose logging]' \
+'--verbose[Enable verbose logging]' \
+'-q[Suppress non-essential output]' \
+'--quiet[Suppress non-essential output]' \
+'-n[Show what would happen without making changes]' \
+'--dry-run[Show what would happen without making changes]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+'-v[Enable verbose logging]' \
+'--verbose[Enable verbose logging]' \
+'-q[Suppress non-essential output]' \
+'--quiet[Suppress non-essential output]' \
+'-n[Show what would happen without making changes]' \
+'--dry-run[Show what would happen without making changes]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(continue)
+_arguments "${_arguments_options[@]}" : \
+'-d+[Number of days to look back for entries (default\: 1)]:DAYS:_default' \
+'--days=[Number of days to look back for entries (default\: 1)]:DAYS:_default' \
+'--auto-start[Automatically start timer without prompting]' \
+'(--restart)--new-entry[Create new timer instead of restarting existing entry]' \
+'(--new-entry)--restart[Restart existing entry instead of creating new timer]' \
+'-v[Enable verbose logging]' \
+'--verbose[Enable verbose logging]' \
+'-q[Suppress non-essential output]' \
+'--quiet[Suppress non-essential output]' \
+'-n[Show what would happen without making changes]' \
+'--dry-run[Show what would happen without making changes]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(generate)
+_arguments "${_arguments_options[@]}" : \
+'--provider=[AI provider to use (overrides config)]:PROVIDER:_default' \
+'--target-hours=[Target hours for the day (default\: from config or 8.0) Supports decimal (e.g., 1.5) or colon format (e.g., 1\:30)]:TARGET_HOURS:_default' \
+'--auto-approve[Skip approval and create entries immediately]' \
+'-v[Enable verbose logging]' \
+'--verbose[Enable verbose logging]' \
+'-q[Suppress non-essential output]' \
+'--quiet[Suppress non-essential output]' \
+'-n[Show what would happen without making changes]' \
+'--dry-run[Show what would happen without making changes]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'::summary -- Natural language summary of work done today If not provided, will prompt interactively:_default' \
+&& ret=0
+;;
+(config)
+_arguments "${_arguments_options[@]}" : \
+'-v[Enable verbose logging]' \
+'--verbose[Enable verbose logging]' \
+'-q[Suppress non-essential output]' \
+'--quiet[Suppress non-essential output]' \
+'-n[Show what would happen without making changes]' \
+'--dry-run[Show what would happen without making changes]' \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_harv__config_commands" \
+"*::: :->config" \
+&& ret=0
+
+    case $state in
+    (config)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:harv-config-command-$line[1]:"
+        case $line[1] in
+            (init)
+_arguments "${_arguments_options[@]}" : \
+'-v[Enable verbose logging]' \
+'--verbose[Enable verbose logging]' \
+'-q[Suppress non-essential output]' \
+'--quiet[Suppress non-essential output]' \
+'-n[Show what would happen without making changes]' \
+'--dry-run[Show what would happen without making changes]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+'-v[Enable verbose logging]' \
+'--verbose[Enable verbose logging]' \
+'-q[Suppress non-essential output]' \
+'--quiet[Suppress non-essential output]' \
+'-n[Show what would happen without making changes]' \
+'--dry-run[Show what would happen without making changes]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(validate)
+_arguments "${_arguments_options[@]}" : \
+'-v[Enable verbose logging]' \
+'--verbose[Enable verbose logging]' \
+'-q[Suppress non-essential output]' \
+'--quiet[Suppress non-essential output]' \
+'-n[Show what would happen without making changes]' \
+'--dry-run[Show what would happen without making changes]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_harv__config__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:harv-config-help-command-$line[1]:"
+        case $line[1] in
+            (init)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(validate)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(completions)
+_arguments "${_arguments_options[@]}" : \
+'-v[Enable verbose logging]' \
+'--verbose[Enable verbose logging]' \
+'-q[Suppress non-essential output]' \
+'--quiet[Suppress non-essential output]' \
+'-n[Show what would happen without making changes]' \
+'--dry-run[Show what would happen without making changes]' \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_harv__completions_commands" \
+"*::: :->completions" \
+&& ret=0
+
+    case $state in
+    (completions)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:harv-completions-command-$line[1]:"
+        case $line[1] in
+            (install)
+_arguments "${_arguments_options[@]}" : \
+'-v[Enable verbose logging]' \
+'--verbose[Enable verbose logging]' \
+'-q[Suppress non-essential output]' \
+'--quiet[Suppress non-essential output]' \
+'-n[Show what would happen without making changes]' \
+'--dry-run[Show what would happen without making changes]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(generate)
+_arguments "${_arguments_options[@]}" : \
+'-v[Enable verbose logging]' \
+'--verbose[Enable verbose logging]' \
+'-q[Suppress non-essential output]' \
+'--quiet[Suppress non-essential output]' \
+'-n[Show what would happen without making changes]' \
+'--dry-run[Show what would happen without making changes]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':shell -- Shell to generate completions for:(bash elvish fish powershell zsh)' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_harv__completions__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:harv-completions-help-command-$line[1]:"
+        case $line[1] in
+            (install)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(generate)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_harv__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:harv-help-command-$line[1]:"
+        case $line[1] in
+            (sync)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(status)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(stop)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(continue)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(generate)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(config)
+_arguments "${_arguments_options[@]}" : \
+":: :_harv__help__config_commands" \
+"*::: :->config" \
+&& ret=0
+
+    case $state in
+    (config)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:harv-help-config-command-$line[1]:"
+        case $line[1] in
+            (init)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(validate)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(completions)
+_arguments "${_arguments_options[@]}" : \
+":: :_harv__help__completions_commands" \
+"*::: :->completions" \
+&& ret=0
+
+    case $state in
+    (completions)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:harv-help-completions-command-$line[1]:"
+        case $line[1] in
+            (install)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(generate)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+}
+
+(( $+functions[_harv_commands] )) ||
+_harv_commands() {
+    local commands; commands=(
+'sync:Check git commits and sync to Harvest (default command)' \
+'status:Show current Harvest timer status' \
+'stop:Stop the currently running Harvest timer' \
+'add:Manually add a time entry with interactive prompts' \
+'continue:Continue work on an existing time entry by starting a new timer' \
+'generate:Generate time entries from a work summary using AI' \
+'config:Configuration management' \
+'completions:Generate shell completions' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'harv commands' commands "$@"
+}
+(( $+functions[_harv__add_commands] )) ||
+_harv__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv add commands' commands "$@"
+}
+(( $+functions[_harv__completions_commands] )) ||
+_harv__completions_commands() {
+    local commands; commands=(
+'install:Auto-detect shell and install completions' \
+'generate:Generate completion script for a specific shell' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'harv completions commands' commands "$@"
+}
+(( $+functions[_harv__completions__generate_commands] )) ||
+_harv__completions__generate_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv completions generate commands' commands "$@"
+}
+(( $+functions[_harv__completions__help_commands] )) ||
+_harv__completions__help_commands() {
+    local commands; commands=(
+'install:Auto-detect shell and install completions' \
+'generate:Generate completion script for a specific shell' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'harv completions help commands' commands "$@"
+}
+(( $+functions[_harv__completions__help__generate_commands] )) ||
+_harv__completions__help__generate_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv completions help generate commands' commands "$@"
+}
+(( $+functions[_harv__completions__help__help_commands] )) ||
+_harv__completions__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv completions help help commands' commands "$@"
+}
+(( $+functions[_harv__completions__help__install_commands] )) ||
+_harv__completions__help__install_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv completions help install commands' commands "$@"
+}
+(( $+functions[_harv__completions__install_commands] )) ||
+_harv__completions__install_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv completions install commands' commands "$@"
+}
+(( $+functions[_harv__config_commands] )) ||
+_harv__config_commands() {
+    local commands; commands=(
+'init:Create a template configuration file' \
+'show:Display current configuration' \
+'validate:Validate configuration file' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'harv config commands' commands "$@"
+}
+(( $+functions[_harv__config__help_commands] )) ||
+_harv__config__help_commands() {
+    local commands; commands=(
+'init:Create a template configuration file' \
+'show:Display current configuration' \
+'validate:Validate configuration file' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'harv config help commands' commands "$@"
+}
+(( $+functions[_harv__config__help__help_commands] )) ||
+_harv__config__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv config help help commands' commands "$@"
+}
+(( $+functions[_harv__config__help__init_commands] )) ||
+_harv__config__help__init_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv config help init commands' commands "$@"
+}
+(( $+functions[_harv__config__help__show_commands] )) ||
+_harv__config__help__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv config help show commands' commands "$@"
+}
+(( $+functions[_harv__config__help__validate_commands] )) ||
+_harv__config__help__validate_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv config help validate commands' commands "$@"
+}
+(( $+functions[_harv__config__init_commands] )) ||
+_harv__config__init_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv config init commands' commands "$@"
+}
+(( $+functions[_harv__config__show_commands] )) ||
+_harv__config__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv config show commands' commands "$@"
+}
+(( $+functions[_harv__config__validate_commands] )) ||
+_harv__config__validate_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv config validate commands' commands "$@"
+}
+(( $+functions[_harv__continue_commands] )) ||
+_harv__continue_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv continue commands' commands "$@"
+}
+(( $+functions[_harv__generate_commands] )) ||
+_harv__generate_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv generate commands' commands "$@"
+}
+(( $+functions[_harv__help_commands] )) ||
+_harv__help_commands() {
+    local commands; commands=(
+'sync:Check git commits and sync to Harvest (default command)' \
+'status:Show current Harvest timer status' \
+'stop:Stop the currently running Harvest timer' \
+'add:Manually add a time entry with interactive prompts' \
+'continue:Continue work on an existing time entry by starting a new timer' \
+'generate:Generate time entries from a work summary using AI' \
+'config:Configuration management' \
+'completions:Generate shell completions' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'harv help commands' commands "$@"
+}
+(( $+functions[_harv__help__add_commands] )) ||
+_harv__help__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv help add commands' commands "$@"
+}
+(( $+functions[_harv__help__completions_commands] )) ||
+_harv__help__completions_commands() {
+    local commands; commands=(
+'install:Auto-detect shell and install completions' \
+'generate:Generate completion script for a specific shell' \
+    )
+    _describe -t commands 'harv help completions commands' commands "$@"
+}
+(( $+functions[_harv__help__completions__generate_commands] )) ||
+_harv__help__completions__generate_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv help completions generate commands' commands "$@"
+}
+(( $+functions[_harv__help__completions__install_commands] )) ||
+_harv__help__completions__install_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv help completions install commands' commands "$@"
+}
+(( $+functions[_harv__help__config_commands] )) ||
+_harv__help__config_commands() {
+    local commands; commands=(
+'init:Create a template configuration file' \
+'show:Display current configuration' \
+'validate:Validate configuration file' \
+    )
+    _describe -t commands 'harv help config commands' commands "$@"
+}
+(( $+functions[_harv__help__config__init_commands] )) ||
+_harv__help__config__init_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv help config init commands' commands "$@"
+}
+(( $+functions[_harv__help__config__show_commands] )) ||
+_harv__help__config__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv help config show commands' commands "$@"
+}
+(( $+functions[_harv__help__config__validate_commands] )) ||
+_harv__help__config__validate_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv help config validate commands' commands "$@"
+}
+(( $+functions[_harv__help__continue_commands] )) ||
+_harv__help__continue_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv help continue commands' commands "$@"
+}
+(( $+functions[_harv__help__generate_commands] )) ||
+_harv__help__generate_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv help generate commands' commands "$@"
+}
+(( $+functions[_harv__help__help_commands] )) ||
+_harv__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv help help commands' commands "$@"
+}
+(( $+functions[_harv__help__status_commands] )) ||
+_harv__help__status_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv help status commands' commands "$@"
+}
+(( $+functions[_harv__help__stop_commands] )) ||
+_harv__help__stop_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv help stop commands' commands "$@"
+}
+(( $+functions[_harv__help__sync_commands] )) ||
+_harv__help__sync_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv help sync commands' commands "$@"
+}
+(( $+functions[_harv__status_commands] )) ||
+_harv__status_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv status commands' commands "$@"
+}
+(( $+functions[_harv__stop_commands] )) ||
+_harv__stop_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv stop commands' commands "$@"
+}
+(( $+functions[_harv__sync_commands] )) ||
+_harv__sync_commands() {
+    local commands; commands=()
+    _describe -t commands 'harv sync commands' commands "$@"
+}
+
+if [ "$funcstack[1]" = "_harv" ]; then
+    _harv "$@"
+else
+    compdef _harv harv
+fi
