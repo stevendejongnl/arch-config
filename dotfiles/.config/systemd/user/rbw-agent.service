@@ -2,6 +2,8 @@
 Description=rbw agent (Bitwarden CLI unlock cache)
 
 [Service]
+Type=forking
+PIDFile=%t/rbw/pidfile
 ExecStart=/usr/bin/rbw-agent
 Restart=on-failure
 RestartSec=1
