@@ -13,11 +13,8 @@ ConditionHost=computersloeber
 
 [Service]
 ExecStartPre=/bin/bash -c 'for i in $(seq 60); do xdpyinfo -display :0 >/dev/null 2>&1 && exit 0; sleep 0.5; done; exit 1'
-# Server (StreamPC / arch-workstation) has two NICs -- .109 on the Intel port,
-# .146 on the Realtek port -- only one is cabled at a time. Probe both, use
-# whichever answers on 24800; Restart=on-failure re-probes if neither does
-# (e.g. cable moved to the other NIC).
-# Off the home LAN (e.g. at work), both IPs are simply unreachable -- ping
+# Server (StreamPC / arch-workstation) address: 192.168.1.130.
+# Off the home LAN (e.g. at work), the IP is simply unreachable -- ping
 # fails even if the client's own subnet coincidentally looks the same
 # (192.168.1.x at work too). Treat that as "not home", exit 0 (no restart
 # spam, no OnFailure); only exit 1 -- a real failure -- when the host itself
@@ -27,14 +24,9 @@ ExecStartPre=/bin/bash -c 'for i in $(seq 60); do xdpyinfo -display :0 >/dev/nul
 # counted as "on LAN" and fired spurious OnFailure alerts while the
 # workstation was simply off.
 ExecStart=/bin/bash -c '\
-  on_lan=0; \
-  for ip in 192.168.1.109 192.168.1.146; do \
-    ping -c1 -W1 "$ip" >/dev/null 2>&1 && on_lan=1; \
-  done; \
-  if [ "$on_lan" -eq 0 ]; then exit 0; fi; \
-  for ip in 192.168.1.109 192.168.1.146; do \
-    nc -z -w1 "$ip" 24800 && exec barrierc -f --no-tray --no-restart --name computersloeber --disable-crypto "$ip:24800"; \
-  done; \
+  ip=192.168.1.130; \
+  ping -c1 -W1 "$ip" >/dev/null 2>&1 || exit 0; \
+  nc -z -w1 "$ip" 24800 && exec barrierc -f --no-tray --no-restart --name computersloeber --disable-crypto "$ip:24800"; \
   exit 1'
 TimeoutStartSec=45
 Environment=DISPLAY=:0
