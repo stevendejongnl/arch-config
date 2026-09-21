@@ -24,6 +24,7 @@ packages:
 - vim
 - virt-manager
 - w3m
+- super-productivity
 deb_packages: []
 nix_packages: []
 exclude: []
