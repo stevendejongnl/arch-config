@@ -147,7 +147,8 @@ packages:
   - xdotool
   - xorg-xkill         # click-to-kill a hung X client
   - flameshot
-  - feh                # wallpaper.sh
+  - feh                # wallpaper-picker: applies the wallpaper
+  - python-gobject     # wallpaper-picker: GTK3 picker (wallpaper.sh --gui)
   - dunst              # notification daemon (notify-send)
   - rofi-bluetooth-git
   - wireplumber        # pipewire session manager

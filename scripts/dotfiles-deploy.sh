@@ -185,6 +185,23 @@ if grep -q "@plugin" "$HOME_DIR/.config/tmux/tmux.conf" 2>/dev/null; then
     fi
 fi
 
+# wallpaper-picker (https://github.com/stevendejongnl/wallpaper-picker):
+# the wallpaper.sh/wallpaper-gui.py code isn't vendored here, same pattern as
+# tpm above. wallpaper.service's ExecStart expects it at this exact path.
+WALLPAPER_PICKER_DIR="$HOME_DIR/.local/share/wallpaper-picker"
+if [ ! -d "$WALLPAPER_PICKER_DIR/.git" ]; then
+    log "Cloning wallpaper-picker -> $WALLPAPER_PICKER_DIR"
+    git clone -q git@github.com:stevendejongnl/wallpaper-picker.git "$WALLPAPER_PICKER_DIR" \
+        && chmod +x "$WALLPAPER_PICKER_DIR"/bin/*.sh \
+        && log "wallpaper-picker installed" \
+        || log "wallpaper-picker clone failed (network/SSH key?) — clone manually"
+fi
+if [ ! -f "$HOME_DIR/.config/wallpaper/categories.conf" ] && [ -f "$WALLPAPER_PICKER_DIR/config/categories.conf.example" ]; then
+    mkdir -p "$HOME_DIR/.config/wallpaper"
+    cp "$WALLPAPER_PICKER_DIR/config/categories.conf.example" "$HOME_DIR/.config/wallpaper/categories.conf"
+    log "Seeded ~/.config/wallpaper/categories.conf from example — edit to taste"
+fi
+
 log "Dotfiles deployed successfully"
 
 # Run systemd service configuration if available

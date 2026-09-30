@@ -98,7 +98,7 @@ source $HOME/scripts/cleanup.sh
 alias reload-aliases='source ~/.aliases && echo "Aliases reloaded ✅"'
 alias unlock="$HOME/unlock"
 alias vpn="$HOME/.local/bin/vpn"
-alias change-wallpaper="$HOME/.config/systemd/user/scripts/wallpaper.sh"
+alias change-wallpaper="$HOME/.local/share/wallpaper-picker/bin/wallpaper.sh"
 alias vim="nvim"
 alias used-ports="sudo lsof -i -P -n"
 alias used-ports-listen="sudo lsof -i -P -n | grep LISTEN"
