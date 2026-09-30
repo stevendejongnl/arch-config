@@ -6,3 +6,8 @@ state/
 
 # Auto-generated statusbar cache files
 dotfiles/.dwm/statusbar/package-updates/last-run
+
+# Wallpaper picker: machine-specific runtime state, not shared config
+dotfiles/.config/wallpaper/current
+dotfiles/.config/systemd/user/wallpaper.timer.d/
+dotfiles/.config/systemd/user/scripts/__pycache__/

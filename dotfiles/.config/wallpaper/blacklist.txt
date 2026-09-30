@@ -1,0 +1,6 @@
+# Blacklisted wallpapers. One key per line: Wallhaven id for cached online
+# downloads, absolute path for local files. Managed by wallpaper.sh
+# (--blacklist) and the wallpaper-gui.py picker.
+72v5vv    # drift car-72v5vv.jpg 2026-09-30
+oxxyrm    # supercar-oxxyrm.jpg 2026-09-30
+4y81vk    # supercar-4y81vk.jpg 2026-09-30

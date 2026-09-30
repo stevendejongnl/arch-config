@@ -2,4 +2,4 @@
 
 # dwm kill disabled — use Super+Shift+Ctrl+Q to reload manually after monitor changes
 notify-send "$(autorandr --current)"
-$HOME/.config/systemd/user/scripts/wallpaper.sh
+$HOME/.config/systemd/user/scripts/wallpaper.sh --reapply

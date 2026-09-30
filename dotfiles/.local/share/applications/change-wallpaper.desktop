@@ -2,7 +2,7 @@
 Name=Change Wallpaper
 Comment=Change the wallpaper
 # Exec=/usr/bin/kitty --hold /bin/bash -c '$HOME/.config/systemd/user/scripts/wallpaper.sh -s'
-Exec=/home/stevendejong/.config/systemd/user/scripts/wallpaper.sh
+Exec=/bin/bash /home/stevendejong/.config/systemd/user/scripts/wallpaper.sh --gui
 Icon=wallpaper
 Terminal=false
 Type=Application
