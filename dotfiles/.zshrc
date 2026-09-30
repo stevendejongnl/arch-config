@@ -115,3 +115,6 @@ case ":$PATH:" in
     *":/home/stevendejong/.jbcontext/bin:"*) ;;
     *) export PATH="$PATH:/home/stevendejong/.jbcontext/bin" ;;
 esac
+
+# Added by the Hunk installer (https://hunk.dev)
+export PATH='/home/stevendejong/.hunk/bin':"$PATH"
