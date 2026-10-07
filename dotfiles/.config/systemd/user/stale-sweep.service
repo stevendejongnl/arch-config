@@ -1,0 +1,24 @@
+[Unit]
+Description=Stale resource sweep
+After=graphical-session.target
+OnFailure=autostart-failure@%n.service
+
+[Service]
+Type=oneshot
+ExecStartPre=/bin/bash -c 'for i in $(seq 60); do xdpyinfo -display :0 >/dev/null 2>&1 && exit 0; sleep 0.5; done; exit 1'
+# Detach immediately: the detector's own popup can legitimately sit open for hours waiting
+# on the user, and this unit must not be "activating" (blocking) for that whole time — a
+# oneshot blocked on a GUI would either get killed by a timeout or make systemd refuse the
+# next hourly run while the old one is still "active". The script's own close_stale_popup()
+# is what makes a second run safely replace a stale, un-acted-on popup from a prior hour.
+ExecStart=/bin/bash -c 'setsid /bin/bash "%h/.local/share/stale-sweep/stale-sweep.sh" </dev/null >/dev/null 2>&1 &'
+# Default KillMode=control-group would SIGKILL the whole cgroup — including the detached
+# child above — the instant this oneshot's main process exits. setsid escapes the process
+# group/session, not the cgroup, so that kill still catches it. KillMode=process restricts
+# the kill to the ExecStart process itself. Confirmed in testing: without this, the detector
+# and its popup were killed before ever doing anything.
+KillMode=process
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=%h/.Xauthority
+StandardOutput=journal
+StandardError=journal
