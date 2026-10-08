@@ -73,3 +73,9 @@ xe83v3    # tuner car-xe83v3.jpg 2026-10-06
 42p93x    # jdm car-42p93x.jpg 2026-10-06
 43zdk9    # jdm car-43zdk9.jpg 2026-10-07
 dg511m    # supercar-dg511m.jpg 2026-10-07
+47vkd9    # widebody car-47vkd9.jpg 2026-10-07
+zyme7o    # widebody car-zyme7o.jpg 2026-10-07
+0qzg9l    # jdm car-0qzg9l.jpg 2026-10-07
+o5q9w5    # modified sports car-o5q9w5.jpg 2026-10-07
+qrzd7r    # tuner car-qrzd7r.jpg 2026-10-08
+j8oo7q    # tuned audi-j8oo7q.jpg 2026-10-08
