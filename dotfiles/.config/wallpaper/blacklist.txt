@@ -83,3 +83,6 @@ j8oo7q    # tuned audi-j8oo7q.jpg 2026-10-08
 n6rpxn    # tuned bmw-n6rpxn.jpg 2026-10-08
 4g887n    # stance car-4g887n.jpg 2026-10-08
 0w5760    # stance car-0w5760.jpg 2026-10-08
+3z5g2d    # drift car-3z5g2d.jpg 2026-10-08
+e71mpr    # tuned porsche-e71mpr.jpg 2026-10-08
+9okdm1    # tuner car-9okdm1.jpg 2026-10-08
