@@ -29,6 +29,8 @@ packages:
   - efibootmgr          # EFI boot manager
   - lxappearance        # Appearance settings manager
   - lxsession           # LXDE session manager
+  - libva-mesa-driver   # VAAPI hardware video decode for AMD/Mesa (Chromium)
+  - libva-utils         # vainfo, to verify VAAPI decode is active
   - mesa-utils          # Mesa utilities (e.g., glxinfo)
   - paccache-hook       # Tool to manage pacman cache
   - sudo
