@@ -87,3 +87,5 @@ n6rpxn    # tuned bmw-n6rpxn.jpg 2026-10-08
 e71mpr    # tuned porsche-e71mpr.jpg 2026-10-08
 9okdm1    # tuner car-9okdm1.jpg 2026-10-08
 n6owx6    # supercar-n6owx6.jpg 2026-10-13
+3k3gqv    # tuned porsche-3k3gqv.jpg 2026-10-15
+0p853e    # stance car-0p853e.jpg 2026-10-15

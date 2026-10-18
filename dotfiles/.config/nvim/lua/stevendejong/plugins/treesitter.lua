@@ -13,7 +13,11 @@ return {
     config = function()
       local ts = require("nvim-treesitter")
       ts.setup()
-      ts.install(parsers)
+      if vim.fn.executable("tree-sitter") == 1 then
+        ts.install(parsers)
+      else
+        vim.notify_once("nvim-treesitter: `tree-sitter` CLI missing, parsers not installed (pacman -S tree-sitter-cli)", vim.log.levels.WARN)
+      end
 
       vim.api.nvim_create_autocmd("FileType", {
         group = vim.api.nvim_create_augroup("stevendejong_treesitter", { clear = true }),
