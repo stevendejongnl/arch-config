@@ -46,4 +46,18 @@ return {
       { "<leader>qd", function() require("persistence").stop() end, desc = "Don't save session" },
     },
   },
+  {
+    "ThePrimeagen/refactoring.nvim",
+    dependencies = { "nvim-lua/plenary.nvim", "nvim-treesitter/nvim-treesitter" },
+    lazy = false,
+    keys = {
+      { "<leader>re", function() return require("refactoring").refactor("Extract Function") end, mode = "x", expr = true, desc = "Extract function" },
+      { "<leader>rf", function() return require("refactoring").refactor("Extract Function To File") end, mode = "x", expr = true, desc = "Extract function to file" },
+      { "<leader>rv", function() return require("refactoring").refactor("Extract Variable") end, mode = "x", expr = true, desc = "Extract variable" },
+      { "<leader>ri", function() return require("refactoring").refactor("Inline Variable") end, mode = { "n", "x" }, expr = true, desc = "Inline variable" },
+      { "<leader>rI", function() return require("refactoring").refactor("Inline Function") end, mode = "n", expr = true, desc = "Inline function" },
+      { "<leader>rb", function() return require("refactoring").refactor("Extract Block") end, mode = "n", expr = true, desc = "Extract block" },
+      { "<leader>rm", function() Snacks.rename.rename_file() end, desc = "Rename/move file (updates imports)" },
+    },
+  },
 }

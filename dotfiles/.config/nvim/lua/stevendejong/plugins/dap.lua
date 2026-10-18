@@ -14,6 +14,7 @@ return {
       { "<leader>dO", function() require("dap").step_out() end, desc = "Step out" },
       { "<leader>dr", function() require("dap").repl.toggle() end, desc = "REPL" },
       { "<leader>dl", function() require("dap").run_last() end, desc = "Run last" },
+      { "<leader>dD", function() require("stevendejong.runner").debug_docker() end, desc = "Debug in Docker (start + attach)" },
       { "<leader>dt", function() require("dap").terminate() end, desc = "Terminate" },
       { "<leader>du", function() require("dap-view").toggle() end, desc = "Toggle debug view" },
       { "<leader>de", function() require("dap.ui.widgets").hover() end, desc = "Eval under cursor", mode = { "n", "v" } },
@@ -34,9 +35,7 @@ return {
         request = "attach",
         name = "Attach to container (localhost:5678)",
         connect = { host = "127.0.0.1", port = 5678 },
-        pathMappings = {
-          { localRoot = function() return vim.fn.getcwd() end, remoteRoot = "/srv" },
-        },
+        pathMappings = function() return require("stevendejong.runner").path_mappings() end,
       })
 
       -- JS/TS: js-debug-adapter

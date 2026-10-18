@@ -25,6 +25,8 @@ lsp("References", "gr", "lua Snacks.picker.lsp_references()")
 lsp("Hover Docs", "K", "lua vim.lsp.buf.hover()")
 lsp("Rename", "grn", "lua vim.lsp.buf.rename()")
 lsp("Code Action", "gra", "lua vim.lsp.buf.code_action()")
+lsp("Incoming Calls", "Space vi", "Trouble lsp_incoming_calls toggle")
+lsp("Outgoing Calls", "Space vI", "Trouble lsp_outgoing_calls toggle")
 lsp("Organize Imports", "Space vo", "lua vim.lsp.buf.code_action({ context = { only = { 'source.organizeImports' } }, apply = true })")
 item("n", "Format", "Space cf", "<Cmd>lua require('conform').format({ async = true })<CR>")
 vim.cmd("anoremenu PopUp.-1- <Nop>")
@@ -34,7 +36,8 @@ item("n", "Project Diagnostics", "Space xx", "<Cmd>Trouble diagnostics toggle<CR
 vim.cmd("anoremenu PopUp.-2- <Nop>")
 
 item("n", "Toggle Breakpoint", "Space db", "<Cmd>lua require('dap').toggle_breakpoint()<CR>")
-item("n", "Run Nearest Test", "Space tt", "<Cmd>lua require('neotest').run.run()<CR>")
+item("n", "Run Nearest Test", "Space tt", "<Cmd>lua require('stevendejong.runner').nearest()<CR>")
+item("n", "Debug in Docker", "Space dD", "<Cmd>lua require('stevendejong.runner').debug_docker()<CR>")
 item("n", "Debug Nearest Test", "Space td", "<Cmd>lua require('neotest').run.run({ strategy = 'dap' })<CR>")
 vim.cmd("anoremenu PopUp.-3- <Nop>")
 

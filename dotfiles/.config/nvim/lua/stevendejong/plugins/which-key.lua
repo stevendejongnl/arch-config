@@ -18,6 +18,7 @@ return {
       { "<leader>u", group = "Toggles" },
       { "<leader>q", group = "Session" },
       { "<leader>b", group = "Buffer" },
+      { "<leader>r", group = "Refactor" },
     },
   },
 }

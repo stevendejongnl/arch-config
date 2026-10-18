@@ -18,6 +18,7 @@ local sections = {
     { "grn / <leader>vrn", "Rename" }, { "gra / <leader>vca", "Code action" }, { "<leader>vo", "Organize imports" },
     { "<leader>vws", "Workspace symbol" }, { "<C-h> (i)", "Signature help" }, { "[d / ]d", "Prev/next diagnostic" },
     { "<leader>i / vd", "Line diagnostics" }, { "<leader>uh", "Toggle inlay hints" },
+    { "<leader>vi / vI", "Incoming / outgoing calls" },
   } },
   { "CODE / FORMAT", {
     { "<leader>cf", "Format" }, { "<leader>uf", "Toggle format on save" }, { "<leader>cv", "Select Python venv" },
@@ -29,13 +30,19 @@ local sections = {
     { "]f [f ]F [F", "Function nav" }, { "]c [c ]C [C", "Class nav" },
     { "]a / [a", "Argument next/prev" }, { "<leader>sa / sA", "Swap argument" },
   } },
+  { "REFACTOR", {
+    { "<leader>re (x)", "Extract function" }, { "<leader>rf (x)", "Extract to file" },
+    { "<leader>rv (x)", "Extract variable" }, { "<leader>ri", "Inline variable" },
+    { "<leader>rI", "Inline function" }, { "<leader>rb", "Extract block" }, { "<leader>rm", "Rename/move file" },
+  } },
   { "DEBUG", {
     { "<leader>db", "Breakpoint" }, { "<leader>dB", "Conditional breakpoint" }, { "<leader>dc", "Continue / start" },
     { "<leader>di / do / dO", "Step into / over / out" }, { "<leader>dl", "Run last" }, { "<leader>dt", "Terminate" },
     { "<leader>du", "Debug view" }, { "<leader>dr", "REPL" }, { "<leader>de", "Eval under cursor" },
+    { "<leader>dD", "Docker: start + attach" },
   } },
   { "TEST", {
-    { "<leader>tt", "Run nearest" }, { "<leader>tf", "Run file" }, { "<leader>ta", "Run all" },
+    { "<leader>tt", "Nearest (nox in tmux / neotest)" }, { "<leader>tf", "File" }, { "<leader>ta", "All" },
     { "<leader>tl", "Run last" }, { "<leader>td", "Debug nearest" }, { "<leader>ts", "Summary" },
     { "<leader>to / tO", "Output / panel" }, { "<leader>tx", "Stop" },
   } },

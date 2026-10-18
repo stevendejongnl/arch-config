@@ -36,6 +36,8 @@ return {
           map("n", "<leader>vrn", vim.lsp.buf.rename, "Rename")
           map("n", "<leader>vt", vim.lsp.buf.type_definition, "Type Definition")
           map("i", "<C-h>", vim.lsp.buf.signature_help, "Signature Help")
+          map("n", "<leader>vi", "<cmd>Trouble lsp_incoming_calls toggle<CR>", "Incoming calls (who calls this)")
+          map("n", "<leader>vI", "<cmd>Trouble lsp_outgoing_calls toggle<CR>", "Outgoing calls")
           map("n", "<leader>vo", function()
             vim.lsp.buf.code_action({ context = { only = { "source.organizeImports" } }, apply = true })
           end, "Organize Imports")
