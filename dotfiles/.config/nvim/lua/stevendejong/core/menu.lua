@@ -52,7 +52,7 @@ vim.api.nvim_create_autocmd("MenuPopup", {
   callback = function()
     local attached = vim.lsp.get_clients({ bufnr = 0 })[1] ~= nil
     for _, name in ipairs(lsp_items) do
-      vim.cmd(string.format("anoremenu %s PopUp.%s", attached and "enable" or "disable", name))
+      vim.cmd(string.format("nmenu %s PopUp.%s", attached and "enable" or "disable", name))
     end
   end,
 })
