@@ -2,7 +2,6 @@ return {
   "folke/which-key.nvim",
   event = "VeryLazy",
   opts = {
-    preset = "helix",
     spec = {
       { "<leader>p", group = "Search/Files" },
       { "<leader>g", group = "Git" },
