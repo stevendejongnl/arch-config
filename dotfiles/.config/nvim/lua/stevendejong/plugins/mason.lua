@@ -16,7 +16,7 @@ return {
         "basedpyright", "ruff", "vtsls", "vue-language-server", "eslint-lsp", "lua-language-server",
         "bash-language-server", "css-lsp", "html-lsp", "json-lsp", "yaml-language-server",
         "dockerfile-language-server", "docker-compose-language-service", "emmet-language-server",
-        "stylelint-lsp", "jq-lsp", "rust-analyzer",
+        "stylelint-language-server", "jq-lsp", "rust-analyzer",
         -- formatters / linters
         "prettierd", "stylua", "shfmt", "flake8", "mypy",
         -- debuggers
