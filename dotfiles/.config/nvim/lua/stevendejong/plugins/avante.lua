@@ -8,6 +8,7 @@ return {
     "nvim-lua/plenary.nvim",
     "MunifTanjim/nui.nvim",
     "ravitemer/mcphub.nvim",
+    { "ColinKennedy/mega.cmdparse", dependencies = { "ColinKennedy/mega.logging" } },
   },
   opts = {
     provider = "claude-code",
