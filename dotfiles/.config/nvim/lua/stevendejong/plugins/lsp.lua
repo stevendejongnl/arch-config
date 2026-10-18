@@ -1,131 +1,60 @@
 return {
-  "neovim/nvim-lspconfig",
-  event = { "BufReadPre", "BufNewFile" },
-  dependencies = {
-    { "mason-org/mason.nvim", opts = {} },
-    { "mason-org/mason-lspconfig.nvim" },
-    { "davidosomething/format-ts-errors.nvim" },
-  },
-  config = function()
-    -- Shared on_attach: custom keybindings (Neovim 0.11 provides K, grn, grr, gra natively)
-    local on_attach = function(_, bufnr)
-      local opts = { buffer = bufnr, remap = false }
+  {
+    "neovim/nvim-lspconfig", -- supplies default server definitions (lsp/*.lua on rtp)
+    event = { "BufReadPre", "BufNewFile" },
+    dependencies = {
+      "mason-org/mason.nvim",
+      "b0o/SchemaStore.nvim",
+      "davidosomething/format-ts-errors.nvim",
+    },
+    config = function()
+      local ok, blink = pcall(require, "blink.cmp")
+      if ok then
+        vim.lsp.config("*", { capabilities = blink.get_lsp_capabilities() })
+      end
 
-      vim.keymap.set("n", "gd", vim.lsp.buf.definition, vim.tbl_extend("force", opts, { desc = "Go to Definition" }))
-      vim.keymap.set("n", "gD", vim.lsp.buf.declaration, vim.tbl_extend("force", opts, { desc = "Go to Declaration" }))
-      vim.keymap.set("n", "gi", vim.lsp.buf.implementation, vim.tbl_extend("force", opts, { desc = "Go to Implementation" }))
-      vim.keymap.set("n", "gr", vim.lsp.buf.references, vim.tbl_extend("force", opts, { desc = "References" }))
-      vim.keymap.set("n", "K", vim.lsp.buf.hover, vim.tbl_extend("force", opts, { desc = "Hover Documentation" }))
-      vim.keymap.set("n", "<leader>vws", vim.lsp.buf.workspace_symbol, vim.tbl_extend("force", opts, { desc = "Workspace Symbol" }))
-      vim.keymap.set("n", "<leader>vd", vim.diagnostic.open_float, vim.tbl_extend("force", opts, { desc = "Open Diagnostics" }))
-      vim.keymap.set("n", "[d", function() vim.diagnostic.jump({ count = -1 }) end, vim.tbl_extend("force", opts, { desc = "Previous Diagnostic" }))
-      vim.keymap.set("n", "]d", function() vim.diagnostic.jump({ count = 1 }) end, vim.tbl_extend("force", opts, { desc = "Next Diagnostic" }))
-      vim.keymap.set("n", "<leader>vca", vim.lsp.buf.code_action, vim.tbl_extend("force", opts, { desc = "Code Action" }))
-      vim.keymap.set("n", "<leader>vrn", vim.lsp.buf.rename, vim.tbl_extend("force", opts, { desc = "Rename" }))
-      vim.keymap.set("n", "<leader>vt", vim.lsp.buf.type_definition, vim.tbl_extend("force", opts, { desc = "Type Definition" }))
-      vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, vim.tbl_extend("force", opts, { desc = "Signature Help" }))
-    end
+      vim.lsp.enable({
+        "basedpyright", "ruff", "vtsls", "vue_ls", "eslint", "lua_ls", "bashls", "cssls", "html",
+        "jsonls", "yamlls", "dockerls", "docker_compose_language_service", "emmet_language_server",
+        "stylelint_lsp", "jqls", "rust_analyzer", "sourcekit",
+      })
 
-    -- Shared capabilities (extended by blink.cmp if available)
-    local capabilities = vim.lsp.protocol.make_client_capabilities()
-    local ok, blink = pcall(require, "blink.cmp")
-    if ok then
-      capabilities = blink.get_lsp_capabilities(capabilities)
-    end
-
-    -- Apply capabilities to all servers via vim.lsp.config wildcard
-    vim.lsp.config("*", {
-      capabilities = capabilities,
-    })
-
-    -- mason-lspconfig: install servers + auto-enable with defaults
-    require("mason-lspconfig").setup({
-      ensure_installed = {
-        "bashls",
-        "cssls",
-        "dockerls",
-        "docker_compose_language_service",
-        "emmet_language_server",
-        "eslint",
-        "html",
-        "jqls",
-        "jsonls",
-        "lua_ls",
-        "basedpyright",
-        "stylelint_lsp",
-        "vtsls",
-        "yamlls",
-      },
-      automatic_enable = true,
-    })
-
-    -- Apply on_attach keybindings to all servers via LspAttach
-    vim.api.nvim_create_autocmd("LspAttach", {
-      callback = function(args)
-        local client = vim.lsp.get_client_by_id(args.data.client_id)
-        if client then
-          on_attach(client, args.buf)
-        end
-      end,
-    })
-
-    -- Server-specific overrides (vim.lsp.config merges with wildcard defaults)
-
-    -- Lua: add Neovim runtime paths
-    vim.lsp.config("lua_ls", {
-      settings = {
-        Lua = {
-          runtime = { version = "LuaJIT" },
-          workspace = {
-            checkThirdParty = false,
-            library = { vim.env.VIMRUNTIME },
-          },
-        },
-      },
-    })
-
-    -- Python: basedpyright with standard type checking
-    vim.lsp.config("basedpyright", {
-      settings = {
-        basedpyright = {
-          typeCheckingMode = "standard",
-        },
-      },
-    })
-
-    -- Swift: sourcekit-lsp (installed via swiftly, not managed by Mason)
-    vim.lsp.config("sourcekit", {
-      cmd = { "sourcekit-lsp" },
-      filetypes = { "swift", "objc", "objcpp", "c", "cpp" },
-      root_markers = { "Package.swift", ".git", "compile_commands.json" },
-    })
-    vim.lsp.enable("sourcekit")
-
-    -- TypeScript: vtsls with format-ts-errors diagnostics handler
-    vim.lsp.config("vtsls", {
-      handlers = {
-        ["textDocument/publishDiagnostics"] = function(_, result, ctx, config)
-          if result.diagnostics == nil then
-            return
+      vim.api.nvim_create_autocmd("LspAttach", {
+        group = vim.api.nvim_create_augroup("stevendejong_lsp", { clear = true }),
+        callback = function(ev)
+          local client = vim.lsp.get_client_by_id(ev.data.client_id)
+          local function map(mode, lhs, rhs, desc)
+            vim.keymap.set(mode, lhs, rhs, { buffer = ev.buf, desc = desc })
           end
 
-          local idx = 1
-          while idx <= #result.diagnostics do
-            local entry = result.diagnostics[idx]
+          -- 0.12 defaults already give: grn rename, gra action, grr refs, gri impl, grt type, gO symbols, K hover
+          map("n", "gd", vim.lsp.buf.definition, "Go to Definition")
+          map("n", "gD", vim.lsp.buf.declaration, "Go to Declaration")
+          map("n", "<leader>vws", vim.lsp.buf.workspace_symbol, "Workspace Symbol")
+          map("n", "<leader>vd", vim.diagnostic.open_float, "Open Diagnostics")
+          map("n", "<leader>vca", vim.lsp.buf.code_action, "Code Action")
+          map("n", "<leader>vrn", vim.lsp.buf.rename, "Rename")
+          map("n", "<leader>vt", vim.lsp.buf.type_definition, "Type Definition")
+          map("i", "<C-h>", vim.lsp.buf.signature_help, "Signature Help")
+          map("n", "<leader>vo", function()
+            vim.lsp.buf.code_action({ context = { only = { "source.organizeImports" } }, apply = true })
+          end, "Organize Imports")
 
-            local formatter = require("format-ts-errors")[entry.code]
-            entry.message = formatter and formatter(entry.message) or entry.message
-
-            if entry.code == 80001 then
-              table.remove(result.diagnostics, idx)
-            else
-              idx = idx + 1
-            end
+          if client and client:supports_method("textDocument/inlayHint") then
+            map("n", "<leader>uh", function()
+              vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = ev.buf }), { bufnr = ev.buf })
+            end, "Toggle Inlay Hints")
           end
-
-          vim.lsp.diagnostic.on_publish_diagnostics(_, result, ctx, config)
+          if client and client:supports_method("textDocument/documentColor") then
+            vim.lsp.document_color.enable(true, { bufnr = ev.buf })
+          end
         end,
-      },
-    })
-  end,
+      })
+    end,
+  },
+  {
+    "folke/lazydev.nvim",
+    ft = "lua",
+    opts = { library = { { path = "${3rd}/luv/library", words = { "vim%.uv" } } } },
+  },
 }

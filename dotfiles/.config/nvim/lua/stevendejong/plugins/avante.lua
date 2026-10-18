@@ -5,7 +5,6 @@ return {
   build = "make",
   dependencies = {
     "nvim-treesitter/nvim-treesitter",
-    "stevearc/dressing.nvim",
     "nvim-lua/plenary.nvim",
     "MunifTanjim/nui.nvim",
     "ravitemer/mcphub.nvim",
@@ -29,9 +28,7 @@ return {
       return hub and hub:get_active_servers_prompt() or ""
     end,
     custom_tools = function()
-      return {
-        require("mcphub.extensions.avante").mcp_tool(),
-      }
+      return { require("mcphub.extensions.avante").mcp_tool() }
     end,
   },
 }

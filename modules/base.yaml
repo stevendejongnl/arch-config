@@ -64,6 +64,7 @@ packages:
   # Basic tools
   - git
   - neovim
+  - tree-sitter-cli
   - btop
   - alacritty
   - xterm               # fallback terminal (dmenu_run, scripts)

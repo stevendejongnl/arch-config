@@ -1,41 +1,23 @@
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
-    vim.fn.system({
-        "git",
-        "clone",
-        "--filter=blob:none",
-        "https://github.com/folke/lazy.nvim.git",
-        "--branch=stable",
-        lazypath,
-    })
+if not vim.uv.fs_stat(lazypath) then
+  local out = vim.fn.system({
+    "git", "clone", "--filter=blob:none", "--branch=stable",
+    "https://github.com/folke/lazy.nvim.git", lazypath,
+  })
+  if vim.v.shell_error ~= 0 then
+    error("Failed to clone lazy.nvim:\n" .. out)
+  end
 end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
-    {
-        import = "stevendejong.plugins",
-    },
-}, {
-    concurrency = 5,
-    install = {
-        colorscheme = { "embark" },
-    },
-    checker = {
-        enable = true,
-        notify = true,
-    },
-    change_detection = {
-        notify = true,
-    },
-    performance = {
-        rtp = {
-            disabled_plugins = {
-                "gzip",
-                "tarPlugin",
-                "tohtml",
-                "tutor",
-                "zipPlugin",
-            },
-        },
-    }
+  spec = { { import = "stevendejong.plugins" } },
+  concurrency = 5,
+  install = { colorscheme = { "embark" } },
+  rocks = { enabled = false },
+  checker = { enabled = true, notify = false },
+  change_detection = { notify = false },
+  performance = {
+    rtp = { disabled_plugins = { "gzip", "tarPlugin", "tohtml", "tutor", "zipPlugin", "netrwPlugin" } },
+  },
 })

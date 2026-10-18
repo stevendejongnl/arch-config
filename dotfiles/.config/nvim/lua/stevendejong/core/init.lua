@@ -1,3 +1,3 @@
-require("stevendejong.core.set")
-require("stevendejong.core.remap")
-require("stevendejong.core.wakatime")
+require("stevendejong.core.options")
+require("stevendejong.core.keymaps")
+require("stevendejong.core.autocmds")
