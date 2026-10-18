@@ -41,3 +41,6 @@ map("n", "<S-l>", "<cmd>bnext<CR>", { desc = "Next Buffer" })
 -- Clear search highlight / escape terminal
 map("n", "<Esc>", "<cmd>nohlsearch<CR>")
 map("t", "<Esc><Esc>", [[<C-\><C-n>]], { desc = "Exit terminal mode" })
+
+-- Cheatsheet
+map("n", "<leader>?", function() require("stevendejong.core.cheatsheet").toggle() end, { desc = "Cheatsheet" })

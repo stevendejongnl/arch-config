@@ -20,7 +20,4 @@ return {
       { "<leader>b", group = "Buffer" },
     },
   },
-  keys = {
-    { "<leader>?", function() require("which-key").show({ global = false }) end, desc = "Buffer keymaps" },
-  },
 }
