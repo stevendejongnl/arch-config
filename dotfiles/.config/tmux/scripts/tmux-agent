@@ -1,0 +1,447 @@
+#!/usr/bin/env python3
+"""tmux-agent: control panes and coding agents inside tmux. JSON on stdout.
+
+Agent state comes from the @agent_state pane option, set by agent-state.sh
+(Claude Code hooks). States: idle, working, blocked, done. Empty = no agent.
+"""
+import argparse
+import json
+import os
+import re
+import shlex
+import subprocess
+import sys
+import tempfile
+import time
+
+SEP = "\x1f"
+FIELDS = [
+    ("session", "#{session_name}"),
+    ("window", "#{window_index}"),
+    ("window_name", "#{window_name}"),
+    ("pane_id", "#{pane_id}"),
+    ("pane", "#{pane_index}"),
+    ("active", "#{&&:#{pane_active},#{window_active}}"),
+    ("cwd", "#{pane_current_path}"),
+    ("command", "#{pane_current_command}"),
+    ("state", "#{@agent_state}"),
+    ("kind", "#{@agent_kind}"),
+    ("name", "#{@agent_name}"),
+    ("sidebar", "#{@sidebar}"),
+]
+SETTLED = ("idle", "done", "blocked")
+
+
+def tmux(*args, check=True):
+    res = subprocess.run(["tmux", *args], capture_output=True, text=True)
+    if check and res.returncode != 0:
+        fail("tmux_error", res.stderr.strip() or "tmux failed")
+    return res.stdout
+
+
+def fail(code, message, status=1):
+    print(json.dumps({"error": {"code": code, "message": message}}), file=sys.stderr)
+    sys.exit(status)
+
+
+def out(result):
+    print(json.dumps({"result": result}, indent=2))
+
+
+def list_panes(target=None):
+    fmt = SEP.join(f for _, f in FIELDS)
+    args = ["list-panes", "-a", "-F", fmt] if target is None else ["list-panes", "-t", target, "-F", fmt]
+    rows = []
+    for line in tmux(*args).splitlines():
+        row = dict(zip((n for n, _ in FIELDS), line.split(SEP)))
+        row["active"] = row["active"] == "1"
+        row["sidebar"] = row["sidebar"] == "1"
+        if row["state"] and row["command"] != "claude":
+            row["state"], row["kind"], row["name"] = "", "", ""
+        if not row["state"] and row["command"] == "claude":
+            row["state"], row["kind"] = "unknown", "claude"
+        rows.append(row)
+    return rows
+
+
+def resolve(target):
+    """Pane id, or unique live agent name -> pane row."""
+    if target is None or target == "current":
+        pane = os.environ.get("TMUX_PANE")
+        if not pane:
+            fail("not_in_tmux", "TMUX_PANE not set")
+        target = pane
+    rows = list_panes()
+    if target.startswith("%"):
+        for r in rows:
+            if r["pane_id"] == target:
+                return r
+        fail("pane_not_found", f"no pane {target}")
+    named = [r for r in rows if r["name"] == target]
+    if len(named) == 1:
+        return named[0]
+    if len(named) > 1:
+        fail("ambiguous_name", f"{len(named)} panes named {target}")
+    fail("agent_not_found", f"no pane or agent named {target}")
+
+
+def pane_state(pane_id):
+    return tmux("display-message", "-p", "-t", pane_id, "#{@agent_state}", check=False).strip()
+
+
+def wait_state(pane_id, accept, timeout_ms):
+    deadline = None if timeout_ms is None else time.monotonic() + timeout_ms / 1000
+    while True:
+        state = pane_state(pane_id)
+        if state in accept:
+            return state
+        if deadline is not None and time.monotonic() >= deadline:
+            fail("timeout", f"state {state or 'none'} after {timeout_ms} ms")
+        time.sleep(0.2)
+
+
+def read_pane(pane_id, source, lines):
+    if source == "visible":
+        args = ["capture-pane", "-p", "-t", pane_id]
+    else:
+        args = ["capture-pane", "-p", "-t", pane_id, "-S", f"-{lines}"]
+        if source == "recent-unwrapped":
+            args.insert(2, "-J")
+    text = tmux(*args)
+    rows = text.rstrip("\n").split("\n")
+    return "\n".join(rows[-lines:]) if source != "visible" else "\n".join(rows)
+
+
+def paste_and_submit(pane_id, text):
+    """Bracketed paste of text, then Enter, as one ordered submission."""
+    with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as fh:
+        fh.write(text)
+        path = fh.name
+    buf = f"tmux-agent-{os.getpid()}"
+    try:
+        tmux("load-buffer", "-b", buf, path)
+        tmux("paste-buffer", "-p", "-d", "-b", buf, "-t", pane_id)
+    finally:
+        os.unlink(path)
+    time.sleep(0.15)
+    tmux("send-keys", "-t", pane_id, "Enter")
+
+
+# ---- commands ----
+
+def cmd_list(a):
+    rows = [r for r in list_panes() if not r["sidebar"]]
+    if a.agents:
+        rows = [r for r in rows if r["state"]]
+    out(rows)
+
+
+def cmd_current(a):
+    out(resolve("current"))
+
+
+def cmd_get(a):
+    out(resolve(a.target))
+
+
+def cmd_split(a):
+    base = resolve(a.target)["pane_id"] if a.target else resolve("current")["pane_id"]
+    args = ["split-window", "-P", "-F", "#{pane_id}", "-t", base, "-h" if a.direction == "right" else "-v"]
+    if not a.focus:
+        args.append("-d")
+    if a.cwd:
+        args += ["-c", a.cwd]
+    pane_id = tmux(*args).strip()
+    out(resolve(pane_id))
+
+
+def cmd_run(a):
+    row = resolve(a.target)
+    tmux("send-keys", "-t", row["pane_id"], "-l", a.command)
+    tmux("send-keys", "-t", row["pane_id"], "Enter")
+    out({"pane_id": row["pane_id"], "queued": True})
+
+
+def cmd_read(a):
+    row = resolve(a.target)
+    out({"pane_id": row["pane_id"], "text": read_pane(row["pane_id"], a.source, a.lines)})
+
+
+def cmd_wait_output(a):
+    if not (a.match or a.regex):
+        fail("bad_args", "need --match or --regex", 2)
+    row = resolve(a.target)
+    pat = re.compile(a.regex) if a.regex else None
+    deadline = None if a.timeout is None else time.monotonic() + a.timeout / 1000
+    while True:
+        text = read_pane(row["pane_id"], "recent-unwrapped", a.lines)
+        hit = pat.search(text) if pat else (a.match in text)
+        if hit:
+            out({"pane_id": row["pane_id"], "matched": True})
+            return
+        if deadline is not None and time.monotonic() >= deadline:
+            fail("timeout", "no match before timeout")
+        time.sleep(0.3)
+
+
+def cmd_close(a):
+    row = resolve(a.target)
+    tmux("kill-pane", "-t", row["pane_id"])
+    out({"pane_id": row["pane_id"], "closed": True})
+
+
+def cmd_agent_list(a):
+    out([r for r in list_panes() if r["state"] and not r["sidebar"]])
+
+
+def cmd_agent_start(a):
+    if not re.fullmatch(r"[a-z][a-z0-9_-]{0,31}", a.name):
+        fail("bad_name", "name must match [a-z][a-z0-9_-]{0,31}", 2)
+    if any(r["name"] == a.name for r in list_panes()):
+        fail("name_taken", f"agent {a.name} already live")
+    row = resolve(a.pane)
+    if row["command"] not in ("zsh", "bash", "fish", "sh"):
+        fail("pane_not_available", f"pane runs {row['command']}, need an idle shell")
+    pid = row["pane_id"]
+    tmux("set-option", "-p", "-t", pid, "@agent_name", a.name)
+    tmux("set-option", "-p", "-u", "-t", pid, "@agent_state", check=False)
+    cmd = " ".join([a.kind, *a.args])
+    tmux("send-keys", "-t", pid, "-l", cmd)
+    tmux("send-keys", "-t", pid, "Enter")
+    try:
+        wait_state(pid, ("idle", "done", "blocked"), a.timeout)
+    except SystemExit:
+        fail("agent_not_ready", f"{a.name} not ready within {a.timeout} ms; name kept")
+    out(resolve(pid))
+
+
+def cmd_agent_prompt(a):
+    row = resolve(a.target)
+    pid = row["pane_id"]
+    state = pane_state(pid)
+    if state == "blocked":
+        fail("agent_blocked", "agent waits at an approval or question dialog; inspect it first")
+    if not state:
+        fail("not_an_agent", "pane has no agent state")
+    paste_and_submit(pid, a.text)
+    if not a.wait:
+        out({"pane_id": pid, "submitted": True})
+        return
+    start = time.monotonic()
+    budget = None if a.timeout is None else a.timeout / 1000
+    # Must see working or blocked within 5 s of submission.
+    seen = None
+    while time.monotonic() - start < 5:
+        s = pane_state(pid)
+        if s in ("working", "blocked"):
+            seen = s
+            break
+        time.sleep(0.1)
+        if budget is not None and time.monotonic() - start >= budget:
+            fail("timeout", "timeout before activity")
+    if seen is None:
+        fail("agent_prompt_stalled", "no working or blocked state within 5 s; prompt may still be delivered")
+    remaining = None if budget is None else max(0, int((budget - (time.monotonic() - start)) * 1000))
+    final = wait_state(pid, SETTLED, remaining)
+    out({"pane_id": pid, "state": final})
+
+
+def cmd_agent_wait(a):
+    row = resolve(a.target)
+    accept = (a.until,) if a.until else SETTLED
+    out({"pane_id": row["pane_id"], "state": wait_state(row["pane_id"], accept, a.timeout)})
+
+
+def cmd_agent_send_keys(a):
+    row = resolve(a.target)
+    keymap = {"esc": "Escape", "enter": "Enter", "tab": "Tab", "up": "Up", "down": "Down",
+              "left": "Left", "right": "Right", "space": "Space", "backspace": "BSpace"}
+    keys = []
+    for k in a.keys:
+        low = k.lower()
+        m = re.fullmatch(r"ctrl\+(\w)", low)
+        keys.append(keymap.get(low) or (f"C-{m.group(1)}" if m else None) or fail("bad_key", f"unknown key {k}", 2))
+    tmux("send-keys", "-t", row["pane_id"], *keys)
+    out({"pane_id": row["pane_id"], "sent": a.keys})
+
+
+def cmd_agent_name(a):
+    row = resolve(a.target)
+    tmux("set-option", "-p", "-t", row["pane_id"], "@agent_name", a.name)
+    out(resolve(row["pane_id"]))
+
+
+def fmt_age(seconds):
+    for unit, size in (("d", 86400), ("h", 3600), ("m", 60)):
+        if seconds >= size:
+            return f"{seconds // size}{unit}"
+    return f"{seconds}s"
+
+
+def resume_id(argv):
+    for i, a in enumerate(argv[:-1]):
+        if a in ("--resume", "-r", "--session-id") and not argv[i + 1].startswith("-"):
+            return argv[i + 1]
+    return ""
+
+
+def proc_env(pid, key):
+    try:
+        with open(f"/proc/{pid}/environ", "rb") as fh:
+            for item in fh.read().split(b"\0"):
+                if item.startswith(key.encode() + b"="):
+                    return item.split(b"=", 1)[1].decode()
+    except OSError:
+        pass
+    return ""
+
+
+def find_zombies():
+    """Claude processes not attached to a live tmux pane, or stopped/defunct."""
+    tty_to_pane = {}
+    for row in tmux("list-panes", "-a", "-F", "#{pane_tty} #{pane_id}").splitlines():
+        tty, pane = row.split()
+        tty_to_pane[tty.removeprefix("/dev/")] = pane
+    pane_ttys = set(tty_to_pane)
+    ps = subprocess.run(["ps", "-eo", "pid=,tty=,stat=,etimes=,args="], capture_output=True, text=True).stdout
+    found = []
+    for line in ps.splitlines():
+        parts = line.split(None, 4)
+        if len(parts) < 5:
+            continue
+        pid, tty, stat, etimes, args = parts
+        argv = args.split()
+        if os.path.basename(argv[0]) != "claude" or "--chrome-native-host" in argv:
+            continue
+        if stat.startswith("Z"):
+            reason = "defunct"
+        elif stat.startswith("T"):
+            reason = "stopped"
+        elif tty not in pane_ttys:
+            reason = "no pane"
+        else:
+            continue
+        try:
+            cwd = os.readlink(f"/proc/{pid}/cwd")
+        except OSError:
+            cwd = ""
+        found.append({"pid": int(pid), "tty": tty, "state": stat, "reason": reason,
+                      "age": fmt_age(int(etimes)), "cwd": cwd, "args": args,
+                      "pane_id": tty_to_pane.get(tty, ""), "exe": argv[0],
+                      "resume_id": resume_id(argv), "config_dir": proc_env(pid, "CLAUDE_CONFIG_DIR")})
+    return found
+
+
+def cmd_revive(a):
+    z = next((c for c in find_zombies() if c["pid"] == a.pid), None)
+    if z is None:
+        fail("not_a_zombie", f"pid {a.pid} is gone or no longer a zombie")
+    if z["reason"] == "defunct":
+        fail("defunct", "defunct process cannot be reopened; its parent must reap it")
+    if z["pane_id"]:
+        pid = z["pane_id"]
+        tmux("switch-client", "-t", pid, check=False)
+        tmux("select-window", "-t", pid)
+        tmux("select-pane", "-t", pid)
+        out({"action": "jumped", "pane_id": pid, "hint": "process is stopped; run fg"})
+        return
+    exe = z["exe"] if os.path.isabs(z["exe"]) and os.path.exists(z["exe"]) else "claude"
+    flags = ["--resume", z["resume_id"]] if z["resume_id"] else ["--continue"]
+    cmd = " ".join(shlex.quote(x) for x in [exe, *flags])
+    if z["config_dir"]:
+        cmd = f"CLAUDE_CONFIG_DIR={shlex.quote(z['config_dir'])} {cmd}"
+    args = ["new-window", "-P", "-F", "#{pane_id}"]
+    if z["cwd"] and os.path.isdir(z["cwd"]):
+        args += ["-c", z["cwd"]]
+    # Keep the window open if the command fails, so the error stays readable.
+    args.append(f'{cmd}; rc=$?; if [ "$rc" -ne 0 ]; then printf "\\nexited with %s - press enter to close\\n" "$rc"; read -r _; fi')
+    out({"action": "opened", "pane_id": tmux(*args).strip(), "command": cmd, "old_pid": z["pid"]})
+
+
+def cmd_zombies(a):
+    out(find_zombies())
+
+
+def build_parser():
+    p = argparse.ArgumentParser(prog="tmux-agent", description=__doc__,
+                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = p.add_subparsers(dest="group", required=True)
+
+    sub.add_parser("list", help="list panes").set_defaults(fn=cmd_list)
+    sub.choices["list"].add_argument("--agents", action="store_true", help="only panes with an agent")
+    sub.add_parser("current", help="calling pane").set_defaults(fn=cmd_current)
+    g = sub.add_parser("get", help="one pane or agent")
+    g.add_argument("target")
+    g.set_defaults(fn=cmd_get)
+
+    pane = sub.add_parser("pane", help="raw pane control").add_subparsers(dest="cmd", required=True)
+    s = pane.add_parser("split")
+    s.add_argument("--target")
+    s.add_argument("--direction", choices=["right", "down"], default="right")
+    s.add_argument("--cwd")
+    s.add_argument("--focus", action="store_true", help="default is no focus change")
+    s.set_defaults(fn=cmd_split)
+    s = pane.add_parser("run")
+    s.add_argument("target")
+    s.add_argument("command")
+    s.set_defaults(fn=cmd_run)
+    s = pane.add_parser("read")
+    s.add_argument("target")
+    s.add_argument("--source", choices=["visible", "recent", "recent-unwrapped"], default="recent-unwrapped")
+    s.add_argument("--lines", type=int, default=120)
+    s.set_defaults(fn=cmd_read)
+    s = pane.add_parser("wait-output")
+    s.add_argument("target")
+    s.add_argument("--match")
+    s.add_argument("--regex")
+    s.add_argument("--timeout", type=int, help="ms")
+    s.add_argument("--lines", type=int, default=200)
+    s.set_defaults(fn=cmd_wait_output)
+    s = pane.add_parser("close")
+    s.add_argument("target")
+    s.set_defaults(fn=cmd_close)
+
+    agent = sub.add_parser("agent", help="coding agent control").add_subparsers(dest="cmd", required=True)
+    agent.add_parser("list").set_defaults(fn=cmd_agent_list)
+    s = agent.add_parser("revive", help="open a zombie: jump to its pane, or resume its session in a new window")
+    s.add_argument("pid", type=int)
+    s.set_defaults(fn=cmd_revive)
+    agent.add_parser("zombies", help="claude processes with no live pane, or stopped").set_defaults(fn=cmd_zombies)
+    s = agent.add_parser("start")
+    s.add_argument("name")
+    s.add_argument("--pane", required=True)
+    s.add_argument("--kind", default="claude")
+    s.add_argument("--timeout", type=int, default=30000, help="ms")
+    s.add_argument("args", nargs="*", help="agent args after --")
+    s.set_defaults(fn=cmd_agent_start)
+    s = agent.add_parser("prompt")
+    s.add_argument("target")
+    s.add_argument("text")
+    s.add_argument("--wait", action="store_true")
+    s.add_argument("--timeout", type=int, help="ms")
+    s.set_defaults(fn=cmd_agent_prompt)
+    s = agent.add_parser("wait")
+    s.add_argument("target")
+    s.add_argument("--until", choices=["idle", "working", "blocked", "done"])
+    s.add_argument("--timeout", type=int, help="ms")
+    s.set_defaults(fn=cmd_agent_wait)
+    s = agent.add_parser("send-keys")
+    s.add_argument("target")
+    s.add_argument("keys", nargs="+")
+    s.set_defaults(fn=cmd_agent_send_keys)
+    s = agent.add_parser("name")
+    s.add_argument("target")
+    s.add_argument("name")
+    s.set_defaults(fn=cmd_agent_name)
+    return p
+
+
+def main():
+    if not os.environ.get("TMUX"):
+        fail("not_in_tmux", "run inside tmux", 2)
+    args = build_parser().parse_args()
+    args.fn(args)
+
+
+if __name__ == "__main__":
+    main()
