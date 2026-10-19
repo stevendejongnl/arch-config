@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Herdr-style sidebar for tmux: panes of this window on top, agents elsewhere below.
+"""Herdr-style sidebar for tmux: panes of this window, its running subagents, zombie agents.
 
 PANES = every pane in the sidebar's own window (the claude pane, the hunk pane, ...).
-OTHER AGENTS = agent panes in all other windows, most urgent first.
+AGENTS = running subagents of this window's agent panes (from SubagentStart/Stop hooks).
+  Enter jumps to the parent pane and sends /tasks there.
 ZOMBIES = claude processes with no live pane (or stopped/defunct). Listed, not jumpable.
 The sidebar re-executes itself when this file changes (skipped if the new file does not compile).
 Keys: j/k or arrows move the cursor, Enter jumps, Enter on a zombie opens it (new window, resumes session), x kills it (asks y/n),
@@ -22,7 +23,7 @@ SEP = "\x1f"
 FMT = SEP.join([
     "#{window_id}", "#{window_name}", "#{pane_id}", "#{pane_index}",
     "#{@agent_state}", "#{@agent_name}", "#{@sidebar}", "#{pane_active}",
-    "#{pane_current_command}", "#{pane_current_path}", "#{session_name}", "#{@agent_kind}",
+    "#{pane_current_command}", "#{pane_current_path}", "#{session_name}", "#{@agent_kind}", "#{@agent_subs}",
 ])
 MARK = {"blocked": "!", "done": "+", "working": "~", "idle": ".", "unknown": "?"}
 RANK = {"blocked": 4, "done": 3, "working": 2, "idle": 1, "unknown": 1, "": 0}
@@ -45,14 +46,14 @@ def own_window():
 
 def snapshot(window_id):
     panes = []
-    others = []
+    subagents = []
     for line in tmux("list-panes", "-a", "-F", FMT).splitlines():
         (wid, wname, pid, pidx, state, name, sidebar, pactive,
-         command, cwd, sess, kind) = line.split(SEP)
+         command, cwd, sess, kind, subs) = line.split(SEP)
         if sidebar == "1":
             continue
         if state and command not in AGENT_COMMANDS:
-            state, name, kind = "", "", ""  # stale: agent process is gone
+            state, name, kind, subs = "", "", "", ""  # stale: agent process is gone
         if not state and command in AGENT_COMMANDS:
             # Agent running but no hook has fired yet (started before hooks, or no hooks).
             state, kind = "unknown", command
@@ -60,14 +61,17 @@ def snapshot(window_id):
         if wid == window_id:
             label = name or (kind if state else command) or "pane"
             extra = f" {cwd_base}" if cwd_base and cwd_base != label else ""
+            if state and subs.split():
+                extra += f" (+{len(subs.split())} sub)"
             panes.append({"pane_id": pid, "index": int(pidx), "state": state,
                           "text": f"{label}{extra}", "active": pactive == "1"})
-        elif state:
-            others.append({"pane_id": pid, "state": state, "sess": sess,
-                           "text": f"{name or wname or cwd_base} ({wname})" if name else (wname or cwd_base)})
+            if state:
+                for entry in subs.split():
+                    sid, _, stype = entry.partition(":")
+                    subagents.append({"pane_id": pid, "parent_state": state, "id": sid,
+                                      "text": f"{stype or 'agent'} {sid[:6]}"})
     panes.sort(key=lambda p: p["index"])
-    others.sort(key=lambda a: (-RANK[a["state"]], a["text"]))
-    return panes, others
+    return panes, subagents
 
 
 def zombies():
@@ -124,6 +128,16 @@ def revive(z):
         return "revive failed"
 
 
+def open_subagent(sub):
+    """Jump to the parent pane and run /tasks there; Enter on its row opens the subagent."""
+    jump(sub["pane_id"])
+    if sub["parent_state"] in ("blocked", "unknown"):
+        return "parent waits on input; type /tasks yourself"
+    tmux("send-keys", "-t", sub["pane_id"], "-l", "/tasks")
+    tmux("send-keys", "-t", sub["pane_id"], "Enter")
+    return "sent /tasks to parent pane; pick the subagent row"
+
+
 def jump(pane_id):
     tmux("switch-client", "-t", pane_id)
     tmux("select-window", "-t", pane_id)
@@ -151,7 +165,7 @@ def run(stdscr):
     notice = ("", 0.0)  # (text, expiry)
     sel = None  # keyboard cursor; None until a key moves it
     last = 0.0
-    panes, others = [], []
+    panes, subs = [], []
     while True:
         now = time.monotonic()
         if now - last_reap >= REAP_EVERY:
@@ -170,16 +184,16 @@ def run(stdscr):
                 bad_mtime = current
                 notice = (err, time.monotonic() + 8)
             window_id = own_window() or window_id
-            panes, others = snapshot(window_id)
+            panes, subs = snapshot(window_id)
             last = now
 
         rows = []  # (text, state, pane_id, active)
         for p in panes:
             mark = MARK.get(p["state"], " ")
             rows.append((f"{mark} {p['text']}", p["state"], p["pane_id"], p["active"]))
-        pane_count = len(rows)
-        for a in others:
-            rows.append((f"{MARK[a['state']]} {a['text']}", a["state"], a["pane_id"], False))
+        sub_start = len(rows)
+        for sb in subs:
+            rows.append((f"{MARK['working']} {sb['text']}", "working", None, False))
         other_end = len(rows)
         for z in zombie_rows:
             base = z["cwd"].rstrip("/").split("/")[-1] or "?"
@@ -187,37 +201,32 @@ def run(stdscr):
         if sel is not None:
             sel = max(0, min(sel, len(rows) - 1)) if rows else None
 
+        # Flat display list: ("head", text) | ("row", index) | ("none", text) | ("gap", "")
+        display = [("head", "PANES")] + [("row", i) for i in range(sub_start)]
+        display += [("gap", ""), ("head", "AGENTS")]
+        display += [("row", i) for i in range(sub_start, other_end)] or [("none", "  none")]
+        display += [("gap", ""), ("head", "ZOMBIES")]
+        display += [("row", i) for i in range(other_end, len(rows))] or [("none", "  none")]
+
         stdscr.erase()
         h, w = stdscr.getmaxyx()
-        y = 0
         pos = {}
-        stdscr.addnstr(y, 0, "PANES", w - 1, curses.A_BOLD)
-        y += 1
-        for i, (text, state, pid, active) in enumerate(rows):
-            if i == pane_count and others:
-                y += 1
-                if y < h:
-                    stdscr.addnstr(y, 0, "OTHER AGENTS", w - 1, curses.A_BOLD)
-                y += 1
-            if i == other_end and zombie_rows:
-                y += 1
-                if y < h:
-                    stdscr.addnstr(y, 0, "ZOMBIES", w - 1, curses.A_BOLD)
-                y += 1
-            if y >= h:
+        for y, (kind, val) in enumerate(display):
+            if y >= h - 1:
                 break
-            attr = curses.color_pair(colors[state])
-            line = ("> " if active else "  ") + text
-            if active:
-                attr |= curses.A_BOLD
-            if i == sel:
-                attr |= curses.A_REVERSE
-            stdscr.addnstr(y, 0, line.ljust(w - 1), w - 1, attr)
-            pos[y] = i
-            y += 1
-        if not zombie_rows and y + 2 < h:
-            stdscr.addnstr(y + 1, 0, "ZOMBIES", w - 1, curses.A_BOLD)
-            stdscr.addnstr(y + 2, 0, "  none", w - 1, curses.A_DIM)
+            if kind == "head":
+                stdscr.addnstr(y, 0, val, w - 1, curses.A_BOLD)
+            elif kind == "none":
+                stdscr.addnstr(y, 0, val, w - 1, curses.A_DIM)
+            elif kind == "row":
+                text, state, pid, active = rows[val]
+                attr = curses.color_pair(colors[state])
+                if active:
+                    attr |= curses.A_BOLD
+                if val == sel:
+                    attr |= curses.A_REVERSE
+                stdscr.addnstr(y, 0, (("> " if active else "  ") + text).ljust(w - 1), w - 1, attr)
+                pos[y] = val
         footer = ""
         if confirm:
             footer = f"kill {confirm['pid']}? y/n"
@@ -240,27 +249,36 @@ def run(stdscr):
             return
         if ch == ord("x") and sel is not None and sel >= other_end:
             confirm = zombie_rows[sel - other_end]
+        activate = None
         if ch in (ord("j"), curses.KEY_DOWN):
             sel = 0 if sel is None else sel + 1
         elif ch in (ord("k"), curses.KEY_UP):
             sel = 0 if sel is None else sel - 1
-        elif ch in (10, curses.KEY_ENTER) and sel is not None and sel >= other_end and not rows[sel][2]:
-            notice = (revive(zombie_rows[sel - other_end]), time.monotonic() + 5)
-            last_zombie = -ZOMBIE_EVERY
-        elif ch in (10, curses.KEY_ENTER) and rows and sel is not None and rows[sel][2]:
-            jump(rows[sel][2])
-            sel = None
-            last = 0.0
+        elif ch in (10, curses.KEY_ENTER) and sel is not None:
+            activate = sel
         elif ch == curses.KEY_MOUSE:
             try:
                 _, _, my, _, bstate = curses.getmouse()
             except curses.error:
                 continue
-            if bstate & curses.BUTTON1_CLICKED and my in pos and rows[pos[my]][2]:
-                jump(rows[pos[my]][2])
-                sel = None
-                last = 0.0
+            if bstate & curses.BUTTON1_CLICKED and my in pos:
+                activate = pos[my]
         elif ch == curses.KEY_RESIZE:
+            last = 0.0
+
+        if activate is not None and rows:
+            if activate >= other_end:
+                z = zombie_rows[activate - other_end]
+                if z.get("pane_id"):
+                    jump(z["pane_id"])
+                else:
+                    notice = (revive(z), time.monotonic() + 5)
+                    last_zombie = -ZOMBIE_EVERY
+            elif activate >= sub_start:
+                notice = (open_subagent(subs[activate - sub_start]), time.monotonic() + 5)
+            elif rows[activate][2]:
+                jump(rows[activate][2])
+            sel = None
             last = 0.0
 
 

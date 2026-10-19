@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Claude Code hook -> tmux agent state.
-# Usage (from hooks): agent-state.sh <working|idle|done|blocked|notification|seen|clear|reap>
+# Usage (from hooks): agent-state.sh <working|idle|done|blocked|notification|seen|clear|reap|sub-start|sub-stop>
 # Sets pane option @agent_state, then rolls up to @wstate (window) and @sstate (session).
+# Subagents: sub-start/sub-stop track id:type entries in pane option @agent_subs (does not touch state).
 # Priority: blocked > done > working > idle. Always exits 0 so a hook never breaks Claude.
 
 action="${1:-}"
@@ -28,7 +29,7 @@ if [ "$action" = "reap" ]; then
   tmux list-panes -a -F '#{pane_id} #{pane_current_command} #{?#{@agent_state},1,0}' 2>/dev/null |
     while read -r id cmd has; do
       if [ "$has" = 1 ] && [ "$cmd" != claude ]; then
-        tmux set-option -p -u -t "$id" @agent_state \; set-option -p -u -t "$id" @agent_kind \; set-option -p -u -t "$id" @agent_name 2>/dev/null
+        tmux set-option -p -u -t "$id" @agent_state \; set-option -p -u -t "$id" @agent_kind \; set-option -p -u -t "$id" @agent_name \; set-option -p -u -t "$id" @agent_subs 2>/dev/null
       fi
     done
   for w in $(tmux list-windows -a -F '#{window_id}' 2>/dev/null); do
@@ -43,6 +44,29 @@ fi
 command -v tmux >/dev/null 2>&1 || exit 0
 
 pane="${TMUX_PANE:-}"
+
+case "$action" in
+  sub-start|sub-stop)
+    [ -n "$pane" ] || exit 0
+    agent_id="$(printf '%s' "$input" | grep -o '"agent_id"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)"$/\1/')"
+    [ -n "$agent_id" ] || exit 0
+    agent_type="$(printf '%s' "$input" | grep -o '"agent_type"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)"$/\1/' | tr -d '\n' | tr -c 'A-Za-z0-9_-' '_')"
+    exec 9>"${TMPDIR:-/tmp}/agent-subs-$(id -u).lock"
+    command -v flock >/dev/null 2>&1 && flock 9
+    current="$(tmux display-message -p -t "$pane" '#{@agent_subs}' 2>/dev/null)"
+    # Entries are id:type. Drop the id first so a repeated start or stop never double counts.
+    kept=""
+    for entry in $current; do [ "${entry%%:*}" = "$agent_id" ] || kept="$kept $entry"; done
+    [ "$action" = "sub-start" ] && kept="$kept $agent_id:${agent_type:-agent}"
+    kept="${kept# }"
+    if [ -n "$kept" ]; then
+      tmux set-option -p -t "$pane" @agent_subs "$kept" 2>/dev/null
+    else
+      tmux set-option -p -u -t "$pane" @agent_subs 2>/dev/null
+    fi
+    exit 0
+    ;;
+esac
 [ "$action" = "seen" ] && pane="${2:-$pane}"
 [ -n "$pane" ] || exit 0
 
@@ -73,7 +97,7 @@ esac
 if [ -n "$state" ]; then
   tmux set-option -p -t "$pane" @agent_state "$state" \; set-option -p -t "$pane" @agent_kind claude 2>/dev/null
 else
-  tmux set-option -p -u -t "$pane" @agent_state \; set-option -p -u -t "$pane" @agent_kind 2>/dev/null
+  tmux set-option -p -u -t "$pane" @agent_state \; set-option -p -u -t "$pane" @agent_kind \; set-option -p -u -t "$pane" @agent_subs 2>/dev/null
 fi
 
 wstate="$(tmux list-panes -t "$pane" -F '#{@agent_state}' 2>/dev/null | worst)"
