@@ -303,13 +303,27 @@ def find_zombies():
         tty, pane = row.split()
         tty_to_pane[tty.removeprefix("/dev/")] = pane
     pane_ttys = set(tty_to_pane)
-    ps = subprocess.run(["ps", "-eo", "pid=,tty=,stat=,etimes=,args="], capture_output=True, text=True).stdout
-    found = []
+    ps = subprocess.run(["ps", "-eo", "pid=,ppid=,tty=,stat=,etimes=,args="], capture_output=True, text=True).stdout
+    table = {}
     for line in ps.splitlines():
-        parts = line.split(None, 4)
-        if len(parts) < 5:
-            continue
-        pid, tty, stat, etimes, args = parts
+        parts = line.split(None, 5)
+        if len(parts) >= 6:
+            table[int(parts[0])] = (int(parts[1]), parts[2], parts[3], parts[4], parts[5])
+
+    def under_live_pane(pid):
+        """True if an ancestor runs on a tmux pane tty (helper process of a live session)."""
+        seen = set()
+        pid = table[pid][0]
+        while pid > 1 and pid in table and pid not in seen:
+            seen.add(pid)
+            if table[pid][1] in pane_ttys:
+                return True
+            pid = table[pid][0]
+        return False
+
+    found = []
+    for pid, (_ppid, tty, stat, etimes, args) in sorted(table.items()):
+        pid = str(pid)
         argv = args.split()
         if os.path.basename(argv[0]) != "claude" or "--chrome-native-host" in argv:
             continue
@@ -317,7 +331,7 @@ def find_zombies():
             reason = "defunct"
         elif stat.startswith("T"):
             reason = "stopped"
-        elif tty not in pane_ttys:
+        elif tty not in pane_ttys and not under_live_pane(int(pid)):
             reason = "no pane"
         else:
             continue
@@ -358,6 +372,140 @@ def cmd_revive(a):
     out({"action": "opened", "pane_id": tmux(*args).strip(), "command": cmd, "old_pid": z["pid"]})
 
 
+# Rules come from a survey of ~/workspace: package.json dev/watch/start/test scripts (vite, nodemon,
+# webpack, expo, jest, vitest), Makefile targets (test, run, up, docker-run), pytest/uvicorn/nox
+# and docker compose. Short runs (lint, mypy, build, typecheck) are not services and are left out.
+SERVICE_RULES = [
+    ("docker", r"^(\S*/)?(docker|docker-compose|podman)(\s|$)|\bmake\s+(up|docker-\S+)\b"),
+    ("test", r"(^|[\s/])(pytest|py\.test|jest|vitest|nox|tox)(\s|$)"
+             r"|\b(npm|pnpm|yarn)\s+(run\s+)?test(:\S+)?\b|\bcargo\s+test\b|\bgo\s+test\b"
+             r"|\bmake\s+(\S*test\S*|unit-tests|integration-tests)\b|playwright\s+test|manage\.py\s+test"),
+    ("server", r"\b(npm|pnpm|yarn)\s+(run\s+)?(dev|start|serve|watch\S*|storybook|static:dev)\b"
+               r"|\b(vite|nodemon|webpack(-dev-server)?|expo|react-native|docusaurus|vue-cli-service|storybook)\b"
+               r"|uvicorn|gunicorn|hypercorn|flask\s+run|fastapi\s+(dev|run)|runserver|http\.server"
+               r"|\bmake\s+(run|dev|serve)\b"),
+    ("uv", r"^(\S*/)?uv(\s|$)"),
+]
+
+
+def classify_service(args):
+    for kind, pattern in SERVICE_RULES:
+        if re.search(pattern, args):
+            return kind
+    return ""
+
+
+DOCKER_CACHE_TTL = 5  # seconds; every open sidebar calls this, so share one docker ps
+
+
+def compact_status(status):
+    """'Up 6 hours (healthy)' -> '6h (healthy)'."""
+    m = re.match(r"Up (?:About )?(?:an? |(\d+) )?(second|minute|hour|day|week|month)s?(.*)", status)
+    if not m:
+        return status
+    n = m.group(1) or "1"
+    return f"{n}{m.group(2)[0]}{m.group(3)}".strip()
+
+
+def docker_containers():
+    """Running containers with their compose working dir. Cached briefly across processes."""
+    cache = os.path.join(tempfile.gettempdir(), f"tmux-agent-docker-{os.getuid()}.json")
+    try:
+        if time.time() - os.path.getmtime(cache) < DOCKER_CACHE_TTL:
+            with open(cache) as fh:
+                return json.load(fh)
+    except (OSError, ValueError):
+        pass
+    fmt = '{{.Names}}\t{{.Status}}\t{{.Label "com.docker.compose.service"}}\t{{.Label "com.docker.compose.project.working_dir"}}\t{{.Label "com.docker.compose.project"}}'
+    try:
+        res = subprocess.run(["docker", "ps", "--format", fmt], capture_output=True, text=True, timeout=3)
+    except (OSError, subprocess.TimeoutExpired):
+        return []
+    rows = []
+    for line in res.stdout.splitlines():
+        name, status, service, workdir, project = (line.split("\t") + ["", "", "", "", ""])[:5]
+        rows.append({"name": name, "status": status, "service": service, "workdir": workdir, "project": project})
+    try:
+        with open(cache, "w") as fh:
+            json.dump(rows, fh)
+    except OSError:
+        pass
+    return rows
+
+
+def docker_services():
+    """Attach each compose container to the first window with a pane inside its project dir.
+
+    Containers that match no pane are returned unbound (window_id ""), grouped by compose project.
+    """
+    fmt = SEP.join(["#{pane_id}", "#{window_id}", "#{session_name}", "#{window_name}", "#{pane_current_path}"])
+    panes = [line.split(SEP) for line in tmux("list-panes", "-a", "-F", fmt).splitlines()]
+    found = []
+    unbound = {}
+    for c in docker_containers():
+        wd = c["workdir"].rstrip("/")
+        match = None
+        for pane_id, window_id, sess, wname, cwd in panes:
+            cwd = cwd.rstrip("/")
+            if wd and (cwd == wd or cwd.startswith(wd + "/")):
+                match = (pane_id, window_id, sess, wname)
+                break
+        if match:
+            found.append({"pane_id": match[0], "window_id": match[1], "session": match[2], "window": match[3],
+                          "kind": "docker", "pid": 0, "age": compact_status(c["status"]), "cmd": c["name"]})
+        else:
+            unbound.setdefault(c.get("project") or c["name"], []).append(c)
+    for project, group in sorted(unbound.items()):
+        age = compact_status(group[0]["status"])
+        if any("unhealthy" in c["status"] for c in group):
+            age += " unhealthy"
+        label = f"{project} ({len(group)})" if len(group) > 1 else group[0]["name"]
+        found.append({"pane_id": "", "window_id": "", "session": "", "window": "", "kind": "docker",
+                      "pid": 0, "age": age, "cmd": label, "unbound": True,
+                      "workdir": group[0]["workdir"]})
+    return found
+
+
+def find_services():
+    """Foreground docker/uv/test/server processes in non-agent panes."""
+    fmt = SEP.join(["#{pane_tty}", "#{pane_id}", "#{window_id}", "#{session_name}", "#{window_name}",
+                    "#{@agent_state}", "#{@sidebar}"])
+    panes = {}
+    for line in tmux("list-panes", "-a", "-F", fmt).splitlines():
+        tty, pane_id, window_id, sess, wname, state, sidebar = line.split(SEP)
+        if state or sidebar == "1" or not tty:
+            continue
+        panes[tty.removeprefix("/dev/")] = {"pane_id": pane_id, "window_id": window_id,
+                                           "session": sess, "window": wname}
+    ps = subprocess.run(["ps", "-eo", "pid=,tty=,stat=,etimes=,args="], capture_output=True, text=True).stdout
+    by_tty = {}
+    for line in ps.splitlines():
+        parts = line.split(None, 4)
+        if len(parts) < 5 or parts[1] not in panes or "+" not in parts[2]:
+            continue
+        by_tty.setdefault(parts[1], []).append((int(parts[0]), int(parts[3]), parts[4]))
+    found = []
+    for tty, procs in by_tty.items():
+        for pid, etimes, args in sorted(procs):  # parent before children
+            args = re.sub(r"^node\s+\S*/safe-chain\s+", "", args)  # safe-chain shim wraps npm/python/pip
+            kind = classify_service(args)
+            if kind:
+                found.append({**panes[tty], "kind": kind, "pid": pid, "age": fmt_age(etimes),
+                              "cmd": args[:120]})
+                break
+    found += docker_services()
+    found.sort(key=lambda r: (r["session"], r["window"], r["pane_id"], r["cmd"]))
+    return found
+
+
+def cmd_services(a):
+    rows = find_services()
+    if a.window:
+        win = tmux("display-message", "-p", "-t", os.environ.get("TMUX_PANE", ""), "#{window_id}").strip()
+        rows = [r for r in rows if r["window_id"] == win]
+    out(rows)
+
+
 def cmd_zombies(a):
     out(find_zombies())
 
@@ -367,6 +515,9 @@ def build_parser():
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="group", required=True)
 
+    sv = sub.add_parser("services", help="running docker/uv/test/server processes in panes")
+    sv.add_argument("--window", action="store_true", help="only the calling pane's window")
+    sv.set_defaults(fn=cmd_services)
     sub.add_parser("list", help="list panes").set_defaults(fn=cmd_list)
     sub.choices["list"].add_argument("--agents", action="store_true", help="only panes with an agent")
     sub.add_parser("current", help="calling pane").set_defaults(fn=cmd_current)

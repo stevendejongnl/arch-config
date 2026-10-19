@@ -4,6 +4,9 @@
 PANES = every pane in the sidebar's own window (the claude pane, the hunk pane, ...).
 AGENTS = running subagents of this window's agent panes (from SubagentStart/Stop hooks).
   Enter jumps to the parent pane and sends /tasks there.
+SERVICES = foreground docker/uv/test/server processes in this window's non-agent panes.
+OTHER SERVICES = services bound to no pane (docker compose projects with no pane in their directory).
+  Enter or click opens the project directory in a new window.
 ZOMBIES = claude processes with no live pane (or stopped/defunct). Listed, not jumpable.
 The sidebar re-executes itself when this file changes (skipped if the new file does not compile).
 Keys: j/k or arrows move the cursor, Enter jumps, Enter on a zombie opens it (new window, resumes session), x kills it (asks y/n),
@@ -14,6 +17,7 @@ State marks (ASCII): ! blocked, + done, ~ working, . idle, ? agent running but s
 import curses
 import json
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -128,6 +132,23 @@ def revive(z):
         return "revive failed"
 
 
+def services():
+    res = subprocess.run([TMUX_AGENT, "services"], stdin=subprocess.DEVNULL, capture_output=True, text=True)
+    try:
+        return json.loads(res.stdout)["result"]
+    except (ValueError, KeyError):
+        return []
+
+
+def open_service_dir(sv):
+    """Open the project directory of an unbound service in a new window."""
+    path = sv.get("workdir") or ""
+    if not path or not os.path.isdir(path):
+        return "no project directory for this service"
+    tmux("new-window", "-c", path)
+    return f"opened {os.path.basename(path)} in new window"
+
+
 def open_subagent(sub):
     """Jump to the parent pane and run /tasks there; Enter on its row opens the subagent."""
     jump(sub["pane_id"])
@@ -159,6 +180,7 @@ def run(stdscr):
     last_reap = 0.0
     last_zombie = -ZOMBIE_EVERY
     zombie_rows = []
+    service_rows = []
     loaded_mtime = self_mtime()
     bad_mtime = 0  # mtime of a file version that failed to compile
     confirm = None  # zombie dict awaiting y/n
@@ -173,6 +195,7 @@ def run(stdscr):
             last_reap = now
         if now - last_zombie >= ZOMBIE_EVERY:
             zombie_rows = zombies()
+            service_rows = services()
             last_zombie = now
         if now - last >= REFRESH:
             current = self_mtime()
@@ -194,6 +217,17 @@ def run(stdscr):
         sub_start = len(rows)
         for sb in subs:
             rows.append((f"{MARK['working']} {sb['text']}", "working", None, False))
+        svc_start = len(rows)
+        mine = [r for r in service_rows if r["window_id"] == window_id]
+        for sv in mine:
+            letter = {"docker": "D", "uv": "U", "test": "T", "server": "S"}.get(sv["kind"], "?")
+            cmd = re.sub(r"^\S*/(\S+)", r"\1", sv["cmd"])  # drop the directory of the executable
+            rows.append((f"{letter} {cmd} {sv['age']}", "working" if sv["kind"] == "test" else "idle",
+                         sv["pane_id"], False))
+        unbound_start = len(rows)
+        unbound_rows = [r for r in service_rows if not r["window_id"]]
+        for sv in unbound_rows:
+            rows.append((f"D {sv['cmd']} {sv['age']}", "idle", None, False))
         other_end = len(rows)
         for z in zombie_rows:
             base = z["cwd"].rstrip("/").split("/")[-1] or "?"
@@ -204,7 +238,11 @@ def run(stdscr):
         # Flat display list: ("head", text) | ("row", index) | ("none", text) | ("gap", "")
         display = [("head", "PANES")] + [("row", i) for i in range(sub_start)]
         display += [("gap", ""), ("head", "AGENTS")]
-        display += [("row", i) for i in range(sub_start, other_end)] or [("none", "  none")]
+        display += [("row", i) for i in range(sub_start, svc_start)] or [("none", "  none")]
+        display += [("gap", ""), ("head", "SERVICES")]
+        display += [("row", i) for i in range(svc_start, unbound_start)] or [("none", "  none")]
+        display += [("gap", ""), ("head", "OTHER SERVICES")]
+        display += [("row", i) for i in range(unbound_start, other_end)] or [("none", "  none")]
         display += [("gap", ""), ("head", "ZOMBIES")]
         display += [("row", i) for i in range(other_end, len(rows))] or [("none", "  none")]
 
@@ -274,6 +312,11 @@ def run(stdscr):
                 else:
                     notice = (revive(z), time.monotonic() + 5)
                     last_zombie = -ZOMBIE_EVERY
+            elif activate >= unbound_start:
+                notice = (open_service_dir(unbound_rows[activate - unbound_start]), time.monotonic() + 4)
+                last_zombie = -ZOMBIE_EVERY
+            elif activate >= svc_start:
+                jump(rows[activate][2])
             elif activate >= sub_start:
                 notice = (open_subagent(subs[activate - sub_start]), time.monotonic() + 5)
             elif rows[activate][2]:
