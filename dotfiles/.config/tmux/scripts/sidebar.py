@@ -6,7 +6,8 @@ AGENTS = running subagents of this window's agent panes (from SubagentStart/Stop
   Enter jumps to the parent pane and sends /tasks there.
 SERVICES = foreground docker/uv/test/server processes in this window's non-agent panes.
 OTHER SERVICES = services bound to no pane (docker compose projects with no pane in their directory).
-  Enter or click opens the project directory in a new window.
+Enter or click on any row opens an action menu (Esc, q, h or a click outside closes it) (go, stop/interrupt, restart, logs, open dir, force kill ...
+the items depend on the row). The same letters work directly on a selected row.
 ZOMBIES = claude processes with no live pane (or stopped/defunct). Listed, not jumpable.
 The sidebar re-executes itself when this file changes (skipped if the new file does not compile).
 Keys: j/k or arrows move the cursor, Enter jumps, Enter on a zombie opens it (new window, resumes session), x kills it (asks y/n),
@@ -18,9 +19,11 @@ import curses
 import json
 import os
 import re
+import shlex
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 
 SEP = "\x1f"
@@ -67,7 +70,7 @@ def snapshot(window_id):
             extra = f" {cwd_base}" if cwd_base and cwd_base != label else ""
             if state and subs.split():
                 extra += f" (+{len(subs.split())} sub)"
-            panes.append({"pane_id": pid, "index": int(pidx), "state": state,
+            panes.append({"pane_id": pid, "index": int(pidx), "state": state, "cwd": cwd, "command": command,
                           "text": f"{label}{extra}", "active": pactive == "1"})
             if state:
                 for entry in subs.split():
@@ -106,19 +109,19 @@ def reload_error():
     return None
 
 
-def kill_zombie(z):
-    """SIGTERM a zombie after re-checking it is still listed (guards against pid reuse)."""
+def kill_zombie(z, sig=signal.SIGTERM):
+    """Signal a zombie after re-checking it is still listed (guards against pid reuse)."""
     if z["reason"] == "defunct":
         return "defunct: parent must reap it"
     if not any(c["pid"] == z["pid"] for c in zombies()):
         return "gone or no longer a zombie"
     try:
-        os.kill(z["pid"], signal.SIGTERM)
-        if z["reason"] == "stopped":
+        os.kill(z["pid"], sig)
+        if z["reason"] == "stopped" and sig == signal.SIGTERM:
             os.kill(z["pid"], signal.SIGCONT)  # a stopped process only handles TERM once resumed
     except OSError as err:
         return f"kill failed: {err.strerror}"
-    return f"sent TERM to {z['pid']}"
+    return f"sent {signal.Signals(sig).name[3:]} to {z['pid']}"
 
 
 def revive(z):
@@ -140,13 +143,198 @@ def services():
         return []
 
 
-def open_service_dir(sv):
-    """Open the project directory of an unbound service in a new window."""
-    path = sv.get("workdir") or ""
+def service_label(sv):
+    return re.sub(r"^\S*/(\S+)", r"\1", sv["cmd"])
+
+
+def service_path(sv):
+    path = sv.get("workdir") or sv.get("cwd") or ""
+    return path if path and os.path.isdir(path) else ""
+
+
+def service_items(sv):
+    """Menu entries (key, label, action) that apply to this service."""
+    docker = bool(sv.get("containers"))
+    items = []
+    if sv.get("pane_id"):
+        items.append(("g", "go to pane", "go"))
+    items.append(("x", "stop (graceful)", "stop"))
+    if docker:
+        items.append(("r", "restart", "restart"))
+        items.append(("l", "logs in new window", "logs"))
+    if service_path(sv):
+        items.append(("o", "open directory in new window", "dir"))
+    items.append(("X", "kill (force)", "kill"))
+    return items
+
+
+def drop_docker_cache():
+    try:
+        os.unlink(os.path.join(tempfile.gettempdir(), f"tmux-agent-docker-{os.getuid()}.json"))
+    except OSError:
+        pass
+
+
+def run_docker(*args):
+    """Start a docker command without blocking the UI (docker stop can take seconds)."""
+    subprocess.Popen(["docker", *args], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                     stderr=subprocess.DEVNULL, start_new_session=True)
+    drop_docker_cache()
+
+
+def kill_service_process(sv):
+    """SIGKILL the foreground process group, after re-checking the pid still runs this service."""
+    if not any(c["pid"] == sv["pid"] and c["pane_id"] == sv["pane_id"] for c in services()):
+        return "gone or changed; not killed"
+    try:
+        os.killpg(os.getpgid(sv["pid"]), signal.SIGKILL)
+    except OSError as err:
+        return f"kill failed: {err.strerror}"
+    return f"killed {service_label(sv)}"
+
+
+def service_action(sv, action):
+    """Run a service action. Returns a notice string, or (prompt, fn) when it needs y/n first."""
+    label = service_label(sv)
+    names = sv.get("containers") or []
+    if action == "go":
+        if not sv.get("pane_id"):
+            return "not bound to a pane"
+        jump(sv["pane_id"])
+        return ""
+    if action == "dir":
+        path = service_path(sv)
+        if not path:
+            return "no directory for this service"
+        tmux("new-window", "-c", path)
+        return f"opened {os.path.basename(path)} in new window"
+    if action == "logs":
+        if not names:
+            return "logs only for docker services"
+        if sv.get("project") and len(names) > 1:
+            cmd = f"docker compose -p {shlex.quote(sv['project'])} logs -f --tail 100"
+        else:
+            cmd = "docker logs -f --tail 200 " + " ".join(shlex.quote(n) for n in names[:1])
+        tmux("new-window", "-n", f"logs-{label}"[:24], f'{cmd}; rc=$?; printf "\\nexited with %s - press enter\\n" "$rc"; read -r _')
+        return f"opened logs for {label}"
+    if action == "stop":
+        def stop():
+            if names:
+                run_docker("stop", *names)
+                return f"stopping {label}"
+            tmux("send-keys", "-t", sv["pane_id"], "C-c")
+            return f"sent Ctrl-C to {label}"
+        return (f"stop {label}? y/n", stop)
+    if action == "restart":
+        def restart():
+            run_docker("restart", *names)
+            return f"restarting {label}"
+        return (f"restart {label}? y/n", restart)
+    if action == "kill":
+        def force():
+            if names:
+                run_docker("kill", *names)
+                return f"killing {label}"
+            return kill_service_process(sv)
+        return (f"FORCE kill {label}? y/n", force)
+    return ""
+
+
+def open_dir(path):
     if not path or not os.path.isdir(path):
-        return "no project directory for this service"
+        return "no directory for this row"
     tmux("new-window", "-c", path)
-    return f"opened {os.path.basename(path)} in new window"
+    return f"opened {os.path.basename(path.rstrip('/'))} in new window"
+
+
+def pane_items(p):
+    items = [("g", "go to pane", "go"), ("z", "zoom pane", "zoom")]
+    items.append(("x", "interrupt (Esc)" if p["state"] else "interrupt (Ctrl-C)", "interrupt"))
+    if p.get("cwd"):
+        items.append(("o", "open directory in new window", "dir"))
+    items.append(("X", "close pane (kill)", "close"))
+    return items
+
+
+def sub_items(sub):
+    return [("g", "go to parent pane", "go"), ("t", "open in /tasks", "tasks")]
+
+
+def zombie_items(z):
+    items = []
+    if z["reason"] != "defunct":
+        items.append(("o", "open (jump or resume in new window)", "open"))
+        items.append(("x", "terminate (SIGTERM)", "term"))
+    if z.get("cwd"):
+        items.append(("d", "open its directory in new window", "dir"))
+    if z["reason"] != "defunct":
+        items.append(("X", "kill (SIGKILL)", "kill"))
+    return items or [("d", "nothing to do (defunct)", "none")]
+
+
+def row_items(kind, obj):
+    return {"pane": pane_items, "sub": sub_items, "svc": service_items, "zombie": zombie_items}[kind](obj)
+
+
+def row_title(kind, obj):
+    if kind == "pane":
+        return obj["text"]
+    if kind == "sub":
+        return obj["text"]
+    if kind == "svc":
+        return service_label(obj)
+    return f"zombie {obj['pid']}"
+
+
+def row_action(kind, obj, action):
+    """Run an action on a row. Returns a notice string, or (prompt, fn) when it needs y/n first."""
+    if kind == "svc":
+        return service_action(obj, action)
+    if kind == "pane":
+        pid = obj["pane_id"]
+        if action == "go":
+            jump(pid)
+            return ""
+        if action == "zoom":
+            tmux("resize-pane", "-Z", "-t", pid)
+            return ""
+        if action == "dir":
+            return open_dir(obj.get("cwd"))
+        if action == "interrupt":
+            if obj["state"]:
+                tmux("send-keys", "-t", pid, "Escape")
+                return "sent Esc to the agent"
+
+            def ctrl_c():
+                tmux("send-keys", "-t", pid, "C-c")
+                return "sent Ctrl-C to the pane"
+            return (f"send Ctrl-C to {obj['text']}? y/n", ctrl_c)
+        if action == "close":
+            what = "agent pane (ends the session)" if obj["state"] else "pane"
+
+            def close():
+                tmux("kill-pane", "-t", pid)
+                return "closed pane"
+            return (f"CLOSE {what} {obj['text']}? y/n", close)
+    if kind == "sub":
+        if action == "go":
+            jump(obj["pane_id"])
+            return ""
+        if action == "tasks":
+            return open_subagent(obj)
+    if kind == "zombie":
+        if action == "open":
+            if obj.get("pane_id"):
+                jump(obj["pane_id"])
+                return ""
+            return revive(obj)
+        if action == "dir":
+            return open_dir(obj.get("cwd"))
+        if action == "term":
+            return (f"terminate {obj['pid']}? y/n", lambda: kill_zombie(obj))
+        if action == "kill":
+            return (f"FORCE kill {obj['pid']}? y/n", lambda: kill_zombie(obj, signal.SIGKILL))
+    return ""
 
 
 def open_subagent(sub):
@@ -167,6 +355,7 @@ def jump(pane_id):
 
 def run(stdscr):
     curses.curs_set(0)
+    curses.set_escdelay(25)  # default 1000 ms makes Esc feel stuck
     curses.use_default_colors()
     curses.mousemask(curses.ALL_MOUSE_EVENTS)
     stdscr.timeout(200)
@@ -183,7 +372,8 @@ def run(stdscr):
     service_rows = []
     loaded_mtime = self_mtime()
     bad_mtime = 0  # mtime of a file version that failed to compile
-    confirm = None  # zombie dict awaiting y/n
+    confirm = None  # {"prompt": str, "fn": callable} awaiting y/n
+    menu = None  # {"sv": service, "items": [...], "idx": int}
     notice = ("", 0.0)  # (text, expiry)
     sel = None  # keyboard cursor; None until a key moves it
     last = 0.0
@@ -229,9 +419,21 @@ def run(stdscr):
         for sv in unbound_rows:
             rows.append((f"D {sv['cmd']} {sv['age']}", "idle", None, False))
         other_end = len(rows)
+        svc_list = mine + unbound_rows
         for z in zombie_rows:
             base = z["cwd"].rstrip("/").split("/")[-1] or "?"
             rows.append((f"Z {base} {z['pid']} {z['reason']} {z['age']}", "blocked", z.get("pane_id") or None, False))
+        # Row index -> (kind, object) for menus and shortkeys.
+        ctx = {}
+        for i in range(len(rows)):
+            if i < sub_start:
+                ctx[i] = ("pane", panes[i])
+            elif i < svc_start:
+                ctx[i] = ("sub", subs[i - sub_start])
+            elif i < other_end:
+                ctx[i] = ("svc", svc_list[i - svc_start])
+            else:
+                ctx[i] = ("zombie", zombie_rows[i - other_end])
         if sel is not None:
             sel = max(0, min(sel, len(rows) - 1)) if rows else None
 
@@ -265,9 +467,16 @@ def run(stdscr):
                     attr |= curses.A_REVERSE
                 stdscr.addnstr(y, 0, (("> " if active else "  ") + text).ljust(w - 1), w - 1, attr)
                 pos[y] = val
+        if menu:
+            top = max(0, h - 2 - len(menu["items"]) - 1)
+            menu["top"] = top
+            stdscr.addnstr(top, 0, f" {row_title(*menu['target'])}  (esc: close) ".ljust(w - 1), w - 1, curses.A_BOLD | curses.color_pair(4))
+            for n, (key, text, _action) in enumerate(menu["items"]):
+                attr = curses.A_REVERSE if n == menu["idx"] else 0
+                stdscr.addnstr(top + 1 + n, 0, f"  {key}  {text}".ljust(w - 1), w - 1, attr)
         footer = ""
         if confirm:
-            footer = f"kill {confirm['pid']}? y/n"
+            footer = confirm["prompt"]
         elif notice[0] and now < notice[1]:
             footer = notice[0]
         if footer and h > 1:
@@ -279,14 +488,64 @@ def run(stdscr):
             if ch == -1:
                 continue
             if ch == ord("y"):
-                notice = (kill_zombie(confirm), time.monotonic() + 4)
+                notice = (confirm["fn"](), time.monotonic() + 4)
                 last_zombie = -ZOMBIE_EVERY
             confirm = None
             continue
+
+        def run_action(target, action):
+            """Do a row action; may set confirm or notice."""
+            nonlocal confirm, notice, last_zombie
+            res = row_action(target[0], target[1], action)
+            if isinstance(res, tuple):
+                confirm = {"prompt": res[0], "fn": res[1]}
+            elif res:
+                notice = (res, time.monotonic() + 4)
+            last_zombie = -ZOMBIE_EVERY
+
+        if menu:
+            if ch == -1:
+                continue
+            items = menu["items"]
+            chosen = None
+            if ch in (27, ord("q"), ord("h"), curses.KEY_LEFT):
+                menu = None
+                continue
+            if ch == curses.KEY_MOUSE:
+                try:
+                    _, _, my, _, bstate = curses.getmouse()
+                except curses.error:
+                    continue
+                if not bstate & curses.BUTTON1_CLICKED:
+                    continue
+                n = my - menu.get("top", 0) - 1
+                if 0 <= n < len(items):
+                    chosen = items[n]
+                else:
+                    menu = None  # click outside the menu closes it
+                    if my in pos:
+                        sel = pos[my]
+                    continue
+            if ch in (ord("j"), curses.KEY_DOWN):
+                menu["idx"] = (menu["idx"] + 1) % len(items)
+            elif ch in (ord("k"), curses.KEY_UP):
+                menu["idx"] = (menu["idx"] - 1) % len(items)
+            elif ch in (10, curses.KEY_ENTER):
+                chosen = items[menu["idx"]]
+            elif 32 < ch < 127:
+                chosen = next((it for it in items if ch == ord(it[0])), None)
+            if chosen:
+                target, menu = menu["target"], None
+                run_action(target, chosen[2])
+            continue
         if ch in (ord("q"), 27):
             return
-        if ch == ord("x") and sel is not None and sel >= other_end:
-            confirm = zombie_rows[sel - other_end]
+        if sel is not None and sel in ctx and 32 < ch < 127 and chr(ch) not in "jkq":
+            target = ctx[sel]
+            match = next((it for it in row_items(*target) if it[0] == chr(ch)), None)
+            if match:
+                run_action(target, match[2])
+                ch = -1  # key consumed
         activate = None
         if ch in (ord("j"), curses.KEY_DOWN):
             sel = 0 if sel is None else sel + 1
@@ -304,24 +563,10 @@ def run(stdscr):
         elif ch == curses.KEY_RESIZE:
             last = 0.0
 
-        if activate is not None and rows:
-            if activate >= other_end:
-                z = zombie_rows[activate - other_end]
-                if z.get("pane_id"):
-                    jump(z["pane_id"])
-                else:
-                    notice = (revive(z), time.monotonic() + 5)
-                    last_zombie = -ZOMBIE_EVERY
-            elif activate >= unbound_start:
-                notice = (open_service_dir(unbound_rows[activate - unbound_start]), time.monotonic() + 4)
-                last_zombie = -ZOMBIE_EVERY
-            elif activate >= svc_start:
-                jump(rows[activate][2])
-            elif activate >= sub_start:
-                notice = (open_subagent(subs[activate - sub_start]), time.monotonic() + 5)
-            elif rows[activate][2]:
-                jump(rows[activate][2])
-            sel = None
+        if activate is not None and rows and activate in ctx:
+            target = ctx[activate]
+            menu = {"target": target, "items": row_items(*target), "idx": 0}
+            sel = activate
             last = 0.0
 
 

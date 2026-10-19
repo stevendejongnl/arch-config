@@ -452,7 +452,8 @@ def docker_services():
                 break
         if match:
             found.append({"pane_id": match[0], "window_id": match[1], "session": match[2], "window": match[3],
-                          "kind": "docker", "pid": 0, "age": compact_status(c["status"]), "cmd": c["name"]})
+                          "kind": "docker", "pid": 0, "age": compact_status(c["status"]), "cmd": c["name"],
+                          "containers": [c["name"]], "project": c.get("project", ""), "workdir": wd})
         else:
             unbound.setdefault(c.get("project") or c["name"], []).append(c)
     for project, group in sorted(unbound.items()):
@@ -462,6 +463,7 @@ def docker_services():
         label = f"{project} ({len(group)})" if len(group) > 1 else group[0]["name"]
         found.append({"pane_id": "", "window_id": "", "session": "", "window": "", "kind": "docker",
                       "pid": 0, "age": age, "cmd": label, "unbound": True,
+                      "containers": [c["name"] for c in group], "project": project if group[0].get("project") else "",
                       "workdir": group[0]["workdir"]})
     return found
 
@@ -469,14 +471,14 @@ def docker_services():
 def find_services():
     """Foreground docker/uv/test/server processes in non-agent panes."""
     fmt = SEP.join(["#{pane_tty}", "#{pane_id}", "#{window_id}", "#{session_name}", "#{window_name}",
-                    "#{@agent_state}", "#{@sidebar}"])
+                    "#{@agent_state}", "#{@sidebar}", "#{pane_current_path}"])
     panes = {}
     for line in tmux("list-panes", "-a", "-F", fmt).splitlines():
-        tty, pane_id, window_id, sess, wname, state, sidebar = line.split(SEP)
+        tty, pane_id, window_id, sess, wname, state, sidebar, pcwd = line.split(SEP)
         if state or sidebar == "1" or not tty:
             continue
         panes[tty.removeprefix("/dev/")] = {"pane_id": pane_id, "window_id": window_id,
-                                           "session": sess, "window": wname}
+                                           "session": sess, "window": wname, "cwd": pcwd}
     ps = subprocess.run(["ps", "-eo", "pid=,tty=,stat=,etimes=,args="], capture_output=True, text=True).stdout
     by_tty = {}
     for line in ps.splitlines():
