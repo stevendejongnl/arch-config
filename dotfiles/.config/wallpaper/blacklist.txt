@@ -91,3 +91,8 @@ n6owx6    # supercar-n6owx6.jpg 2026-10-13
 0p853e    # stance car-0p853e.jpg 2026-10-15
 nk7lvq    # jdm car-nk7lvq.jpg 2026-10-19
 2k8r1y    # stance car-2k8r1y.jpg 2026-10-19
+4xyvzd    # widebody car-4xyvzd.jpg 2026-10-20
+gjxv1d    # tuned audi-gjxv1d.jpg 2026-10-20
+k8jx7q    # tuner car-k8jx7q.jpg 2026-10-20
+gjllll    # tuned audi-gjllll.jpg 2026-10-21
+d8v6pl    # tuner car-d8v6pl.jpg 2026-10-21
