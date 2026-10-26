@@ -25,7 +25,7 @@ packages:
 
 # Exclude packages from base or modules
 # Only 8GB RAM (2x4GB, both slots full) vs computersloeber/arch-workstation —
-# consider trimming heavier base.yaml packages (jetbrains-toolbox, slack-desktop,
+# consider trimming heavier base.yaml packages (slack-desktop,
 # jdk/jdk17-openjdk, android-tools) if things feel sluggish. Left enabled for now.
 exclude: []
 

@@ -110,11 +110,5 @@ if [[ -o interactive && -t 1 ]] && command -v archsync >/dev/null; then
   archsync check || true
 fi
 
-# Added by JetBrains Context CLI installer
-case ":$PATH:" in
-    *":/home/stevendejong/.jbcontext/bin:"*) ;;
-    *) export PATH="$PATH:/home/stevendejong/.jbcontext/bin" ;;
-esac
-
 # Added by the Hunk installer (https://hunk.dev)
 export PATH='/home/stevendejong/.hunk/bin':"$PATH"

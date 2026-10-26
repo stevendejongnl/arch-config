@@ -40,7 +40,6 @@ packages:
   - docker-compose
   - distrobox
   - toolbox
-  - minikube
   - lvm2
   - nfs-utils
 
@@ -78,7 +77,6 @@ packages:
   - openssl-1.1
   - dbeaver
   - redisinsight
-  - mqtt-explorer
   - pass-git-helper
   - ollama
   - expect
@@ -88,9 +86,6 @@ packages:
   - kicad
   - prusa-slicer
   - orca-slicer-bin
-  - sweethome3d
-  - sweethome3d-3dmodels-contributions
-  - sweethome3d-furniture-library
   - inkscape
   - gimp
   - arduino-cli
@@ -111,7 +106,6 @@ packages:
   - google-chrome
   - spotify
   - telegram-desktop
-  - obsidian
   - vlc
   - claude-desktop-official-bin
   - figma-linux-bin

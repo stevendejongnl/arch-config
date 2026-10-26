@@ -96,7 +96,6 @@ source $HOME/scripts/raspberry-pis.sh
 source $HOME/scripts/cleanup.sh
 
 alias reload-aliases='source ~/.aliases && echo "Aliases reloaded ✅"'
-alias unlock="$HOME/unlock"
 alias vpn="$HOME/.local/bin/vpn"
 alias change-wallpaper="$HOME/.local/share/wallpaper-picker/bin/wallpaper.sh"
 alias vim="nvim"

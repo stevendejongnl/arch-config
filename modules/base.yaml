@@ -99,7 +99,6 @@ packages:
   - ungoogled-chromium-bin
   - zapzap             # WhatsApp desktop client
   - slack-desktop
-  - jetbrains-toolbox
   - barrier            # Keyboard and mouse sharing
   - pep                 # System tray keep-awake tool (systemd-inhibit)
   - kdeconnect          # Cross-device link (phone/desktop) over LAN
