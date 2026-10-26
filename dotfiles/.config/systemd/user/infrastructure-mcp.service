@@ -7,7 +7,7 @@ WorkingDirectory=/home/stevendejong/workspace/personal/infrastructure/ansible-pl
 ExecStart=/home/stevendejong/.local/bin/uv run python server.py
 Restart=always
 RestartSec=3
-EnvironmentFile=/home/stevendejong/workspace/personal/infrastructure/infrastructure-docs/mcp-server/.env
+EnvironmentFile=/home/stevendejong/workspace/personal/infrastructure/ansible-playbooks/tools/infrastructure-mcp/.env
 Environment=PATH=/home/stevendejong/.local/bin:/usr/local/bin:/usr/bin:/bin
 Environment=SSH_AUTH_SOCK=/home/stevendejong/.1password/agent.sock
 

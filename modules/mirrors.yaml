@@ -1,0 +1,13 @@
+# Keep the pacman mirrorlist fresh with reflector.
+# reflector.timer rewrites /etc/pacman.d/mirrorlist weekly with fast, recently
+# synced HTTPS mirrors, so one dead mirror cannot sit first in the list and
+# abort a system update ("Operation too slow" ... "failed to retrieve some files").
+
+description: reflector mirrorlist refresh timer
+
+packages:
+  - reflector
+
+conflicts: []
+
+post_install_hook: "scripts/mirrors.sh"

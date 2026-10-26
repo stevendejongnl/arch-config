@@ -15,6 +15,7 @@ enabled_modules:
   - networkmanager
   - dark-mode
   - power-management
+  - mirrors               # reflector weekly mirrorlist refresh
   - computer-sloeber
   - dotfiles              # Deploy dotfiles with stow symlinks
   - secrets               # Unlock and deploy encrypted secrets

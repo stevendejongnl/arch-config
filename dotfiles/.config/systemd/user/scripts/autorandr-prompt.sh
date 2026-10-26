@@ -49,3 +49,6 @@ else
 fi
 
 notify-send "Display" "$(autorandr --current)"
+
+# Profile chosen: let the wallpaper picker run if it is in events mode.
+"$HOME/.local/share/wallpaper-picker/bin/wallpaper.sh" --display-changed
