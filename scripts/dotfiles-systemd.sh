@@ -26,11 +26,9 @@ systemctl --user daemon-reload
 ESSENTIAL_SERVICES=(
     # darkman.service intentionally omitted — the dark-mode module keeps it
     # disabled (locked dark, no day/night switching).
-    # wallpaper.service intentionally omitted — it has no [Install] block
-    # (timer-triggered only, to avoid racing wallpaper.timer's own boot
-    # trigger); it's started once below instead of enabled.
+    # wallpaper.service intentionally omitted — it has no [Install] block;
+    # it's started once below and again at login by .dwm/autostart.sh.
     "1password.service"
-    "wallpaper.timer"
     "kbd-backlight-restore.service"
     "kbd-backlight-lid-monitor.service"
 )
@@ -44,8 +42,8 @@ for service in "${ESSENTIAL_SERVICES[@]}"; do
     fi
 done
 
-# wallpaper.service: start once for an immediate refresh; wallpaper.timer
-# (enabled above) is what keeps it running on boot + every 3h.
+# wallpaper.service: start once for an immediate refresh. There is no timer;
+# .dwm/autostart.sh restarts it at login.
 if [ -f "$SYSTEMD_USER_DIR/wallpaper.service" ]; then
     log "Starting wallpaper.service (one-off refresh)"
     systemctl --user start wallpaper.service || log "Failed to start wallpaper.service"

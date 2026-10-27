@@ -10,6 +10,11 @@ Wants=network-online.target
 # Only autostart on the client machine — arch-workstation runs the
 # server side, managed separately (see barrier.service).
 ConditionHost=computersloeber
+# Give up after 10 starts in 5 minutes instead of retrying forever. Once
+# tripped, the unit stays failed until `systemctl --user reset-failed
+# barrier-client && systemctl --user start barrier-client`.
+StartLimitIntervalSec=5min
+StartLimitBurst=10
 
 [Service]
 ExecStartPre=/bin/bash -c 'for i in $(seq 60); do xdpyinfo -display :0 >/dev/null 2>&1 && exit 0; sleep 0.5; done; exit 1'
@@ -33,8 +38,7 @@ Environment=DISPLAY=:0
 Environment=XAUTHORITY=%h/.Xauthority
 # on-failure alone won't retry the off-LAN case (that now exits 0, clean);
 # Restart=always keeps re-probing so it connects as soon as we're back on
-# the LAN, without spamming — off-LAN loops silently since exit 0 skips
-# OnFailure entirely.
+# the LAN, until StartLimitBurst above stops it.
 Restart=always
 RestartSec=15
 
