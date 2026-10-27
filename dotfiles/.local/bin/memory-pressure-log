@@ -1,0 +1,16 @@
+#!/bin/bash
+# Log memory pressure to the journal every 10 s, so the last lines before a freeze show if memory was the cause.
+interval_seconds=10
+
+memory_pressure() {
+    head -n1 /proc/pressure/memory
+}
+
+memory_field_mebibytes() {
+    awk -v field="$1:" '$1 == field {print int($2 / 1024)}' /proc/meminfo
+}
+
+while true; do
+    echo "pressure: $(memory_pressure) available_mib=$(memory_field_mebibytes MemAvailable) swap_free_mib=$(memory_field_mebibytes SwapFree)"
+    sleep "$interval_seconds"
+done

@@ -1,0 +1,54 @@
+#!/bin/bash
+# Stop the trydent and sales-center containers and send a notification when memory runs out,
+# before the laptop starts thrashing swap and freezes.
+interval_seconds=2
+minimum_available_mebibytes=2048
+maximum_stall_percent=40
+compose_projects=(trydent sales-center)
+
+available_mebibytes() {
+    awk '$1 == "MemAvailable:" {print int($2 / 1024)}' /proc/meminfo
+}
+
+stall_percent() {
+    awk -F'[ =]' '$1 == "some" {print int($3)}' /proc/pressure/memory
+}
+
+project_container_ids() {
+    local project
+    for project in "${compose_projects[@]}"; do
+        docker ps --quiet --filter "label=com.docker.compose.project=$project"
+    done
+}
+
+is_memory_low() {
+    (( $(available_mebibytes) < minimum_available_mebibytes )) && return 0
+    (( $(stall_percent) >= maximum_stall_percent )) && return 0
+    return 1
+}
+
+notify() {
+    notify-send --urgency=critical "Docker memory guard" "$1"
+    echo "$1"
+}
+
+stop_containers() {
+    local container_ids=("$@")
+    docker stop --time 10 "${container_ids[@]}" > /dev/null
+}
+
+guard_once() {
+    is_memory_low || return 0
+    local container_ids
+    mapfile -t container_ids < <(project_container_ids)
+    (( ${#container_ids[@]} > 0 )) || return 0
+    local reason="available=$(available_mebibytes) MiB, stall=$(stall_percent)%"
+    notify "Memory low ($reason). Stopping ${#container_ids[@]} trydent containers."
+    stop_containers "${container_ids[@]}"
+    notify "Stopped trydent containers. Start them again with docker compose up -d."
+}
+
+while true; do
+    guard_once
+    sleep "$interval_seconds"
+done

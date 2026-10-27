@@ -1,0 +1,9 @@
+[Unit]
+Description=Log memory pressure to the journal
+
+[Service]
+ExecStart=%h/.local/bin/memory-pressure-log
+Restart=always
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,9 @@
+[Unit]
+Description=Stop trydent containers when memory runs low
+
+[Service]
+ExecStart=%h/.local/bin/docker-memory-guard
+Restart=always
+
+[Install]
+WantedBy=default.target
