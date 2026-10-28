@@ -74,7 +74,6 @@ packages:
   - bluez-tools         # Bluetooth command-line tools
   - caffeine-ng         # Prevents system from sleeping
   - pavucontrol         # PulseAudio volume control
-  - tmate               # Instant terminal sharing
   - tmux                # Terminal multiplexer
   - unclutter           # Hide mouse cursor when idle
   - x11-ssh-askpass     # SSH password prompt for X11
@@ -155,7 +154,6 @@ packages:
   - rofi-bluetooth-git
   - wireplumber        # pipewire session manager
   - openssh
-  - thefuck
   - usbutils
 
   # dcli itself

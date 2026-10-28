@@ -98,3 +98,7 @@ gjllll    # tuned audi-gjllll.jpg 2026-10-21
 d8v6pl    # tuner car-d8v6pl.jpg 2026-10-21
 nr7127    # widebody car-nr7127.jpg 2026-10-25
 og3gdp    # tuner car-og3gdp.jpg 2026-10-25
+j3wx85    # drift car-j3wx85.jpg 2026-10-27
+4vdg23    # stance car-4vdg23.jpg 2026-10-27
+6qzz16    # tuned audi-6qzz16.jpg 2026-10-27
+x6prev    # drift car-x6prev.jpg 2026-10-27

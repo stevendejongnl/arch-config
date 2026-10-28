@@ -36,8 +36,6 @@ source $HOME/.zsh-config/workspace-navigation.zsh
 export PATH="$HOME/.npm-global/bin:$PATH"
 [ -f "$HOME/.safe-chain/scripts/init-posix.sh" ] && source "$HOME/.safe-chain/scripts/init-posix.sh" # Safe-chain
 source $HOME/.zsh-config/nvm.zsh
-source $HOME/.zsh-config/tmate.zsh
-source $HOME/.zsh-config/ollama.zsh
 
 [ -f /home/stevendejong/.config/cani/completions/_cani.zsh ] && source /home/stevendejong/.config/cani/completions/_cani.zsh
 
@@ -45,13 +43,6 @@ source $HOME/.zsh-config/ollama.zsh
 [ -s $HOME/.rsvm/rsvm.sh ] && \. "$HOME/.rsvm/rsvm.sh" # This loads RSVM
 
 [[ -o interactive ]] && eval "$(zoxide init --cmd cd zsh)"
-
-# Lazy load thefuck - only initialize when first used
-fuck() {
-  unset -f fuck
-  eval $(thefuck --alias)
-  fuck "$@"
-}
 
 export PATH=$PATH:/home/stevendejong/.local/bin
 

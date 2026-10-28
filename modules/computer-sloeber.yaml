@@ -9,8 +9,6 @@ packages:
   - linux
   - linux-headers
   - linux-firmware-qlogic
-  - libfprint-2-tod1-elan     # fingerprint reader
-  - fprintd
   - fwupd
   - light                     # backlight
   - lact                      # AMD GPU control
@@ -78,7 +76,6 @@ packages:
   - dbeaver
   - redisinsight
   - pass-git-helper
-  - ollama
   - expect
   - scrcpy
 
