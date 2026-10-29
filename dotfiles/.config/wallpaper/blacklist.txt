@@ -102,3 +102,5 @@ j3wx85    # drift car-j3wx85.jpg 2026-10-27
 4vdg23    # stance car-4vdg23.jpg 2026-10-27
 6qzz16    # tuned audi-6qzz16.jpg 2026-10-27
 x6prev    # drift car-x6prev.jpg 2026-10-27
+j86ed5    # tuned audi-j86ed5.jpg 2026-10-29
+rqez87    # tuned porsche-rqez87.jpg 2026-10-29

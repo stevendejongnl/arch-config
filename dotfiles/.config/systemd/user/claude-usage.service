@@ -1,0 +1,7 @@
+[Unit]
+Description=Collect Claude usage (personal + work) for statusline and Home Assistant
+OnFailure=autostart-failure@%n.service
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/claude-usage-collect
