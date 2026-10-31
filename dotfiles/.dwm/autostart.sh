@@ -1,5 +1,8 @@
 #! /bin/bash
 
+# Hover dock + Super+Tab switcher (guarded: only one copy)
+pgrep -f dwm-dock.py >/dev/null || nohup python3 -I "$HOME/workspace/builds/suckless/dwm-dock/dwm-dock.py" > /tmp/dwm-dock.log 2>&1 &
+
 # Skip on dwm restart — session file only exists during restoreafterrestart
 [ -f /tmp/dwm-session ] && exit 0
 
