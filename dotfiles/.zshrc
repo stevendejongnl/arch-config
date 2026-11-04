@@ -103,3 +103,6 @@ fi
 
 # Added by the Hunk installer (https://hunk.dev)
 export PATH='/home/stevendejong/.hunk/bin':"$PATH"
+
+# kubectl: the working admin kubeconfig (the default ~/.kube/config token has expired)
+export KUBECONFIG="$HOME/.kube/admin-direct.conf"
