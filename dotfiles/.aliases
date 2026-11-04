@@ -235,6 +235,7 @@ function cloudsuite_cli {
 }
 
 alias cs="cloudsuite_cli"
+alias ass="archsync sync"
 
 genpass() {
   local len="${1:-16}"
