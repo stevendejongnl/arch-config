@@ -3,7 +3,7 @@
 # Listens to the upower LidIsClosed property over D-Bus, so it needs no root.
 
 apply_profile() {
-    autorandr --change --default default
+    autorandr --change
 }
 
 watch_lid() {
