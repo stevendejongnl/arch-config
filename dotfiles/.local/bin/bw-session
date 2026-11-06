@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Prints a Bitwarden session key. Use: export BW_SESSION=$(bw-session "why you need it")
+# Reuses the key in $XDG_RUNTIME_DIR/bw-session while the vault is unlocked,
+# otherwise asks for the master password in a popup that shows the reason.
+# The reason is required, so every prompt says what it is for. The key is gone at logout.
+set -eu
+reason="${1:?usage: bw-session \"why the vault is needed\"}"
+f="${XDG_RUNTIME_DIR:?}/bw-session"
+
+if [ -r "$f" ] && BW_SESSION=$(cat "$f") bw unlock --check >/dev/null 2>&1; then
+  cat "$f"; exit 0
+fi
+
+# The class makes dwm float the popup (rule in suckless/dwm/config.h).
+pw=$(yad --entry --hide-text --no-markup --title="Bitwarden" \
+  --text="Unlock Bitwarden for:
+$reason" \
+  --class="claude-git-guard" --center --on-top --button="Unlock:0" --button="Cancel:1") || exit 1
+[ -n "$pw" ] || { echo "bw-session: no password entered" >&2; exit 1; }
+key=$(BW_PASSWORD=$pw bw unlock --passwordenv BW_PASSWORD --raw) || exit 1
+(umask 077; printf '%s' "$key" > "$f")
+printf '%s' "$key"

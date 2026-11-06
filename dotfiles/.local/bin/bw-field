@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Prints one field of the Bitwarden item "auth-tokens".
+# Use: bw-field pve-token-secret "why you need it"
+# The reason is passed on to bw-session, so an unlock popup says what it is for.
+set -eu
+name="${1:?usage: bw-field <field> \"why you need it\"}"
+why="${2:?usage: bw-field <field> \"why you need it\"}"
+
+BW_SESSION=$(bw-session "$why") bw get item auth-tokens \
+  | jq -er --arg n "$name" '.fields[] | select(.name == $n) | .value'
