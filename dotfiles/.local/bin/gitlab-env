@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Prints export lines for the work GitLab token, from 1Password (Employee/GitLab token).
+# Use: eval "$(gitlab-env)"   then make build, docker compose build, npm install, ...
+set -eu
+account=cloudsuite.1password.eu
+token=$(op read "op://Employee/GitLab token/credential" --account "$account")
+name=$(op read "op://Employee/GitLab token/token name" --account "$account")
+printf 'export GITLAB_TOKEN=%q GITLAB_TOKEN_NAME=%q GLPRIV=%q\n' "$token" "$name" "$token"

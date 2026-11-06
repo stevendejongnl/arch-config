@@ -7,7 +7,7 @@ This document explains how to securely manage sensitive information (SSH keys, A
 **Secrets** are sensitive files that should never be committed unencrypted to version control:
 - SSH private keys (`~/.ssh/id_rsa`)
 - API tokens (GitLab, GitHub, etc.)
-- Application credentials (`.auth_tokens`, `.bashrc.local` with passwords)
+- Application credentials (`.bashrc.local` with passwords)
 - Configuration with sensitive data
 
 ### The Problem
@@ -59,7 +59,6 @@ If you commit these to git:
 │   ├── config              # ENCRYPTED: SSH host configurations
 │   └── authorized_keys     # NOT encrypted: Public keys (if server)
 └── credentials/
-    ├── auth_tokens         # ENCRYPTED: Application tokens
     ├── gitlab_token        # ENCRYPTED: GitLab token (if separate)
     └── github_token        # ENCRYPTED: GitHub token (if separate)
 ```
@@ -118,9 +117,6 @@ cd ~/.config/arch-config
 cp ~/.ssh/id_rsa secrets/ssh/
 cp ~/.ssh/id_rsa.pub secrets/ssh/
 cp ~/.ssh/config secrets/ssh/ 2>/dev/null || echo "No SSH config"
-
-# Copy credentials
-cp ~/.auth_tokens secrets/credentials/ 2>/dev/null || true
 
 # View what will be encrypted
 git-crypt status
@@ -200,7 +196,6 @@ dcli sync
 
 # Verify deployment
 ls -la ~/.ssh/id_rsa      # Should exist with 600 permissions
-ls -la ~/.auth_tokens      # Should exist with 600 permissions
 ```
 
 ### Verifying Encryption
@@ -214,7 +209,6 @@ git-crypt status
 # Expected output:
 #     encrypted: secrets/ssh/id_rsa
 #     encrypted: secrets/ssh/config
-#     encrypted: secrets/credentials/auth_tokens
 #   unencrypted: secrets/ssh/id_rsa.pub
 
 # View encrypted file in git (should be binary/unreadable)
@@ -279,28 +273,11 @@ bash scripts/secrets-decrypt.sh
 ssh -T git@github.com
 ```
 
-### Updating Credentials
+### Application tokens
 
-When credentials change:
-
-```bash
-# 1. Update locally
-vim ~/.auth_tokens
-
-# 2. Copy to secrets
-cp ~/.auth_tokens ~/.config/arch-config/secrets/credentials/
-
-# 3. Commit
-git add secrets/credentials/auth_tokens
-git commit -m "Update authentication tokens"
-
-# 4. Push to remote
-git push
-
-# 5. Deploy on other machines
-git pull
-bash scripts/secrets-decrypt.sh
-```
+`~/.auth_tokens` was retired on 2026-11-06. Personal tokens are read on demand from the Bitwarden item
+`auth-tokens` with `bw-field <field> "reason"`; work tokens from 1Password with `op read`
+(`gitlab-env` exports the GitLab token). Nothing in this repo holds an application token.
 
 ### Viewing History of Encrypted Files
 
@@ -311,7 +288,7 @@ git-crypt allows you to view history normally:
 git log --follow -p secrets/ssh/id_rsa
 
 # View who changed what
-git blame secrets/credentials/auth_tokens
+git blame secrets/ssh/config
 
 # See all changes to secrets
 git log --name-status secrets/
