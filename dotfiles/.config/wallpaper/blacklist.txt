@@ -106,3 +106,4 @@ j86ed5    # tuned audi-j86ed5.jpg 2026-10-29
 rqez87    # tuned porsche-rqez87.jpg 2026-10-29
 nre1dw    # jdm car-nre1dw.jpg 2026-10-29
 vgxorm    # widebody car-vgxorm.jpg 2026-10-29
+4xlw5v    # stance car-4xlw5v.jpg 2026-11-06
