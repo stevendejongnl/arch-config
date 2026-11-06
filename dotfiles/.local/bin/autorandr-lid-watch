@@ -1,0 +1,17 @@
+#!/bin/sh
+# Run autorandr whenever the laptop lid opens or closes.
+# Listens to the upower LidIsClosed property over D-Bus, so it needs no root.
+
+apply_profile() {
+    autorandr --batch --change --default default
+}
+
+watch_lid() {
+    gdbus monitor --system --dest org.freedesktop.UPower --object-path /org/freedesktop/UPower |
+        grep --line-buffered "LidIsClosed"
+}
+
+watch_lid | while read -r _; do
+    sleep 1
+    apply_profile
+done
