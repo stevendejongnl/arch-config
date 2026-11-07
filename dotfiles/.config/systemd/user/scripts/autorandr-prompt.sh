@@ -5,6 +5,7 @@
 # - Monitor unplugged / nothing external detected -> switch silently to laptop.
 # - Monitor(s) plugged -> ask via rofi. One match: yes/no. Multiple: pick one.
 # - Deny (Escape or "Laptop only") -> force laptop-only profile.
+# - Lid closed -> no prompt (nobody can see the laptop screen), load the match.
 set -euo pipefail
 
 force=0
@@ -12,6 +13,10 @@ force=0
 
 export DISPLAY="${DISPLAY:-:0}"
 export XAUTHORITY="${XAUTHORITY:-$HOME/.Xauthority}"
+
+lid_is_closed() {
+    grep -q closed /proc/acpi/button/lid/*/state 2>/dev/null
+}
 
 mapfile -t detected < <(autorandr --detected)
 current=$(autorandr --current | head -1)
@@ -25,6 +30,14 @@ done
 # No external monitor detected (unplug, or lid event with nothing new) - no prompt needed.
 if [[ ${#external[@]} -eq 0 ]]; then
     autorandr --change --default default
+    exit 0
+fi
+
+# Lid closed: the laptop screen is not visible, so a prompt there could never be answered.
+# Load the matching external profile directly.
+if lid_is_closed; then
+    autorandr --load "${external[0]}"
+    "$HOME/.local/share/wallpaper-picker/bin/wallpaper.sh" --display-changed
     exit 0
 fi
 
