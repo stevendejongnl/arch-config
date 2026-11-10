@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+"""Mod+9: jump to the open YouTube or Spotify window (tag 9), or offer to launch one.
+
+Uses the same _DWM_FOCUS_CLIENT client message dwm-dock sends: dwm's
+clientmessage() handler switches to the client's monitor+tag and focuses it.
+"""
+import subprocess
+
+from Xlib import X, display, error, protocol
+
+YOUTUBE_URL = "https://www.youtube.com"
+
+
+def find_target(d, root):
+    prop = root.get_full_property(d.intern_atom("_NET_CLIENT_LIST"), X.AnyPropertyType)
+    if not prop:
+        return None
+    for wid in prop.value:
+        win = d.create_resource_object("window", wid)
+        try:
+            cls = win.get_wm_class()
+        except error.XError:
+            continue
+        if not cls:
+            continue
+        instance, klass = cls
+        if klass == "Spotify" or instance == "www.youtube.com":
+            return win
+    return None
+
+
+def focus(d, root, win):
+    ev = protocol.event.ClientMessage(
+        window=win, client_type=d.intern_atom("_DWM_FOCUS_CLIENT"),
+        data=(32, [0, 0, 0, 0, 0]))
+    root.send_event(ev, event_mask=X.SubstructureRedirectMask | X.SubstructureNotifyMask)
+    d.flush()
+
+
+def prompt_and_launch():
+    result = subprocess.run([
+        "yad", "--class=claude-git-guard", "--title=Tag 9",
+        "--text=Open Spotify or YouTube?",
+        "--button=Spotify:0", "--button=YouTube:2",
+    ])
+    if result.returncode == 0:
+        subprocess.Popen(["spotify-launcher"])
+    elif result.returncode == 2:
+        subprocess.Popen(["chromium", f"--app={YOUTUBE_URL}"])
+
+
+def main():
+    d = display.Display()
+    root = d.screen().root
+    win = find_target(d, root)
+    if win is not None:
+        focus(d, root, win)
+    else:
+        prompt_and_launch()
+
+
+if __name__ == "__main__":
+    main()

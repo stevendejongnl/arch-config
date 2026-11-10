@@ -19,6 +19,8 @@ packages:
   - libpulse        # pipewire.sh (pactl)
   - procps-ng       # cpu-usage.sh / memory-usage.sh (top, free)
   - xorg-xsetroot   # update-statusbar.sh
+  - yad             # tag9-media fallback popup, bw-session password prompt
+  - python-xlib     # tag9-media, dwm-dock (sends _DWM_FOCUS_CLIENT)
 
 # Modules that conflict with this one
 conflicts: []
