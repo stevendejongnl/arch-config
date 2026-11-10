@@ -34,15 +34,15 @@ get_date() {
   OUTPUT+="$(printf '\x11')$(printf '\x09')$(printf '\xef\x80\x97') $(printf '\x01')$(date '+%d-%m-%Y %H:%M:%S') $(printf '\x01')  "
 }
 
-get_harvest() {
-  OUTPUT+="$("$SLSTATUS_DIR"/harvest.sh)"
+get_keito() {
+  OUTPUT+="$("$SLSTATUS_DIR"/keito.sh)"
 }
 
 get_sysmon
 get_date
 
-# Harvest timer: only when this machine has the API creds (work laptop).
-[ -f "$SLSTATUS_DIR/harvest/.env" ] && get_harvest
+# Keito timer: only when this machine has the API creds (work laptop).
+[ -f "$SLSTATUS_DIR/keito/.env" ] && get_keito
 
 # get_cpu_usage
 # get_memory_usage
