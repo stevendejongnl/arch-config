@@ -41,6 +41,9 @@ get_keito() {
 get_sysmon
 get_date
 
+# Writes the Spotify playing state for dwm, prints nothing
+"$SLSTATUS_DIR"/shared-tag-playing.sh
+
 # Keito timer: only when this machine has the API creds (work laptop).
 [ -f "$SLSTATUS_DIR/keito/.env" ] && get_keito
 
