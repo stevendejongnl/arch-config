@@ -11,6 +11,7 @@ packages:
 - docker-compose
 - expect
 - firefox
+- gitea-cli
 - glab
 - gvfs-smb
 - hcloud
@@ -32,7 +33,6 @@ packages:
 - sshfs
 - sshpass
 - super-productivity
-- tea
 - thefuck
 - thunderbird
 - tmate
