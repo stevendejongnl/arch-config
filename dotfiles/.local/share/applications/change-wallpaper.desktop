@@ -1,9 +1,0 @@
-[Desktop Entry]
-Name=Change Wallpaper
-Comment=Pick a new wallpaper (GTK picker: choose, blacklist, or shuffle)
-Exec=/bin/bash -c '$HOME/.local/share/wallpaper-picker/bin/wallpaper.sh --gui'
-Icon=wallpaper
-Terminal=false
-Type=Application
-Categories=System;Utility
-Keywords=wallpaper;change;desktop;background;image;picture
