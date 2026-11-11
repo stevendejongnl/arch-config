@@ -114,3 +114,6 @@ k8jopm    # modified sports car-k8jopm.jpg 2026-11-11
 d5qqz3    # tuned audi-d5qqz3.jpg 2026-11-11
 4lx312    # tuned bmw-4lx312.jpg 2026-11-11
 d55z33    # tuned audi-d55z33.jpg 2026-11-11
+5d7v91    # drift car-5d7v91.jpg 2026-11-11
+od7kl9    # modified sports car-od7kl9.jpg 2026-11-11
+pkxzze    # jdm car-pkxzze.jpg 2026-11-11
