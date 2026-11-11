@@ -100,7 +100,6 @@ packages:
 
   # --- desktop apps ---
   - google-chrome
-  - spotify
   - telegram-desktop
   - vlc
   - claude-desktop-official-bin
