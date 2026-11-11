@@ -32,9 +32,12 @@ xset fp rehash &
 
 # No X-level screen blanking / DPMS. Idle-suspend is handled separately by pep
 # (systemd-inhibit); pep does NOT stop the X server blanking the screen.
-xset s off
+# The X screensaver timer only drives the lock: after 30 minutes without input
+# xss-lock runs lock.sh (slock). Cycle 0 means it fires once per idle period.
+xset s 1800 0
 xset s noblank
 xset -dpms
+pgrep -x xss-lock > /dev/null || xss-lock -- "$HOME/.dwm/lock.sh" &
 
 # Hide cursor after x time
 unclutter -idle 3 &

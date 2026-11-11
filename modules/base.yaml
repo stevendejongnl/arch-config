@@ -146,6 +146,7 @@ packages:
   - brightnessctl
   - numlockx
   - xdotool
+  - xss-lock           # runs lock.sh (slock) after 30 minutes idle, see xinitrc
   - xorg-xkill         # click-to-kill a hung X client
   - flameshot
   - feh                # wallpaper-picker: applies the wallpaper
