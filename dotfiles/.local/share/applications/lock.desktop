@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Lock Screen
 Comment=Lock the screen using slock
-Exec=slock
+Exec=sh -c "$HOME/.dwm/lock.sh"
 Icon=system-lock-screen
 Terminal=false
 Type=Application
