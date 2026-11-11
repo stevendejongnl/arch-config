@@ -1,134 +1,141 @@
-/* Rime theme — https://git.madebysteven.nl/stevendejong/rime */
+/* Rime theme — https://git.madebysteven.nl/stevendejong/rime
+ * Used by the app launcher (Mod+Space), the window switcher (Mod+Alt+Space) and rofi-rbw.
+ * The colours match the dwm status bar popup and the dunst notifications. */
 
 configuration {
-    show-icons:      true;
-    display-drun:    "";
-    disable-history: false;
+    modes:                  "drun,window,run";
+    show-icons:             true;
+    icon-theme:             "Papirus";
+    disable-history:        false;
+    drun-display-format:    "{name}";
+    window-format:          "{c}  ·  {t}";
+    display-drun:           "󰀻";
+    display-window:         "󰖯";
+    display-run:            "";
+    display-ssh:            "󰣀";
 }
 
 * {
-    font: "Jetbrains Mono 12";
-    foreground: #d3d6e6;
-    background-color: #12141c;
-    active-background: #20242f;
-    urgent-background: #ff5c78;
-    urgent-foreground: #12141c;
-    selected-background: #3ee6e0;
-    selected-foreground: #12141c;
-    selected-urgent-background: @urgent-background;
-    selected-active-background: @active-background;
-    separatorcolor: #2a2f3d;
-    bordercolor: #3ee6e0;
+    font:                   "JetBrainsMono Nerd Font 12";
+
+    bg:                     #12141cf2;
+    card:                   #181b26;
+    line:                   #2a2f3d;
+    fg:                     #d3d6e6;
+    dim:                    #7a7f99;
+    accent:                 #3ee6e0;
+    yellow:                 #ffd473;
+    red:                    #ff5c78;
+
+    background-color:       transparent;
+    text-color:             @fg;
+    margin:                 0;
+    padding:                0;
+    spacing:                0;
 }
 
-#window {
-    background-color: @background-color;
-    border:           3;
-    border-radius:    6;
-    border-color:     @bordercolor;
-    padding:          15;
+window {
+    location:               center;
+    anchor:                 center;
+    y-offset:               -80px;
+    width:                  660px;
+    background-color:       @bg;
+    border:                 1px;
+    border-color:           @line;
+    border-radius:          16px;
 }
-#mainbox {
-    border:  0;
-    padding: 0;
+
+mainbox {
+    padding:                16px;
+    spacing:                14px;
+    children:               [ inputbar, message, listview ];
 }
-#message {
-    border:       0px;
-    border-color: @separatorcolor;
-    padding:      1px;
+
+inputbar {
+    padding:                12px 16px;
+    spacing:                12px;
+    background-color:       @card;
+    border:                 1px;
+    border-color:           @line;
+    border-radius:          12px;
+    children:               [ prompt, entry ];
 }
-#textbox {
-    text-color: @foreground;
+
+prompt {
+    text-color:             @accent;
+    font:                   "JetBrainsMono Nerd Font 14";
 }
-#listview {
-    fixed-height: 0;
-    border:       0px;
-    border-color: @bordercolor;
-    spacing:      2px ;
-    scrollbar:    false;
-    padding:      2px 0px 0px ;
+
+entry {
+    text-color:             @fg;
+    placeholder:            "Search";
+    placeholder-color:      @dim;
+    cursor-color:           @accent;
 }
-#element {
-    border:  0;
-    padding: 3px ;
+
+message {
+    border:                 0px;
+    padding:                10px 14px;
+    background-color:       @card;
+    border-radius:          10px;
 }
-#element.normal.normal {
-    background-color: @background-color;
-    text-color:       @foreground;
+
+textbox {
+    text-color:             @dim;
 }
-#element.normal.urgent {
-    background-color: @urgent-background;
-    text-color:       @urgent-foreground;
+
+listview {
+    border:                 0px;
+    lines:                  8;
+    columns:                1;
+    fixed-height:           false;
+    scrollbar:              false;
+    spacing:                4px;
+    dynamic:                true;
 }
-#element.normal.active {
-    background-color: @active-background;
-    text-color:       @foreground;
+
+element {
+    padding:                9px 12px;
+    spacing:                14px;
+    border-radius:          10px;
 }
-#element.selected.normal {
-    background-color: @selected-background;
-    text-color:       @selected-foreground;
+
+element-icon {
+    size:                   28px;
+    vertical-align:         0.5;
 }
-#element.selected.urgent {
-    background-color: @selected-urgent-background;
-    text-color:       @urgent-foreground;
+
+element-text {
+    vertical-align:         0.5;
+    highlight:              bold #3ee6e0;
 }
-#element.selected.active {
-    background-color: @selected-active-background;
-    text-color:       @selected-foreground;
+
+element normal.normal, element alternate.normal {
+    background-color:       transparent;
+    text-color:             @fg;
 }
-#element.alternate.normal {
-    background-color: @background-color;
-    text-color:       @foreground;
+
+element selected.normal {
+    background-color:       @line;
+    text-color:             #ffffff;
 }
-#element.alternate.urgent {
-    background-color: @urgent-background;
-    text-color:       @foreground;
+
+element normal.urgent, element alternate.urgent {
+    background-color:       transparent;
+    text-color:             @red;
 }
-#element.alternate.active {
-    background-color: @active-background;
-    text-color:       @foreground;
+
+element selected.urgent {
+    background-color:       @red;
+    text-color:             #12141c;
 }
-#scrollbar {
-    width:        2px ;
-    border:       0;
-    handle-width: 8px ;
-    padding:      0;
+
+element normal.active, element alternate.active {
+    background-color:       transparent;
+    text-color:             @yellow;
 }
-#sidebar {
-    border:       2px dash 0px 0px ;
-    border-color: @separatorcolor;
-}
-#button.selected {
-    background-color: @selected-background;
-    text-color:       @selected-foreground;
-}
-#inputbar {
-    spacing:    0;
-    text-color: @foreground;
-    padding:    1px ;
-}
-#case-indicator {
-    spacing:    0;
-    text-color: @foreground;
-}
-#entry {
-    spacing:    0;
-    text-color: @foreground;
-}
-#prompt {
-    spacing:    0;
-    text-color: @foreground;
-}
-#inputbar {
-    children:   [ prompt,textbox-prompt-colon,entry,case-indicator ];
-}
-#textbox-prompt-colon {
-    expand:     false;
-    str:        ">";
-    margin:     0px 0.3em 0em 0em ;
-    text-color: @foreground;
-}
-element-text, element-icon {
-    background-color: inherit;
-    text-color: inherit;
+
+element selected.active {
+    background-color:       @line;
+    text-color:             @yellow;
 }
