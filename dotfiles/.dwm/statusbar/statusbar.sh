@@ -36,7 +36,9 @@ get_bluetooth() {
 }
 
 get_sysmon() {
-  OUTPUT+="$(sysmon status) "
+  # sysmon prints nothing while disk and RAM are both healthy; only then skip the separator
+  SYSMON="$(sysmon status)"
+  [ -n "$SYSMON" ] && OUTPUT+="$SYSMON "
 }
 
 get_date() {
