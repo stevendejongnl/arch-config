@@ -10,7 +10,8 @@ pgrep -f dwm-dock.py >/dev/null || nohup python3 -I "$HOME/workspace/builds/suck
 
 # sleep 5
 gsettings set org.gnome.desktop.interface color-scheme prefer-dark &  # locked dark (modules/dark-mode.yaml)
-systemctl --user restart wallpaper.service &
+# Re-apply the last used wallpaper. The picker (wallpaper.service) only opens on its schedule.
+"$HOME/.local/share/wallpaper-picker/bin/wallpaper.sh" --reapply &
 systemctl --user start autostart.target &
 
 watch-screenshots &

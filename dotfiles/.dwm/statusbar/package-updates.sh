@@ -1,9 +1,7 @@
 #!/bin/bash
 
-# Red-colored Nerd Font archive glyph (U+F187). Icon is always red for
-# emphasis; the count after it picks up count-based color.
-# Bytes: \x0B (red) + glyph UTF-8 + \x01 (reset).
-ICON=$(printf '\x0b\xef\x86\x87\x01')
+# Nerd Font archive glyph (U+F187)
+ICON=$(printf '\xef\x86\x87')
 
 status_file="$HOME/.dwm/statusbar/package-updates/status"
 last_run_file="$HOME/.dwm/statusbar/package-updates/last-run"
@@ -46,23 +44,21 @@ else
     status="0/0"
 fi
 
+# Shown only when updates pile up: yellow from 5, orange from 20, red from 50.
 if [ "$status" != "0/0" ]; then
     updates_arch=$(echo "$status" | cut -d'/' -f1)
     updates_aur=$(echo "$status" | cut -d'/' -f2)
     total=$((updates_arch + updates_aur))
 
-    # Count-based color for the value (icon stays red).
     if [ "$total" -ge 50 ]; then
-        value_color=$(printf '\x0B')  # critical
+        color=$(printf '\x0B')  # critical
     elif [ "$total" -ge 20 ]; then
-        value_color=$(printf '\x0A')  # high
+        color=$(printf '\x0A')  # high
     elif [ "$total" -ge 5 ]; then
-        value_color=$(printf '\x09')  # medium
+        color=$(printf '\x09')  # medium
     else
-        value_color=$(printf '\x0C')  # green — few updates
+        exit 0
     fi
 
-    echo "$ICON$value_color $status $(printf '\x01')  "
-else
-    echo "$ICON$(printf '\x0C') 0/0 $(printf '\x01')  "
+    echo "$color$ICON $status$(printf '\x01')  "
 fi

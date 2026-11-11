@@ -1,0 +1,12 @@
+[Unit]
+Description=Wallpaper picker, every 3 hours
+
+[Timer]
+# No run at boot: autostart re-applies the last wallpaper instead (wallpaper.sh --reapply).
+# The first picker opens 3h after boot, then every 3h.
+# Do not use "wallpaper.sh --interval": it writes OnBootSec=30s, which brings the boot popup back.
+OnBootSec=3h
+OnUnitActiveSec=3h
+
+[Install]
+WantedBy=timers.target

@@ -1,14 +1,18 @@
 #!/bin/sh
 
 # Keito running-timer badge.
-# Idle: dim badge with clock glyph. Running: green badge with clock + elapsed H:MM.
+# Idle: dim badge with clock glyph. Running: badge with clock + elapsed H:MM,
+# green at first, yellow after 2h, orange after 4h so a forgotten timer stands out.
 # Polls the Keito API at most once per $interval; every other invocation
 # (the 1s statusbar loop) just re-renders from the cached start time.
 
 CLOCK=$(printf '\xef\x80\x97')  # Nerd Font clock glyph (U+F017)
 BADGE_ON=$(printf '\x0d')       # dark text on green background
-BADGE_OFF=$(printf '\x0e')      # dim text on gray background
+BADGE_YELLOW=$(printf '\x02')  # dark text on yellow background
+BADGE_ORANGE=$(printf '\x03')  # dark text on orange background
+BADGE_OFF=$(printf '\x0e')      # light text on gray background
 RESET=$(printf '\x01')
+CLICK=$(printf '\x13')         # statuscmd byte: click opens the Keito app (see click.sh)
 
 keito_dir="$HOME/.dwm/statusbar/keito"
 env_file="$keito_dir/.env"
@@ -52,7 +56,10 @@ status="idle"
 
 if [ "$status" = "running" ] && [ -n "$started_epoch" ]; then
     total_minutes=$(( (current_time - started_epoch) / 60 ))
-    printf '%s %s %d:%02d %s  ' "$BADGE_ON" "$CLOCK" "$((total_minutes / 60))" "$((total_minutes % 60))" "$RESET"
+    badge=$BADGE_ON
+    [ "$total_minutes" -ge 120 ] && badge=$BADGE_YELLOW
+    [ "$total_minutes" -ge 240 ] && badge=$BADGE_ORANGE
+    printf '%s%s %s %d:%02d %s  ' "$CLICK" "$badge" "$CLOCK" "$((total_minutes / 60))" "$((total_minutes % 60))" "$RESET"
 else
-    printf '%s %s %s  ' "$BADGE_OFF" "$CLOCK" "$RESET"
+    printf '%s%s %s %s  ' "$CLICK" "$BADGE_OFF" "$CLOCK" "$RESET"
 fi

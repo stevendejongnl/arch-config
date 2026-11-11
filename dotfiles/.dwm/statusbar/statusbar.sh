@@ -30,8 +30,8 @@ get_sysmon() {
 
 get_date() {
   # 0x11 = statuscmd byte for date (clickable)
-  # Yellow clock glyph (U+F017), norm-colored time
-  OUTPUT+="$(printf '\x11')$(printf '\x09')$(printf '\xef\x80\x97') $(printf '\x01')$(date '+%d-%m-%Y %H:%M:%S') $(printf '\x01')  "
+  # Calendar glyph (U+F073), then dd-mm hh:mm in the normal status color
+  OUTPUT+="$(printf '\x11')$(printf '\xef\x81\xb3') $(date '+%d-%m %H:%M')$(printf '\x01')  "
 }
 
 get_keito() {
@@ -39,6 +39,7 @@ get_keito() {
 }
 
 get_sysmon
+get_package_updates
 get_date
 
 # Writes the Spotify playing state for dwm, prints nothing
@@ -49,7 +50,6 @@ get_date
 
 # get_cpu_usage
 # get_memory_usage
-get_package_updates
 # get_pipewire
 # get_bluetooth
 
