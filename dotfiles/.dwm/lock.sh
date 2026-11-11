@@ -58,10 +58,14 @@ pamixer --mute 2>/dev/null
 # office (autorandr profile "office"), always on the other machines.
 host=$(sed -n 's/^host: *//p' "$HOME/.config/arch-config/config.yaml" 2>/dev/null)
 case "$host" in
-  arch-workstation) export SLOCK_PANIC_AFTER=0 ;;
-  computersloeber)
-    autorandr --current 2>/dev/null | grep -qx office || export SLOCK_PANIC_AFTER=0 ;;
+  arch-workstation) no_panic=1 ;;
+  computersloeber) autorandr --current 2>/dev/null | grep -qx office || no_panic=1 ;;
 esac
+# Where there is no panic, the lock screen dims to 10% brightness after the same 2 minutes
+# (any key brings it back), so the screen feels almost off.
+if [ -n "${no_panic:-}" ]; then
+  export SLOCK_PANIC_AFTER=0 SLOCK_DIM_AFTER=120
+fi
 
 slock
 rc=$?
