@@ -109,3 +109,8 @@ vgxorm    # widebody car-vgxorm.jpg 2026-10-29
 4xlw5v    # stance car-4xlw5v.jpg 2026-11-06
 nzmz2w    # stance car-nzmz2w.jpg 2026-11-09
 gjzoke    # tuned porsche-gjzoke.jpg 2026-11-09
+0jvr15    # stance car-0jvr15.jpg 2026-11-11
+k8jopm    # modified sports car-k8jopm.jpg 2026-11-11
+d5qqz3    # tuned audi-d5qqz3.jpg 2026-11-11
+4lx312    # tuned bmw-4lx312.jpg 2026-11-11
+d55z33    # tuned audi-d55z33.jpg 2026-11-11
