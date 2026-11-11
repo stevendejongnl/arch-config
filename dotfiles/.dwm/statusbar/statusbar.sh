@@ -3,6 +3,17 @@
 SLSTATUS_DIR="$HOME/.dwm/statusbar"
 OUTPUT=""
 
+# The popup (dwm-popup.py) writes the name of its open tab here. The chip of that tab gets the
+# selected (cyan, escape 0x04) badge: a chip starts with its click byte and its badge byte.
+ACTIVE_TAB=$(cat "${XDG_RUNTIME_DIR:-/tmp}/dwm-popup-tab" 2>/dev/null)
+select_chip() {
+  if [ "$ACTIVE_TAB" = "$1" ]; then
+    printf '%s' "$2" | LC_ALL=C sed 's/^\(.\)./\1\x04/'
+  else
+    printf '%s' "$2"
+  fi
+}
+
 get_cpu_usage() {
   OUTPUT+="$("$SLSTATUS_DIR"/cpu-usage.sh)"
 }
@@ -29,24 +40,37 @@ get_sysmon() {
 }
 
 get_date() {
-  # 0x11 = statuscmd byte for date (clickable)
-  # Calendar glyph (U+F073), then dd-mm hh:mm in the normal status color
-  OUTPUT+="$(printf '\x11')$(printf '\xef\x81\xb3') $(date '+%d-%m %H:%M')$(printf '\x01')  "
+  # 0x11 = statuscmd byte for date (clickable, opens the Calendar tab of the popup)
+  # A grey chip like the Keito and Claude chips: calendar glyph (U+F073), then dd-mm hh:mm
+  OUTPUT+="$(select_chip calendar "$(printf '\x11\x0e') $(printf '\xef\x81\xb3') $(date '+%d-%m %H:%M') $(printf '\x01') ")"
+}
+
+get_claude_usage() {
+  # 0x14 = statuscmd byte for the Claude usage popup (clickable, printed by the script)
+  OUTPUT+="$(select_chip claude "$("$SLSTATUS_DIR"/claude-usage.sh)")"
+}
+
+get_notifications() {
+  # 0x15 = statuscmd byte for the notifications popup (clickable, printed by the script)
+  OUTPUT+="$(select_chip notifications "$("$SLSTATUS_DIR"/notifications.sh)")"
 }
 
 get_keito() {
-  OUTPUT+="$("$SLSTATUS_DIR"/keito.sh)"
+  OUTPUT+="$(select_chip keito "$("$SLSTATUS_DIR"/keito.sh)")"
 }
-
-get_sysmon
-get_package_updates
-get_date
 
 # Writes the Spotify playing state for dwm, prints nothing
 "$SLSTATUS_DIR"/shared-tag-playing.sh
 
+get_sysmon
+get_package_updates
+
+get_claude_usage
+get_date
+
 # Keito timer: only when this machine has the API creds (work laptop).
 [ -f "$SLSTATUS_DIR/keito/.env" ] && get_keito
+get_notifications
 
 # get_cpu_usage
 # get_memory_usage

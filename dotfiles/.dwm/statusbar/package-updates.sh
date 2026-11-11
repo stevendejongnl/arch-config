@@ -44,21 +44,21 @@ else
     status="0/0"
 fi
 
-# Shown only when updates pile up: yellow from 5, orange from 20, red from 50.
+# Shown only when updates pile up: a yellow chip from 5, orange from 20, red from 50.
 if [ "$status" != "0/0" ]; then
     updates_arch=$(echo "$status" | cut -d'/' -f1)
     updates_aur=$(echo "$status" | cut -d'/' -f2)
     total=$((updates_arch + updates_aur))
 
     if [ "$total" -ge 50 ]; then
-        color=$(printf '\x0B')  # critical
+        badge=$(printf '\x05')  # red chip
     elif [ "$total" -ge 20 ]; then
-        color=$(printf '\x0A')  # high
+        badge=$(printf '\x03')  # orange chip
     elif [ "$total" -ge 5 ]; then
-        color=$(printf '\x09')  # medium
+        badge=$(printf '\x02')  # yellow chip
     else
         exit 0
     fi
 
-    echo "$color$ICON $status$(printf '\x01')  "
+    printf '%s %s %s %s ' "$badge" "$ICON" "$status" "$(printf '\x01')"
 fi

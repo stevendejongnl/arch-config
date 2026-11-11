@@ -12,7 +12,7 @@ BADGE_YELLOW=$(printf '\x02')  # dark text on yellow background
 BADGE_ORANGE=$(printf '\x03')  # dark text on orange background
 BADGE_OFF=$(printf '\x0e')      # light text on gray background
 RESET=$(printf '\x01')
-CLICK=$(printf '\x13')         # statuscmd byte: click opens the Keito app (see click.sh)
+CLICK=$(printf '\x13')         # statuscmd byte: click opens the Keito tab of the popup (see click.sh)
 
 keito_dir="$HOME/.dwm/statusbar/keito"
 env_file="$keito_dir/.env"

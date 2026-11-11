@@ -33,3 +33,6 @@ nohup.out
 # rime theme installer: per-run backups + generated Chrome theme extension
 *.rime-backup-*
 .local/share/rime-chrome-theme/
+
+# Python bytecode of the status bar popup
+__pycache__/
