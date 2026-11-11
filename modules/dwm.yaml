@@ -21,6 +21,7 @@ packages:
   - xorg-xsetroot   # update-statusbar.sh
   - yad             # tag9-media fallback popup, bw-session password prompt
   - python-xlib     # tag9-media, dwm-dock (sends _DWM_FOCUS_CLIENT)
+  - imagemagick     # lock.sh: blurred wallpaper background for slock
 
 # Modules that conflict with this one
 conflicts: []

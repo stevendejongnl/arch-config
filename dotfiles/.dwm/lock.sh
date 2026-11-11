@@ -20,7 +20,7 @@ prepare_image() {
   monitors=$(xrandr --listmonitors | sed -n 's/.* \([0-9]*\)\/[0-9]*x\([0-9]*\)\/[0-9]*+\([0-9]*\)+\([0-9]*\) .*/\1x\2+\3+\4/p')
   [ -n "$total" ] && [ -n "$monitors" ] || { rm -f "$image"; return 0; }
 
-  key=$(printf 'v3|%s|%s|%s|%s' "$wall" "$(stat -c %Y "$wall")" "$total" "$monitors" | sha1sum | cut -d' ' -f1)
+  key=$(printf 'v4|%s|%s|%s|%s' "$wall" "$(stat -c %Y "$wall")" "$total" "$monitors" | sha1sum | cut -d' ' -f1)
   [ -f "$image" ] && [ "$(cat "$keyfile" 2>/dev/null)" = "$key" ] && return 0
 
   set -- -size "$total" "canvas:$bgcolor"
@@ -28,11 +28,11 @@ prepare_image() {
     size=${geom%%+*}
     offset=+${geom#*+}
     offset=${offset%+*}+${geom##*+}
-    # shrink, blur and grow again: a strong blur for little work, then dim it.
+    # shrink, blur and grow again: a strong blur for little work, then dim it by 10%.
     # -clamp is needed: this ImageMagick is HDRI, so resizing overshoots past white and
     # -modulate turned those values into wrong colors in bright areas (smoke, sky)
     set -- "$@" '(' "$wall" -resize "${size}^" -gravity center -extent "$size" \
-      -resize 12.5% -clamp -blur 0x2 -resize "${size}!" -clamp -evaluate Multiply 0.55 ')' \
+      -resize 12.5% -clamp -blur 0x2 -resize "${size}!" -clamp -evaluate Multiply 0.9 ')' \
       -gravity NorthWest -geometry "$offset" -composite
   done
   if magick "$@" -depth 8 "ppm:$image.tmp"; then
@@ -53,6 +53,15 @@ pgrep -x slock >/dev/null && exit 0
 playerctl -a pause 2>/dev/null
 was_muted=$(pamixer --get-mute 2>/dev/null)
 pamixer --mute 2>/dev/null
+
+# Fake kernel panic / bluescreen: never on arch-workstation, on computersloeber only at the
+# office (autorandr profile "office"), always on the other machines.
+host=$(sed -n 's/^host: *//p' "$HOME/.config/arch-config/config.yaml" 2>/dev/null)
+case "$host" in
+  arch-workstation) export SLOCK_PANIC_AFTER=0 ;;
+  computersloeber)
+    autorandr --current 2>/dev/null | grep -qx office || export SLOCK_PANIC_AFTER=0 ;;
+esac
 
 slock
 rc=$?
