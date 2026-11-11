@@ -1,0 +1,7 @@
+[Unit]
+Description=Sync the Claude configuration with the claude-config repository
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/workspace/personal/claude-config/sync.sh
