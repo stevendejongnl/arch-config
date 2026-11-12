@@ -40,6 +40,8 @@ xset s blank
 xset -dpms
 # -s: xss-lock crashes on unlock ("logind_session" assertion) when it cannot find its session
 pgrep -x xss-lock > /dev/null || xss-lock ${XDG_SESSION_ID:+-s "$XDG_SESSION_ID"} -- "$HOME/.dwm/lock.sh" &
+# pep (keep-awake) turns DPMS back on and drops the lock timer when it is switched off; this puts them back
+pgrep -x idle-guard.sh > /dev/null || "$HOME/.dwm/idle-guard.sh" &
 
 # Hide cursor after x time
 unclutter -idle 3 &
