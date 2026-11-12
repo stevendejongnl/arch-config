@@ -197,9 +197,9 @@ class CalendarPanel(Gtk.Box):
 
         row.pack_start(when, False, False, 0)
         row.pack_start(text, True, True, 0)
-        if e["meet"] and not past:
+        if e["meet"]:  # a past meeting keeps its link (a quiet button), to rejoin or to find the recording
             css = "action-go" if ongoing else "action-primary" if soon else None
-            text_ = "▶  Join now" if ongoing else "▶  Join"
+            text_ = "▶  Join now" if ongoing else "↗  Meet link" if past else "▶  Join"
             row.pack_end(button(text_, css, lambda url=e["meet"]: self.open_url(url)), False, False, 0)
         return row
 

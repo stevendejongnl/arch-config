@@ -1,0 +1,11 @@
+[Unit]
+Description=Meeting alert popup, one minute before a calendar meeting
+After=graphical-session.target
+
+[Service]
+ExecStart=%h/.dwm/statusbar/meeting-alert.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=graphical-session.target
