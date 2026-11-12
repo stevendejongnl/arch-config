@@ -85,15 +85,24 @@ class CalendarPanel(Gtk.Box):
 
     @staticmethod
     def available():
-        return CREDENTIALS.exists()
+        return True  # without credentials the tab still opens and says what is missing
 
     # data ------------------------------------------------------------
 
     def load(self):
         return fetch()
 
+    def show_missing_credentials(self):
+        clear(self.list)
+        text = f"No Google credentials on this machine. Put them at {CREDENTIALS}."
+        self.list.pack_start(label(text, "muted", wrap=True), False, False, 0)
+        self.list.show_all()
+
     def refresh_async(self):
         if self.busy:
+            return
+        if not CREDENTIALS.exists():
+            self.show_missing_credentials()
             return
         self.busy = True
         self.since_refresh = 0
