@@ -124,3 +124,4 @@ ymrj1x    # supercar-ymrj1x.jpg 2026-11-12
 ym83r7    # supercar-ym83r7.jpg 2026-11-12
 0wkx3x    # supercar-0wkx3x.jpg 2026-11-12
 42kjry    # widebody car-42kjry.jpg 2026-11-12
+45r6z1    # stance car-45r6z1.jpg 2026-11-12
