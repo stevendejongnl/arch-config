@@ -35,9 +35,11 @@ xset fp rehash &
 # The X screensaver timer only drives the lock: after 30 minutes without input
 # xss-lock runs lock.sh (slock). Cycle 0 means it fires once per idle period.
 xset s 1800 0
-xset s noblank
+# blank (not noblank): if the locker is ever missing the screen goes black, not the gray X pattern
+xset s blank
 xset -dpms
-pgrep -x xss-lock > /dev/null || xss-lock -- "$HOME/.dwm/lock.sh" &
+# -s: xss-lock crashes on unlock ("logind_session" assertion) when it cannot find its session
+pgrep -x xss-lock > /dev/null || xss-lock ${XDG_SESSION_ID:+-s "$XDG_SESSION_ID"} -- "$HOME/.dwm/lock.sh" &
 
 # Hide cursor after x time
 unclutter -idle 3 &
