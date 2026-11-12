@@ -55,11 +55,11 @@ was_muted=$(pamixer --get-mute 2>/dev/null)
 pamixer --mute 2>/dev/null
 
 # Fake kernel panic / bluescreen: never on arch-workstation, on computersloeber only at the
-# office (autorandr profile "office"), always on the other machines.
+# office (the office monitors are attached: autorandr --detected lists "office"), always on the other machines.
 host=$(sed -n 's/^host: *//p' "$HOME/.config/arch-config/config.yaml" 2>/dev/null)
 case "$host" in
   arch-workstation) no_panic=1 ;;
-  computersloeber) autorandr --current 2>/dev/null | grep -qx office || no_panic=1 ;;
+  computersloeber) autorandr --detected 2>/dev/null | grep -qx office || no_panic=1 ;;
 esac
 # Where there is no panic, the lock screen dims to 10% brightness after the same 2 minutes
 # (any key brings it back), so the screen feels almost off.
