@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# Adds the user-scope MCP servers that one machine has and the other lacks, for the work and
+# personal Claude account, in both directions, over ssh.
+#
+#   claude-mcp-sync [--apply] <ssh command words>     e.g. claude-mcp-sync ssh sloeber
+#
+# Without --apply it only lists the server NAMES it would add. Tokens in env and headers travel
+# over ssh only: they are never printed and never go into a git repository (the claude-config
+# repository keeps no secrets). A server that exists on both sides is left alone, because
+# commands and paths differ per machine. Writes go through `claude mcp add-json`, so a running
+# Claude Code is not fighting a hand-edited .claude.json.
+set -euo pipefail
+
+apply=0
+if [ "${1:-}" = "--apply" ]; then apply=1; shift; fi
+[ "$#" -gt 0 ] || { echo "usage: claude-mcp-sync [--apply] <ssh command words, e.g. ssh sloeber>" >&2; exit 2; }
+peer=("$@")
+accounts="work personal"
+
+workdir=$(mktemp -d)
+chmod 700 "$workdir"
+trap 'rm -rf "$workdir"' EXIT
+
+servers_file() {
+  printf '%s/.claude/accounts/%s/.claude.json' "$HOME" "$1"
+}
+
+read_local() {
+  jq -c '.mcpServers // {}' "$(servers_file "$1")" 2> /dev/null || echo '{}'
+}
+
+read_peer() {
+  "${peer[@]}" "jq -c '.mcpServers // {}' \$HOME/.claude/accounts/$1/.claude.json 2> /dev/null || echo '{}'"
+}
+
+names_missing_in() {
+  jq -r --slurpfile have "$2" 'keys - ($have[0] | keys) | .[]' "$1"
+}
+
+absolute_command_of() {
+  jq -r --arg name "$2" '.[$name].command // "" | select(startswith("/"))' "$1"
+}
+
+# A server that runs an absolute path is only added where that program exists.
+runnable_here() {
+  local command
+  command=$(absolute_command_of "$1" "$2")
+  [ -z "$command" ] || [ -x "$command" ]
+}
+
+runnable_on_peer() {
+  local command
+  command=$(absolute_command_of "$1" "$2")
+  [ -z "$command" ] || "${peer[@]}" "test -x $(printf '%q' "$command")"
+}
+
+add_local() {
+  local account=$1 name=$2 json
+  json=$(jq -c --arg name "$name" '.[$name]' "$workdir/$account.peer.json")
+  CLAUDE_CONFIG_DIR="$HOME/.claude/accounts/$account" /usr/bin/claude mcp add-json -s user "$name" "$json" > /dev/null
+}
+
+add_on_peer() {
+  local account=$1 name=$2
+  jq -c --arg name "$name" '.[$name]' "$workdir/$account.local.json" |
+    "${peer[@]}" "json=\$(cat); CLAUDE_CONFIG_DIR=\$HOME/.claude/accounts/$account /usr/bin/claude mcp add-json -s user $(printf '%q' "$name") \"\$json\" > /dev/null"
+}
+
+for account in $accounts; do
+  read_local "$account" > "$workdir/$account.local.json"
+  read_peer "$account" > "$workdir/$account.peer.json"
+  chmod 600 "$workdir"/*.json
+
+  into_local=$(names_missing_in "$workdir/$account.peer.json" "$workdir/$account.local.json" | tr '\n' ' ')
+  into_peer=$(names_missing_in "$workdir/$account.local.json" "$workdir/$account.peer.json" | tr '\n' ' ')
+  echo "[$account] missing here: ${into_local:-none}"
+  echo "[$account] missing on peer: ${into_peer:-none}"
+
+  [ "$apply" -eq 1 ] || continue
+  for name in $into_local; do
+    runnable_here "$workdir/$account.peer.json" "$name" || { echo "[$account] skipped here (program not installed): $name"; continue; }
+    add_local "$account" "$name" && echo "[$account] added here: $name"
+  done
+  for name in $into_peer; do
+    runnable_on_peer "$workdir/$account.local.json" "$name" || { echo "[$account] skipped on peer (program not installed): $name"; continue; }
+    add_on_peer "$account" "$name" && echo "[$account] added on peer: $name"
+  done
+done
+[ "$apply" -eq 1 ] || echo "(dry run: nothing changed, use --apply)"
