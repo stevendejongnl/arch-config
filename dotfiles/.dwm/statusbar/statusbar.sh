@@ -52,6 +52,12 @@ get_claude_usage() {
   OUTPUT+="$(select_chip claude "$("$SLSTATUS_DIR"/claude-usage.sh)")"
 }
 
+get_case_dot() {
+  # 0x16 = statuscmd byte for the Case tab (clickable), 0x06 = dwm escape for the dot in the colour of the PC case.
+  # The colour is read by dwm itself from ~/.config/case-color, so this text never changes.
+  OUTPUT+="$(printf '\x16\x06 \xef\x84\x91 \x01')"
+}
+
 get_notifications() {
   # 0x15 = statuscmd byte for the notifications popup (clickable, printed by the script)
   OUTPUT+="$(select_chip notifications "$("$SLSTATUS_DIR"/notifications.sh)")"
@@ -67,6 +73,7 @@ get_keito() {
 get_sysmon
 get_package_updates
 
+get_case_dot
 get_claude_usage
 get_date
 

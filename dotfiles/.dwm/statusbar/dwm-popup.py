@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""The popup of the dwm status bar: one window that shows Claude, Calendar, Keito or Notifications. The chips in the bar
+"""The popup of the dwm status bar: one window that shows Case, Claude, Calendar, Keito or Notifications. The chips in the bar
 are the tabs (the chip of the shown one is cyan), so the window has no tab strip of its own.
 
-  dwm-popup.py [claude|calendar|keito|notifications]   open on that tab (click.sh runs this). When the popup is
+  dwm-popup.py [case|claude|calendar|keito|notifications]   open on that tab (click.sh runs this). When the popup is
                                          already open, the same tab closes it and another tab switches.
   dwm-popup.py <tab> --at X Y            open under that point (click.sh passes the position of the click)
   dwm-popup.py png DIR [tab ...]         render the tabs to PNG files, for checking the layout
@@ -21,11 +21,12 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 from popup.theme import Gdk, GLib, Gtk, install_css, label, margins  # noqa: E402
 from popup.calendar_panel import CalendarPanel  # noqa: E402
+from popup.case_panel import CasePanel  # noqa: E402
 from popup.claude_panel import ClaudePanel  # noqa: E402
 from popup.keito_panel import KeitoPanel  # noqa: E402
 from popup.notifications_panel import NotificationsPanel  # noqa: E402
 
-PANELS = [ClaudePanel, CalendarPanel, KeitoPanel, NotificationsPanel]  # the order of the chips in the bar
+PANELS = [CasePanel, ClaudePanel, CalendarPanel, KeitoPanel, NotificationsPanel]  # the order of the chips in the bar
 PANEL_WIDTH, PANEL_HEIGHT = 662, 440
 BAR_HEIGHT = 36  # clicks in this band at the top of the monitor are clicks on the bar
 RUN_DIR = Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp"))

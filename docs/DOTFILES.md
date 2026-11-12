@@ -54,6 +54,26 @@ When you edit `~/.zshrc`, you're actually editing `~/.config/arch-config/dotfile
 └── ...                    # Other top-level dotfiles
 ```
 
+## Status bar: case colour
+
+A coloured dot sits before the Claude usage chip in the dwm status bar. It shows the colour of the PC case. A click opens
+the Case tab of the status bar popup, a colour picker with a hex field.
+
+![Case tab of the status bar popup](screenshots/status-bar-case-tab.png)
+
+- The colour is one `#RRGGBB` line in `~/.config/case-color`. The file belongs to one machine and is not in the dotfiles.
+  Without the file the dot is grey.
+- dwm reads the file on every status update (status escape `0x06`, see `updatecasecolor()` in the dwm fork), so a new
+  colour shows within a second.
+- Picking a colour also sets the lights, in `dotfiles/.dwm/statusbar/popup/case_color.py`:
+  - The board of arch-workstation (ASUS ROG STRIX X570-E): board LEDs and the two addressable headers (sized to 60 LEDs)
+    through `openrgb`. OpenRGB.json has only the `ASUS Aura Motherboard` detector on, so one call takes under a second
+    instead of 8.
+  - The Redragon M602-RGB mouse (USB `04d9:fc38`) through HID feature reports on `/dev/hidraw`, in the sequence the
+    Windows software sends (found by capturing its USB traffic). OpenRGB cannot set this mouse.
+- `autostart.sh` runs `case_color.py apply` at login, because the lights forget the colour at power off.
+- On a host without the OpenRGB package or the mouse, the dot still works and the missing device is skipped.
+
 ## Managing Dotfiles
 
 ### Adding a New Dotfile

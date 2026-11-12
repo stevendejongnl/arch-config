@@ -47,6 +47,10 @@ packages:
   # clipman/solaar.service (dotfiles, all hosts) need these binaries
   - xfce4-clipman-plugin
   - solaar
+  # RGB lighting of the case (ASUS Aura controller on the ROG STRIX X570-E), driven by the case dot in the status bar
+  - openrgb
+  # USB capture (usbmon) to reverse-engineer the Redragon mouse protocol from the Windows VM
+  - wireshark-cli
 
 # Exclude packages from base or modules
 exclude:

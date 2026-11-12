@@ -8,6 +8,9 @@ pgrep -f dwm-dock.py >/dev/null || nohup python3 -I "$HOME/workspace/builds/suck
 
 "$HOME/.config/systemd/user/scripts/autorandr-prompt.sh" &
 
+# The case and mouse lights forget their colour at power off: set the saved case colour again
+python3 -I "$HOME/.dwm/statusbar/popup/case_color.py" apply &
+
 # sleep 5
 gsettings set org.gnome.desktop.interface color-scheme prefer-dark &  # locked dark (modules/dark-mode.yaml)
 # Re-apply the last used wallpaper. The picker (wallpaper.service) only opens on its schedule.
