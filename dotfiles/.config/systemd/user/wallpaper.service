@@ -1,14 +1,1 @@
-[Unit]
-Description=Wallpaper
-After=graphical-session.target
-OnFailure=autostart-failure@%n.service
-
-[Service]
-Type=oneshot
-ExecStartPre=/bin/bash -c 'for i in $(seq 60); do xdpyinfo -display :0 >/dev/null 2>&1 && exit 0; sleep 0.5; done; exit 1'
-ExecStart=/bin/bash %h/.local/share/wallpaper-picker/bin/wallpaper.sh --gui
-TimeoutStartSec=300
-Environment=DISPLAY=:0
-Environment=XAUTHORITY=%h/.Xauthority
-StandardOutput=journal
-StandardError=journal
+/home/stevendejong/.local/share/wallpaper-picker/systemd/wallpaper.service

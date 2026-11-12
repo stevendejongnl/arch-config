@@ -117,3 +117,4 @@ d55z33    # tuned audi-d55z33.jpg 2026-11-11
 5d7v91    # drift car-5d7v91.jpg 2026-11-11
 od7kl9    # modified sports car-od7kl9.jpg 2026-11-11
 pkxzze    # jdm car-pkxzze.jpg 2026-11-11
+zmvdwy    # supercar-zmvdwy.jpg 2026-11-12
