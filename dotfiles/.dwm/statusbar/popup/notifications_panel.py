@@ -9,7 +9,7 @@ import zlib
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-from gi.repository import Gtk, Pango
+from gi.repository import GLib, Gtk, Pango
 
 from .theme import (DIM, GREEN, MARKUP, MUTED, ORANGE, PURPLE, RED, TEAL, YELLOW, button, clear, label, margins,
                     rgb, run_async)
@@ -41,6 +41,12 @@ def write_seen(value):
 def plain(text):
     """dunst bodies carry markup (<b>, <a href>): show them as text."""
     return html.unescape(TAG.sub("", text or "")).strip()
+
+
+def copy_text(text):
+    """Own the X clipboard through xclip, which forks and keeps serving it after this popup closes."""
+    subprocess.run(["xclip", "-selection", "clipboard", "-in"], input=text.encode(), timeout=5, check=False,
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def esc(text):
@@ -214,14 +220,25 @@ class NotificationsPanel(Gtk.Box):
             text.pack_start(lb, False, False, 0)
 
         dismiss = button("✕", "dismiss", lambda i=n["id"]: self.act("history-rm", str(i)))
-        dismiss.get_style_context().remove_class("action")
-        dismiss.set_valign(Gtk.Align.START)
+        copy = button("\uf0c5", "dismiss", lambda: None)
+        copy.connect("clicked", lambda b, n=n: self.copy(b, n))
+        buttons = Gtk.Box(spacing=0, valign=Gtk.Align.START)
+        for b in (copy, dismiss):
+            b.get_style_context().remove_class("action")
+            b.set_valign(Gtk.Align.START)
+            buttons.pack_start(b, False, False, 0)
         row.pack_start(tile, False, False, 0)
         row.pack_start(text, True, True, 0)
-        row.pack_end(dismiss, False, False, 0)
+        row.pack_end(buttons, False, False, 0)
         return row
 
     # actions ---------------------------------------------------------
+
+    def copy(self, widget, n):
+        """Copy the title and the text of one notification, and show a check mark for a moment."""
+        copy_text("\n".join(t for t in (plain(n["summary"]), plain(n["body"])) if t))
+        widget.set_label("\uf00c")
+        GLib.timeout_add(1200, lambda: widget.set_label("\uf0c5") and False)
 
     def toggle_dnd(self):
         self.act("set-paused", "toggle")
