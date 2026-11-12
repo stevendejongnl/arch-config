@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Timer entry for claude-mcp-sync: syncs the MCP servers with the other machine, but only when
+# that machine answers. When it is off, asleep, away from the network or ssh is refused, the run
+# is skipped quietly and the next timer run tries again. Names only are logged, never values.
+set -u
+
+log="${XDG_STATE_HOME:-$HOME/.local/state}/claude-mcp-sync.log"
+mkdir -p "$(dirname "$log")"
+
+say() {
+  printf '%s %s\n' "$(date '+%F %T')" "$*" >> "$log"
+}
+
+exec 9> "${XDG_RUNTIME_DIR:-/tmp}/claude-mcp-sync.lock"
+flock -n 9 || exit 0
+
+host=$(sed -n 's/^host: *//p' "$HOME/.config/arch-config/config.yaml" 2> /dev/null)
+case "$host" in
+  arch-workstation) peer=computersloeber ;;
+  computersloeber) peer=arch-workstation ;;
+  *) exit 0 ;;
+esac
+
+# The ssh config holds fixed addresses that go stale, so the peer is addressed by its name.
+peer_ssh=(ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new -o HostName="$peer" "$peer")
+
+if ! timeout 4 bash -c "exec 3<>/dev/tcp/$peer/22" 2> /dev/null; then
+  exit 0
+fi
+if ! "${peer_ssh[@]}" true 2> /dev/null; then
+  say "$peer answers but ssh was refused (agent locked?), skipped"
+  exit 0
+fi
+
+output=$("$(dirname "$(readlink -f "$0")")/claude-mcp-sync" --apply "${peer_ssh[@]}" 2>&1)
+status=$?
+changes=$(printf '%s\n' "$output" | grep -E 'added|rror|usage' || true)
+[ -n "$changes" ] && say "$changes"
+[ "$status" -eq 0 ] || say "claude-mcp-sync failed with status $status"
+exit "$status"

@@ -1,0 +1,7 @@
+[Unit]
+Description=Sync the Claude MCP servers with the other machine, when it is reachable
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/claude-mcp-autosync
