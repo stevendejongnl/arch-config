@@ -92,6 +92,12 @@ def apply_mouse(hexcolor):
     return True
 
 
+def lights_present():
+    """True on a machine with case lights: the ASUS board or the mouse. The bar uses the same script."""
+    script = Path(__file__).resolve().parent.parent / "case-lights.sh"
+    return subprocess.run([str(script)], capture_output=True).returncode == 0
+
+
 def apply_case(hexcolor):
     if not shutil.which("openrgb"):
         return False
@@ -106,6 +112,8 @@ def apply_lighting(hexcolor):
 
 
 if __name__ == "__main__":
+    if sys.argv[1:] == ["apply"] and not lights_present():
+        sys.exit(0)  # nothing to light on this machine
     if sys.argv[1:] == ["apply"]:
         sys.exit(0 if apply_lighting(read_case_color()) else 1)
     sys.exit(__doc__)

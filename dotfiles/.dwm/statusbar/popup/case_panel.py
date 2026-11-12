@@ -1,7 +1,7 @@
 """Case tab: pick the colour of the PC case. The dot in the bar, the case lights and the mouse get it."""
 from gi.repository import Gdk, GLib, Gtk
 
-from .case_color import apply_lighting, read_case_color, write_case_color
+from .case_color import apply_lighting, lights_present, read_case_color, write_case_color
 from .theme import label, margins, run_async
 
 LIGHT_DELAY_MS = 400  # dragging in the picker changes the colour many times a second, OpenRGB needs a moment per call
@@ -33,7 +33,7 @@ class CasePanel(Gtk.Box):
 
     @staticmethod
     def available():
-        return True
+        return lights_present()
 
     def set_chooser_color(self, hexcolor):
         rgba = Gdk.RGBA()

@@ -53,6 +53,8 @@ get_claude_usage() {
 }
 
 get_case_dot() {
+  # Only machines with case lights (the workstation) get the dot, see case-lights.sh
+  "$SLSTATUS_DIR"/case-lights.sh || return 0
   # 0x16 = statuscmd byte for the Case tab (clickable), 0x06 = dwm escape for the dot in the colour of the PC case.
   # The colour is read by dwm itself from ~/.config/case-color, so this text never changes.
   OUTPUT+="$(printf '\x16\x06 \xef\x84\x91 \x01')"

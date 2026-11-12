@@ -72,7 +72,10 @@ the Case tab of the status bar popup, a colour picker with a hex field.
   - The Redragon M602-RGB mouse (USB `04d9:fc38`) through HID feature reports on `/dev/hidraw`, in the sequence the
     Windows software sends (found by capturing its USB traffic). OpenRGB cannot set this mouse.
 - `autostart.sh` runs `case_color.py apply` at login, because the lights forget the colour at power off.
-- On a host without the OpenRGB package or the mouse, the dot still works and the missing device is skipped.
+- The dot and the Case tab only exist on a host with case lights. `dotfiles/.dwm/statusbar/case-lights.sh` decides: the
+  board vendor in `/sys/class/dmi/id/board_vendor` contains `ASUS`, or the mouse (USB `04d9:fc38`) is connected. The
+  laptop has neither, so it shows no dot and no Case tab, and `case_color.py apply` exits at once. On a host with only
+  one of the two devices, the missing device is skipped.
 
 ## Managing Dotfiles
 
