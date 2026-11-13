@@ -29,3 +29,4 @@ dotfiles.code-workspace
 ^/\.config/ntfd            # ntfd config (machine-specific)
 ^/\.local/bin              # Local binaries (may have machine-specific scripts)
 ^/\.local/share/applications  # Desktop entries (may be machine-specific)
+^/\.config/autorandr       # copied (not linked) by dotfiles-deploy.sh; per-host profiles live in dotfiles-hosts/
