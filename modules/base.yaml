@@ -98,7 +98,6 @@ packages:
   - ungoogled-chromium-bin
   - zapzap             # WhatsApp desktop client
   - slack-desktop
-  - barrier            # Keyboard and mouse sharing
   - pep                 # System tray keep-awake tool (systemd-inhibit)
   - kdeconnect          # Cross-device link (phone/desktop) over LAN
   - plasma-browser-integration  # native host for the Plasma Chrome/Firefox extension.

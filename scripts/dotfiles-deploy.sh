@@ -221,6 +221,21 @@ if [ ! -d "$WALLPAPER_PICKER_DIR/.git" ]; then
         && log "wallpaper-picker installed" \
         || log "wallpaper-picker clone failed (network/SSH key?) — clone manually"
 fi
+# Keep an existing checkout current, so sync picks up new pickers/desktop files.
+if [ -d "$WALLPAPER_PICKER_DIR/.git" ]; then
+    git -C "$WALLPAPER_PICKER_DIR" pull -q --ff-only 2>/dev/null \
+        || log "wallpaper-picker pull skipped (offline, local changes or diverged)"
+    chmod +x "$WALLPAPER_PICKER_DIR"/bin/*.sh 2>/dev/null || true
+    # Launchers: link every .desktop from the repo, drop dead links to old ones.
+    mkdir -p "$HOME_DIR/.local/share/applications"
+    for desktop in "$WALLPAPER_PICKER_DIR"/desktop/*.desktop; do
+        [ -f "$desktop" ] || continue
+        ln -sfn "$desktop" "$HOME_DIR/.local/share/applications/$(basename "$desktop")"
+    done
+    for link in "$HOME_DIR"/.local/share/applications/*wallpaper*.desktop; do
+        [ -L "$link" ] && [ ! -e "$link" ] && rm -f "$link" && log "removed dead launcher $(basename "$link")"
+    done
+fi
 if [ ! -f "$HOME_DIR/.config/wallpaper/categories.conf" ] && [ -f "$WALLPAPER_PICKER_DIR/config/categories.conf.example" ]; then
     mkdir -p "$HOME_DIR/.config/wallpaper"
     cp "$WALLPAPER_PICKER_DIR/config/categories.conf.example" "$HOME_DIR/.config/wallpaper/categories.conf"

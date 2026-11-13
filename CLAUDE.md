@@ -338,7 +338,6 @@ dcli sync                           # Apply changes to system
 
 **Utilities**:
 - `lazydocker` - Docker/Compose terminal UI
-- `barrier` - Keyboard/mouse sharing
 - `darkman` - Automatic dark mode switching
 - `autorandr` - Automatic screen layout management
 
