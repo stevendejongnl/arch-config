@@ -18,6 +18,15 @@ lid_is_closed() {
     grep -q closed /proc/acpi/button/lid/*/state 2>/dev/null
 }
 
+has_laptop_profile() {
+    [[ -d "$HOME/.config/autorandr/laptop" ]]
+}
+
+load_laptop_if_present() {
+    has_laptop_profile || return 0
+    autorandr --load laptop
+}
+
 mapfile -t detected < <(autorandr --detected)
 current=$(autorandr --current | head -1)
 
@@ -41,6 +50,13 @@ if lid_is_closed; then
     exit 0
 fi
 
+# No laptop profile (desktop machine) and one external match: nothing to ask, load it.
+if ! has_laptop_profile && [[ ${#external[@]} -eq 1 ]]; then
+    autorandr --load "${external[0]}"
+    "$HOME/.local/share/wallpaper-picker/bin/wallpaper.sh" --display-changed
+    exit 0
+fi
+
 # Already sitting on one of the currently-matching external profiles - don't re-prompt,
 # unless manually invoked with --force (e.g. the "Change Display" launcher).
 if [[ "$force" -eq 0 ]]; then
@@ -50,13 +66,13 @@ if [[ "$force" -eq 0 ]]; then
 fi
 
 # Force laptop-only immediately so nothing shows dual/extended while we ask.
-autorandr --load laptop
+load_laptop_if_present
 
 choice=$(printf '%s\n' "${external[@]}" "Laptop only (deny)" \
     | rofi -dmenu -p "Monitor connected - use profile?")
 
 if [[ -z "$choice" || "$choice" == "Laptop only (deny)" ]]; then
-    autorandr --load laptop
+    load_laptop_if_present
 else
     autorandr --load "$choice"
 fi
