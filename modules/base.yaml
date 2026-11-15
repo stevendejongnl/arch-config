@@ -96,7 +96,6 @@ packages:
   - thunar-shares-plugin  # Network shares support for Thunar
   - thunar-volman       # Volume management for Thunar
   - ungoogled-chromium-bin
-  - zapzap             # WhatsApp desktop client
   - slack-desktop
   - pep                 # System tray keep-awake tool (systemd-inhibit)
   - kdeconnect          # Cross-device link (phone/desktop) over LAN
