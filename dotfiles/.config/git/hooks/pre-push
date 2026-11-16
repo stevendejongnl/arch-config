@@ -11,6 +11,9 @@ if echo "$remote_url" | grep -qE 'https?://[^@[:space:]]+:[^@[:space:]]+@'; then
     exit 1
 fi
 
+# Scheduled jobs set GIT_PUSH_NOTIFY=0 so they do not notify every run
+[[ "${GIT_PUSH_NOTIFY:-1}" == "0" ]] && exit 0
+
 branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
 timeout 2s notify-send "git push" "→ ${remote_name} (${remote_url}) on ${branch}" 2>/dev/null || true
 exit 0
