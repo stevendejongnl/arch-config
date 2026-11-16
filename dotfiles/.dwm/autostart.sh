@@ -13,7 +13,7 @@ python3 -I "$HOME/.dwm/statusbar/popup/case_color.py" apply &
 
 # sleep 5
 gsettings set org.gnome.desktop.interface color-scheme prefer-dark &  # locked dark (modules/dark-mode.yaml)
-# Re-apply the last used wallpaper. The picker (wallpaper.service) only opens on its schedule.
+# Re-apply the last used wallpaper. The picker (wallpaper.service) opens once, 5 minutes after boot.
 "$HOME/.local/share/wallpaper-picker/bin/wallpaper.sh" --reapply &
 systemctl --user start autostart.target &
 
