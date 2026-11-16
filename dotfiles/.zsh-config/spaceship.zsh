@@ -4,6 +4,7 @@ SPACESHIP_PROMPT_ASYNC=false
 SPACESHIP_EXEC_TIME_ELAPSED=1
 
 SPACESHIP_PROMPT_ORDER=(
+  sudo_active   # Red marker while a sudo credential is cached
   time          # Time stampts section
   exec_time     # Execution time
   user          # Username section
@@ -126,4 +127,22 @@ spaceship_pkgmgr() {
     --suffix "$SPACESHIP_PKGMGR_SUFFIX" \
     --symbol "$pkgmgr_symbol " \
     "$pkgmgr_name"
+}
+
+# ------------------------------------------------------------------------------
+# Custom section: sudo_active
+# ------------------------------------------------------------------------------
+
+SPACESHIP_SUDO_ACTIVE_SHOW="${SPACESHIP_SUDO_ACTIVE_SHOW=true}"
+SPACESHIP_SUDO_ACTIVE_ASYNC="${SPACESHIP_SUDO_ACTIVE_ASYNC=false}"
+SPACESHIP_SUDO_ACTIVE_COLOR="${SPACESHIP_SUDO_ACTIVE_COLOR="red"}"
+
+spaceship_sudo_active() {
+  [[ $SPACESHIP_SUDO_ACTIVE_SHOW == false ]] && return
+  sudo -n -v >/dev/null 2>&1 || return
+
+  spaceship::section \
+    --color "$SPACESHIP_SUDO_ACTIVE_COLOR" \
+    --suffix " " \
+    "SUDO"
 }

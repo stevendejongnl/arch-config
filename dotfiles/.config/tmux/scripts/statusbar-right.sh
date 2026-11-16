@@ -3,7 +3,9 @@
 # Rime theme — https://git.madebysteven.nl/stevendejong/rime
 
 green='#[fg=#12141c,bg=#7fd88f,nobold,nounderscore,noitalics]'
-purple='#[fg=#12141c,bg=#3ee6e0,nobold,nounderscore,noitalics]'
+accent=3ee6e0
+[ "$(~/.config/tmux/scripts/sudo-active.sh)" = "1" ] && accent=ff2a3d
+purple="#[fg=#12141c,bg=#$accent,nobold,nounderscore,noitalics]"
 reset='#[fg=default,bg=default]'
 
 if command -v playerctl >/dev/null 2>&1 && [ "$(playerctl status 2>/dev/null)" = "Playing" ]; then
