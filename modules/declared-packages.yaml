@@ -20,6 +20,7 @@ packages:
 - kubectl
 - okular
 - openvpn
+- python-paho-mqtt
 - python-pipx
 - python-pywebview
 - python-qtpy

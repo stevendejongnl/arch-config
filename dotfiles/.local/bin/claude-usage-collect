@@ -1,0 +1,345 @@
+#!/usr/bin/env python3
+"""Collect Claude usage for all profiles via the OAuth usage endpoint.
+
+Writes per-profile cache files, a combined usage.json, and publishes sensors to MQTT
+(Home Assistant MQTT discovery). Never refreshes tokens and never prints them.
+"""
+import json
+import os
+import socket
+import sys
+import threading
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+import requests
+
+PROFILES = ["personal", "work"]
+ACCOUNTS = Path.home() / ".claude" / "accounts"
+OUT_DIR = Path.home() / ".cache" / "claude-usage"
+URL = "https://api.anthropic.com/api/oauth/usage"
+MQTT_HOST = os.environ.get("CLAUDE_USAGE_MQTT_HOST", "192.168.1.28")
+MQTT_PORT = 1883
+# Home Assistant marks every sensor unavailable this long after the last publish. The collector
+# runs every minute, so this only bites when publishing stops (network down, broker down). It was
+# 5 minutes, which blanked the wall displays during any short outage; 15 rides those out.
+EXPIRE_AFTER_S = 900
+MQTT_USER = os.environ.get("CLAUDE_USAGE_MQTT_USER", "root")
+MQTT_PASSWORD_FILE = Path.home() / ".config" / "claude-usage" / "mqtt_password"
+FETCH_STATE = OUT_DIR / "fetch-state.json"
+MIN_INTERVAL = int(os.environ.get("CLAUDE_USAGE_MIN_INTERVAL", "300"))  # seconds between API calls
+MAX_BACKOFF = 1800  # cap for 429 backoff
+STALE_AFTER = 1200  # data older than this is reported stale
+# Several computers can run this collector. Only one publishes to Home Assistant at a time: the
+# holder of a retained "lease" message per profile. A computer renews the lease on every publish with fresh
+# data; another computer takes over once the lease is older than LEASE_S (about 3 missed runs).
+HOST = socket.gethostname()
+LEASE_TOPIC = "claude_usage/publisher"
+LEASE_S = int(os.environ.get("CLAUDE_USAGE_LEASE_S", "180"))
+
+
+def log(msg):
+    print(msg, file=sys.stderr)
+
+
+def atomic_write(path, text):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(text)
+    os.replace(tmp, path)
+
+
+def read_json(path):
+    try:
+        return json.loads(path.read_text())
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+
+
+def normalize(profile, sub, data):
+    five = data.get("five_hour") or {}
+    seven = data.get("seven_day") or {}
+    extra = data.get("extra_usage") or {}
+    div = 10 ** extra.get("decimal_places", 2)
+    used = (extra.get("used_credits") or 0) / div
+    limit = (extra.get("monthly_limit") or 0) / div
+    now = time.time()
+    out = {
+        "profile": profile,
+        "subscription": sub,
+        "fetched_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "stale": False,
+        "stale_reason": None,
+        "session_pct": five.get("utilization") or 0,
+        "session_resets_at": five.get("resets_at"),
+        "weekly_pct": seven.get("utilization") or 0,
+        "weekly_resets_at": seven.get("resets_at"),
+        "credits_used": round(used, 2),
+        "credits_limit": round(limit, 2),
+        "credits_pct": extra.get("utilization") or 0,
+        "credits_currency": extra.get("currency"),
+        "credits_enabled": bool(extra.get("is_enabled")),
+        # blocked: extra usage switched off or limit reached; the amounts stay meaningful
+        "credits_blocked": (not extra.get("is_enabled")) or bool(extra.get("spend_limit_reached")),
+        "credits_disabled_reason": extra.get("disabled_reason"),
+        "timestamp": now,
+    }
+    # legacy keys read by the statusline
+    out["current_session"] = out["session_pct"]
+    out["weekly"] = out["weekly_pct"]
+    return out
+
+
+def collect(profile, state):
+    """Return fresh data, or cached data when the API is skipped or fails.
+
+    The usage endpoint rate limits (429 with retry-after: 0), so API calls are spaced
+    MIN_INTERVAL apart and back off exponentially after a 429. Cached data is only
+    reported stale once it is older than STALE_AFTER.
+    """
+    cache_path = ACCOUNTS / profile / "rate-limit-cache.json"
+    last = read_json(cache_path) or {"profile": profile}
+    ps = state.setdefault(profile, {})
+    now = time.time()
+
+    def cached(reason):
+        age = now - (last.get("timestamp") or 0)
+        is_stale = age > STALE_AFTER
+        last.update({
+            "profile": profile,
+            "stale": is_stale,
+            "stale_reason": reason if is_stale else None,
+            "last_error": reason,
+            "rate_limited": reason == "http_429",
+        })
+        return last
+
+    if now < ps.get("next_fetch_after", 0):
+        return cached(ps.get("last_error"))
+
+    creds = (read_json(ACCOUNTS / profile / ".credentials.json") or {}).get("claudeAiOauth") or {}
+    token = creds.get("accessToken")
+    sub = creds.get("subscriptionType")
+    if not token:
+        return cached("no_token")
+    if (creds.get("expiresAt") or 0) / 1000 < now:
+        # never refresh here: a refresh rotates the refresh token and can log Claude Code out
+        ps.update(next_fetch_after=now + 60, last_error="token_expired")
+        return cached("token_expired")
+
+    def fail(reason, wait):
+        ps.update(next_fetch_after=now + wait, last_error=reason)
+        return cached(reason)
+
+    try:
+        resp = requests.get(
+            URL,
+            headers={"Authorization": f"Bearer {token}", "anthropic-beta": "oauth-2025-04-20"},
+            timeout=10,
+        )
+    except requests.RequestException as exc:
+        return fail(f"network:{type(exc).__name__}", 60)
+    if resp.status_code == 429:
+        backoff = min(max(ps.get("backoff", 0) * 2, MIN_INTERVAL), MAX_BACKOFF)
+        ps["backoff"] = backoff
+        return fail("http_429", backoff)
+    if resp.status_code != 200:
+        return fail(f"http_{resp.status_code}", 60)
+    try:
+        data = resp.json()
+    except ValueError:
+        return fail("bad_json", 60)
+    for key in ("five_hour", "seven_day", "extra_usage"):
+        if key not in data:
+            log(f"{profile}: key missing in response: {key}")
+    ps.update(next_fetch_after=now + MIN_INTERVAL, backoff=0, last_error=None, last_ok=now)
+    out = normalize(profile, sub, data)
+    out.update({"last_error": None, "rate_limited": False})
+    return out
+
+
+def export_doc(states):
+    """Consumer-facing document: one entry per account with grouped, typed fields."""
+    accounts = {}
+    for s in states:
+        accounts[s["profile"]] = {
+            "subscription": s.get("subscription"),
+            "status": s.get("data_status"),
+            "stale": bool(s.get("stale")),
+            "age_min": s.get("data_age_min"),
+            "error": s.get("last_error"),
+            "fetched_at": s.get("fetched_at"),
+            "session": {"pct": s.get("session_pct"), "resets_at": s.get("session_resets_at")},
+            "weekly": {"pct": s.get("weekly_pct"), "resets_at": s.get("weekly_resets_at")},
+            "credits": {
+                "used": s.get("credits_used"),
+                "limit": s.get("credits_limit"),
+                "pct": s.get("credits_pct"),
+                "currency": s.get("credits_currency"),
+                "enabled": s.get("credits_enabled"),
+                "blocked": s.get("credits_blocked"),
+                "disabled_reason": s.get("credits_disabled_reason"),
+            },
+        }
+    return {"updated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "accounts": accounts}
+
+
+SENSORS = [
+    # key, name, unit, device_class, state_class
+    ("session_pct", "Session (5h) usage", "%", None, "measurement"),
+    ("weekly_pct", "Weekly usage", "%", None, "measurement"),
+    ("credits_pct", "Credits usage", "%", None, "measurement"),
+    ("credits_used", "Credits used", None, "monetary", "total"),
+    ("credits_limit", "Credits limit", None, "monetary", None),
+    ("session_resets_at", "Session reset", None, "timestamp", None),
+    ("weekly_resets_at", "Weekly reset", None, "timestamp", None),
+]
+
+
+STATUS_VALUES = ["ok", "rate_limited", "token_expired", "error", "stale"]
+
+
+def annotate(s):
+    """Add data health fields: status, age in minutes, stale flag for HA."""
+    ts = s.get("timestamp")
+    err = s.get("last_error")
+    if s.get("stale"):
+        status = "stale"
+    elif err == "http_429":
+        status = "rate_limited"
+    elif err == "token_expired":
+        status = "token_expired"
+    elif err:
+        status = "error"
+    else:
+        status = "ok"
+    s["data_status"] = status
+    s["data_age_min"] = int(max(0, time.time() - ts) // 60) if ts else None
+    s["data_stale"] = "ON" if s.get("stale") else "OFF"
+    return s
+
+
+def publish_mqtt(states):
+    import paho.mqtt.client as mqtt
+
+    # paho 2.x wants the callback API version, paho 1.x does not know it; the callbacks below fit both
+    api = getattr(mqtt, "CallbackAPIVersion", None)
+    client_id = f"claude-usage-collector-{HOST}"
+    client = mqtt.Client(api.VERSION2, client_id=client_id) if api else mqtt.Client(client_id=client_id)
+    client.username_pw_set(MQTT_USER, MQTT_PASSWORD_FILE.read_text().strip())
+    leases = {}  # profile -> lease message
+    lease_seen = threading.Event()
+
+    def on_connect(c, userdata, flags, reason_code, properties=None):
+        c.subscribe(f"{LEASE_TOPIC}/+")
+
+    def on_message(c, userdata, msg):
+        try:
+            leases[msg.topic.rsplit("/", 1)[1]] = json.loads(msg.payload)
+        except ValueError:
+            pass
+        lease_seen.set()
+
+    client.on_connect = on_connect
+    client.on_message = on_message
+    client.connect(MQTT_HOST, MQTT_PORT, keepalive=30)
+    client.loop_start()
+    lease_seen.wait(timeout=3)  # retained leases arrive right after subscribing; none = no holder
+    time.sleep(0.5)  # let the other profile's lease arrive too
+
+    def other_holds(profile):
+        lease = leases.get(profile) or {}
+        age = time.time() - lease.get("ts", 0)
+        return lease.get("host") not in (None, HOST) and age < LEASE_S
+
+    publishing = []
+    for s in states:
+        if other_holds(s["profile"]):
+            log(f"mqtt skipped {s['profile']}: {leases[s['profile']]['host']} holds the publish lease")
+        else:
+            publishing.append(s)
+    states = publishing
+    infos = []
+    for s in states:
+        if not s.get("stale"):  # only a computer with fresh data claims or renews the lease
+            infos.append(client.publish(
+                f"{LEASE_TOPIC}/{s['profile']}", json.dumps({"host": HOST, "ts": time.time()}), retain=True))
+    for s in states:
+        p = s["profile"]
+        avail = f"claude_usage/{p}/availability"
+        device = {
+            "identifiers": [f"claude_usage_{p}"],
+            "name": f"Claude {p.capitalize()}",
+            "manufacturer": "Anthropic",
+            "model": s.get("subscription") or "unknown",
+        }
+        for key, name, unit, dclass, sclass in SENSORS:
+            cfg = {
+                "name": name,
+                "unique_id": f"claude_usage_{p}_{key}",
+                "state_topic": f"claude_usage/{p}/state",
+                "value_template": f"{{{{ value_json.{key} }}}}",
+                "availability_topic": avail,
+                "expire_after": EXPIRE_AFTER_S,
+                "device": device,
+            }
+            if unit:
+                cfg["unit_of_measurement"] = unit
+            if dclass:
+                cfg["device_class"] = dclass
+            if sclass:
+                cfg["state_class"] = sclass
+            if key in ("credits_used", "credits_limit") and s.get("credits_currency"):
+                cfg["unit_of_measurement"] = s["credits_currency"]
+            infos.append(client.publish(
+                f"homeassistant/sensor/claude_usage_{p}_{key}/config", json.dumps(cfg), retain=True))
+        # Health entities: no availability topic, so they keep reporting while usage values
+        # are unavailable. They go unavailable only when the collector stops (expire_after).
+        health = [
+            ("sensor", "data_status", {
+                "name": "Data status", "device_class": "enum", "options": STATUS_VALUES,
+                "value_template": "{{ value_json.data_status }}"}),
+            ("sensor", "data_age", {
+                "name": "Data age", "device_class": "duration", "unit_of_measurement": "min",
+                "state_class": "measurement",
+                "value_template": "{{ value_json.data_age_min if value_json.data_age_min is not none else 'unknown' }}"}),
+            ("binary_sensor", "data_stale", {
+                "name": "Data stale", "device_class": "problem", "payload_on": "ON", "payload_off": "OFF",
+                "value_template": "{{ value_json.data_stale }}"}),
+        ]
+        for comp, key, extra in health:
+            cfg = {
+                "unique_id": f"claude_usage_{p}_{key}",
+                "state_topic": f"claude_usage/{p}/state",
+                "expire_after": EXPIRE_AFTER_S,
+                "device": device,
+                **extra,
+            }
+            infos.append(client.publish(
+                f"homeassistant/{comp}/claude_usage_{p}_{key}/config", json.dumps(cfg), retain=True))
+        infos.append(client.publish(f"claude_usage/{p}/state", json.dumps(s), retain=True))
+        infos.append(client.publish(avail, "offline" if s.get("stale") else "online", retain=True))
+    for info in infos:
+        info.wait_for_publish(timeout=10)
+    client.loop_stop()
+    client.disconnect()
+
+
+def main():
+    fetch_state = read_json(FETCH_STATE) or {}
+    states = [annotate(collect(p, fetch_state)) for p in PROFILES]
+    atomic_write(FETCH_STATE, json.dumps(fetch_state))
+    for s in states:
+        atomic_write(ACCOUNTS / s["profile"] / "rate-limit-cache.json", json.dumps(s))
+    atomic_write(OUT_DIR / "usage.json", json.dumps(export_doc(states), indent=2) + "\n")
+    if "--no-mqtt" in sys.argv:
+        return
+    try:
+        publish_mqtt(states)
+    except Exception as exc:  # broker unreachable, password file missing, etc.
+        log(f"mqtt skipped: {type(exc).__name__}: {exc}")
+
+
+if __name__ == "__main__":
+    main()
