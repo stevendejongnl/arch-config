@@ -1,0 +1,10 @@
+[Unit]
+Description=Record the profile of the last focused Chromium window
+After=xsession.service
+
+[Service]
+ExecStart=%h/.local/bin/chromium-track-profile
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

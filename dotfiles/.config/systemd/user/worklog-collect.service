@@ -1,0 +1,6 @@
+[Unit]
+Description=Collect worklog entries (commits, Jira, Linear, Keito, calendar)
+
+[Service]
+Type=oneshot
+ExecStart=/home/stevendejong/.claude/shared/skills/worklog/scripts/worklog.py collect
