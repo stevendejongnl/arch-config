@@ -12,3 +12,6 @@ dotfiles/.config/wallpaper/current
 dotfiles/.config/wallpaper/immich.conf
 dotfiles/.config/systemd/user/scripts/__pycache__/
 dotfiles/.local/bin/__pycache__/
+
+# Desktop-entry intent cache: generated at runtime
+dotfiles/.local/share/applications/intent.cache

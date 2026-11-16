@@ -89,17 +89,30 @@ _report() {
   esac
 }
 
+# true when an uncommitted file is also changed by commits on either side of FETCH_HEAD
+_dirty_overlaps_branches() {
+  _is_dirty || return 1
+  local dirty_files branch_files
+  dirty_files=$(_git status --porcelain | cut -c4- | sort)
+  branch_files=$({ _git diff --name-only HEAD...FETCH_HEAD; _git diff --name-only FETCH_HEAD...HEAD; } | sort -u)
+  [[ -n "$(comm -12 <(printf '%s\n' "$dirty_files") <(printf '%s\n' "$branch_files"))" ]]
+}
+
 _pull() {
-  if _is_dirty; then
-    printf '%sWorking tree dirty - commit or stash first, then: archsync pull%s\n' "$c_yellow" "$c_reset"
+  _git fetch --quiet origin "$BRANCH" || { printf '%s✗ fetch failed%s\n' "$c_red" "$c_reset"; return 1; }
+  if _dirty_overlaps_branches; then
+    printf '%sUncommitted edits touch files that differ on origin - commit or stash first, then: archsync pull%s\n' "$c_yellow" "$c_reset"
     return 1
   fi
-  if _git pull --ff-only --quiet origin "$BRANCH"; then
+  # rebase first: fast-forwards when behind, replays local commits when diverged;
+  # autostash carries non-overlapping uncommitted edits across
+  if _git rebase --autostash --quiet FETCH_HEAD; then
     printf '%s✓ pulled%s\n' "$c_green" "$c_reset"
     printf '  dotfiles/system may have changed - run: dcli sync  (and scripts/dotfiles-deploy.sh)\n'
     return 0
   fi
-  printf '%s✗ pull failed (diverged?) - resolve manually in %s%s\n' "$c_red" "$REPO" "$c_reset"
+  _git rebase --abort 2>/dev/null
+  printf '%s✗ rebase failed - aborted, nothing changed. Resolve manually in %s%s\n' "$c_red" "$REPO" "$c_reset"
   return 1
 }
 
@@ -250,6 +263,21 @@ selftest() {
   _do_fetch >/dev/null
   echo x >> "$tmp/b/newfile"
   cmd_sync >/dev/null 2>&1 && _bad "sync should refuse when behind" || _ok "sync refuses when behind"
+  # 6d. pull works on a dirty tree when edits do not overlap the incoming files
+  _pull >/dev/null 2>&1
+  if [[ "$(_branch_state)" == uptodate ]] && grep -q x "$tmp/b/newfile"; then
+    _ok "pull ff on dirty tree keeps local edits"
+  else
+    _bad "dirty pull: state='$(_branch_state)'"
+  fi
+
+  # 6e. pull refuses when local edits overlap the incoming files
+  git -C "$tmp/a" pull -q --ff-only origin main
+  echo remote > "$tmp/a/newfile"
+  git -C "$tmp/a" -c user.email=t@t -c user.name=t commit -q -am remote4
+  git -C "$tmp/a" push -q origin main
+  _do_fetch >/dev/null
+  _pull >/dev/null 2>&1 && _bad "pull should refuse on overlapping edits" || _ok "pull refuses on overlapping edits"
   git -C "$tmp/b" checkout -q -- newfile  # clean up for later tests
 
   # 7. fetch throttle: fresh stamp -> stale check false
