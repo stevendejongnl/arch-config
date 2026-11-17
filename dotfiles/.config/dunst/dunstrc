@@ -314,4 +314,16 @@
     appname = "Spotify"
     history_ignore = yes
 
+[seafile-worklog-hide]
+    appname = "Seafile"
+    summary = "\"worklog\"*"
+    skip_display = yes
+    history_ignore = yes
+
+[timecheck-hide]
+    appname = "notify-send"
+    summary = "Time check:*"
+    skip_display = yes
+    history_ignore = yes
+
 # vim: ft=cfg
