@@ -132,3 +132,4 @@ mlrd3m    # tuner car-mlrd3m.jpg 2026-11-13
 m9rp3k    # drift car-m9rp3k.jpg 2026-11-13
 4yogl7    # stance car-4yogl7.jpg 2026-11-13
 r7qrj7    # jdm car-r7qrj7.jpg 2026-11-18
+r2wr27    # jdm car-r2wr27.jpg 2026-11-18
