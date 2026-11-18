@@ -103,7 +103,6 @@ packages:
   - figma-linux-bin
   - etcher-bin
   - seafile-client
-  - remmina
   - copyq
 
   # --- pdf / docs / images ---
