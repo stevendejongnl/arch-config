@@ -33,6 +33,10 @@ exclude:
   - winegui
   - waydroid
   - caffeine-ng
+  - kdeconnect
+  - krdp
+  - plasma-browser-integration
+  - okular
 
 # Settings
 flatpak_scope: user           # "user" or "system"
