@@ -108,8 +108,6 @@ packages:
   - seafile-client
   - remmina
   - copyq
-  - moonlight-qt
-  - timer-for-harvest
 
   # --- pdf / docs / images ---
   - pdfarranger
