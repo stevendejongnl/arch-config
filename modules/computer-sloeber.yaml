@@ -43,7 +43,6 @@ packages:
 
   # --- cloud / infra / k8s ---
   - kubectl
-  - rancher-cli-bin
   - glab
   - cloudflared
   - skopeo
@@ -73,14 +72,12 @@ packages:
   - expac
   - mongo-c-driver
   - openssl-1.1
-  - dbeaver
   - redisinsight
   - expect
   - scrcpy
 
   # --- maker / CAD / 3D printing / electronics ---
   - kicad
-  - prusa-slicer
   - orca-slicer-bin
   - inkscape
   - gimp
