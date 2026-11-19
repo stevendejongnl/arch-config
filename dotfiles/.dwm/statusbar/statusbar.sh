@@ -52,6 +52,10 @@ get_claude_usage() {
   OUTPUT+="$(select_chip claude "$("$SLSTATUS_DIR"/claude-usage.sh)")"
 }
 
+get_network() {
+  OUTPUT+="$("$SLSTATUS_DIR"/network.sh)"
+}
+
 get_case_dot() {
   # Only machines with case lights (the workstation) get the dot, see case-lights.sh
   "$SLSTATUS_DIR"/case-lights.sh || return 0
@@ -77,6 +81,7 @@ get_package_updates
 
 get_case_dot
 get_claude_usage
+get_network
 get_date
 
 # Keito timer: only when this machine has the API creds (work laptop).
