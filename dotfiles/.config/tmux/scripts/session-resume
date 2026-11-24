@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Resume a Claude session in a new tmux window, in the directory and account it ran in.
+# Usage: session-resume <session-id>
+set -u
+
+say() {
+  if [ -n "${TMUX:-}" ]; then tmux display-message "session-resume: $1"; else echo "session-resume: $1" >&2; fi
+}
+
+id="${1:-}"
+case "$id" in
+  "" | *[!a-zA-Z0-9-]*) say "usage: session-resume <session-id>"; exit 2 ;;
+esac
+
+transcript="$(compgen -G "$HOME/.claude/accounts/*/projects/*/$id.jsonl" | head -n1)"
+if [ -z "$transcript" ]; then
+  host="$(wl sessions --id "$id" | cut -f3)"
+  say "transcript is not on this machine${host:+ (it ran on $host)}"
+  exit 1
+fi
+
+account="${transcript#"$HOME"/.claude/accounts/}"
+account="${account%%/*}"
+directory="$(wl sessions --local --id "$id" | cut -f10)"
+directory="${directory/#\~/$HOME}"
+[ -d "$directory" ] || directory="$HOME"
+
+window="$(tmux new-window -P -F '#{window_id}' -c "$directory")"
+tmux send-keys -t "$window" -l "CLAUDE_PROFILE=$account claude --resume $id"
+tmux send-keys -t "$window" Enter

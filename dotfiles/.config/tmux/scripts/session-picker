@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Pick a Claude session from the worklog index and resume it. Meant for a tmux popup.
+# Rows come from `wl sessions`: sessions on this machine plus sessions logged on other machines.
+
+list() {
+  wl sessions | awk -F'\t' '{ printf "%s\t%s  %-14.14s %-18.18s %-10.10s %s\n", $1, $2, $3, $5, $7, $9 }'
+}
+
+preview() {
+  wl sessions --id "$1" | awk -F'\t' '{
+    split("session when host area repo branch tickets dir title", names, " ")
+    for (i = 1; i <= 9; i++) printf "%-8s %s\n", names[i], $i
+  }'
+}
+
+if [ "${1:-}" = "--preview" ]; then
+  preview "$2"
+  exit 0
+fi
+
+selection="$(list | fzf --delimiter=$'\t' --with-nth=2 --no-sort --prompt='session> ' \
+  --header='enter: resume in new window' \
+  --preview "$0 --preview {1}" --preview-window=down:9:wrap)"
+[ -n "$selection" ] || exit 0
+exec "$(dirname "$0")/session-resume" "${selection%%$'\t'*}"

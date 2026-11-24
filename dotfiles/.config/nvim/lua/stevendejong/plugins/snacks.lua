@@ -43,6 +43,7 @@ return {
     { "<leader>pk", function() Snacks.picker.keymaps() end, desc = "Keymaps" },
     { "<leader>ph", function() Snacks.picker.help() end, desc = "Help" },
     { "<leader>pu", function() Snacks.picker.undo() end, desc = "Undo history" },
+    { "<leader>pa", function() require("stevendejong.sessions").pick() end, desc = "Agent sessions" },
     { "<leader>pd", function() Snacks.picker.diagnostics() end, desc = "Diagnostics" },
     { "<leader>pS", function() Snacks.picker.lsp_workspace_symbols() end, desc = "Workspace symbols" },
     { "<leader>/", function() Snacks.picker.lines() end, desc = "Search buffer lines" },
