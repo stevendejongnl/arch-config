@@ -5,6 +5,7 @@ title = "Alacritty"
 decorations = "none"
 blur = true
 opacity = 1.0
+resize_increments = true
 
 [colors]
 transparent_background_colors = true
