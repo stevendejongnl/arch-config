@@ -67,14 +67,16 @@ class CalendarPanel(Gtk.Box):
         head = Gtk.Box(spacing=8)
         head.pack_start(self.heading, False, False, 0)
         head.pack_end(self.status, False, False, 6)
+        head.get_style_context().add_class("head")
         self.timeline = Timeline(64)
         self.all_day = Gtk.Box(spacing=8)
-        self.list = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        self.list = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         footer = Gtk.Box()
         footer.pack_end(button("Open Google Calendar  ↗", None, lambda: self.open_url(CALENDAR_URL)), False, False, 0)
 
-        for child, top in ((head, 2), (self.timeline, 14), (self.all_day, 10), (self.list, 14), (footer, 14)):
-            self.pack_start(margins(child, top), False, False, 0)
+        self.pack_start(head, False, False, 0)
+        for child, top, side in ((self.timeline, 14, 20), (self.all_day, 10, 20), (self.list, 12, 0), (footer, 12, 20)):
+            self.pack_start(margins(child, top, 0, side, side), False, False, 0)
 
         try:
             cached = json.loads(CACHE.read_text())
@@ -156,7 +158,7 @@ class CalendarPanel(Gtk.Box):
             self.status.set_markup(MARKUP.format(c=GREEN, t=text))
         elif upcoming:
             text = f"Next: {esc(upcoming['title'])}  ·  in {left((parse(upcoming['start']) - now).total_seconds())}"
-            self.status.set_markup(MARKUP.format(c=TEAL, t=text))
+            self.status.set_markup(MARKUP.format(c=YELLOW, t=text))
         else:
             self.status.set_markup(MARKUP.format(c=MUTED, t="No more meetings today"))
 

@@ -10,57 +10,54 @@ gi.require_version("PangoCairo", "1.0")
 import cairo  # noqa: E402
 from gi.repository import Gdk, GLib, Gtk, Pango, PangoCairo  # noqa: E402
 
-from .colors import (BG, CARD, DIM, GREEN, LINE, MUTED, ORANGE, PURPLE, RED, TEAL, TEXT, TRACK, YELLOW)  # noqa: E402,F401
+from .colors import (BG, BORDER, CARD, DIM, GREEN, HOVER, LINE, MUTED, ORANGE, PURPLE, RED, TEAL, TEXT, TRACK, YELLOW)  # noqa: E402,F401
 
 CSS = f"""
-window {{ background: {BG}; }}
-.tab {{ background: {CARD}; color: {DIM}; font-size: 10.5pt; font-weight: 700; padding: 7px 16px;
-       border: 1px solid {LINE}; border-radius: 10px; box-shadow: none; background-image: none; }}
-.tab:hover {{ background: {LINE}; }}
-.tab:checked {{ background: {LINE}; color: {TEXT}; border-color: {TEAL}; }}
-.tabhint {{ color: {MUTED}; font-size: 9pt; font-weight: 600; }}
-.title {{ color: {TEXT}; font-size: 14pt; font-weight: 800; }}
-.card {{ background: {CARD}; border: 1px solid {LINE}; border-radius: 14px; }}
-.row, .row-now, .row-soon, .row-crit {{ padding: 10px 14px; }}
-.row {{ background: {CARD}; border: 1px solid {LINE}; border-radius: 12px; }}
-.row-now {{ background: {CARD}; border: 1px solid {GREEN}; border-radius: 12px; }}
-.row-soon {{ background: {CARD}; border: 1px solid {TEAL}; border-radius: 12px; }}
-.row-crit {{ background: {CARD}; border: 1px solid {RED}; border-radius: 12px; }}
-.apptile {{ border-radius: 10px; font-size: 13pt; font-weight: 800; min-width: 40px; min-height: 40px; }}
-.app {{ color: {DIM}; font-size: 8pt; font-weight: 800; letter-spacing: 1px; }}
-.summary {{ color: {TEXT}; font-size: 10.5pt; font-weight: 700; }}
-.body {{ color: {DIM}; font-size: 9.5pt; }}
-.dismiss {{ background: transparent; color: {MUTED}; font-size: 10pt; padding: 2px 8px; border: none; border-radius: 999px;
+* {{ font-family: "Inter Tight", sans-serif; }}
+window {{ background: {BG}; border: 1px solid {BORDER}; border-radius: 6px; }}
+.head {{ padding: 14px 20px; border-bottom: 1px solid {LINE}; }}
+.title {{ color: {TEXT}; font-size: 11pt; font-weight: 600; }}
+.card {{ background: transparent; border: none; border-bottom: 1px solid {LINE}; border-radius: 0; }}
+.row, .row-now, .row-soon, .row-crit {{ padding: 12px 20px; background: transparent; border: none;
+                                        border-bottom: 1px solid {LINE}; border-radius: 0; }}
+.row-now {{ border-left: 2px solid {GREEN}; }}
+.row-crit {{ border-left: 2px solid {RED}; }}
+.apptile {{ background: {LINE}; color: {TEXT}; border-radius: 6px; font-size: 11pt; font-weight: 600; min-width: 36px; min-height: 36px; }}
+.app {{ color: {MUTED}; font-size: 9pt; font-weight: 500; letter-spacing: 1px; }}
+.summary {{ color: {TEXT}; font-size: 10.5pt; font-weight: 600; }}
+.body {{ color: {DIM}; font-size: 10pt; }}
+.dismiss {{ background: transparent; color: {MUTED}; font-size: 10pt; padding: 2px 8px; border: none; border-radius: 6px;
            box-shadow: none; background-image: none; }}
-.dismiss:hover {{ background: {LINE}; color: {TEXT}; }}
-.pill {{ color: {BG}; font-size: 10pt; font-weight: 800; padding: 2px 10px; border-radius: 999px; }}
-.name {{ color: {TEXT}; font-size: 13pt; font-weight: 700; }}
-.plan {{ color: {DIM}; font-size: 9pt; font-weight: 700; padding: 1px 8px; border: 1px solid {LINE}; border-radius: 999px; }}
-.muted {{ color: {MUTED}; font-size: 9pt; }}
+.dismiss:hover {{ background: {HOVER}; color: {TEXT}; }}
+.pill {{ color: {DIM}; font-size: 9pt; font-weight: 500; padding: 1px 8px; border: 1px solid {BORDER}; border-radius: 4px; }}
+.name {{ color: {TEXT}; font-size: 11pt; font-weight: 600; }}
+.plan {{ color: {DIM}; font-size: 9pt; font-weight: 500; padding: 1px 8px; border: 1px solid {BORDER}; border-radius: 4px; }}
+.muted {{ color: {MUTED}; font-size: 9.5pt; }}
 .dim {{ color: {DIM}; font-size: 10pt; }}
-.ringtitle {{ color: {DIM}; font-size: 8pt; font-weight: 800; letter-spacing: 1px; }}
-.reset {{ color: {TEXT}; font-size: 10pt; font-weight: 600; }}
-.section {{ color: {MUTED}; font-size: 8pt; font-weight: 800; letter-spacing: 1px; }}
-.amount {{ color: {TEXT}; font-size: 9.5pt; font-weight: 600; }}
-.big {{ color: {TEXT}; font-size: 28pt; font-weight: 800; }}
-.elapsed {{ color: {TEXT}; font-size: 20pt; font-weight: 800; }}
-.bigmuted {{ color: {MUTED}; font-size: 14pt; font-weight: 700; }}
-.rowtitle {{ color: {TEXT}; font-size: 11pt; font-weight: 700; }}
-.time {{ color: {DIM}; font-size: 10pt; font-weight: 700; }}
-.action {{ background: {LINE}; color: {TEXT}; font-size: 9.5pt; font-weight: 700; padding: 4px 14px;
-          border: none; border-radius: 999px; box-shadow: none; background-image: none; }}
-.action:hover {{ background: #343A4D; }}
-.action-primary {{ background: {TEAL}; color: {BG}; }}
-.action-primary:hover {{ background: #6BF0EB; }}
-.action-go {{ background: {GREEN}; color: {BG}; }}
-.action-go:hover {{ background: #9BE6A8; }}
-.action-warn {{ background: {YELLOW}; color: {BG}; }}
-.action-warn:hover {{ background: #FFE29A; }}
-.action-stop {{ background: {RED}; color: {BG}; }}
-.action-stop:hover {{ background: #FF7D93; }}
+.ringtitle {{ color: {MUTED}; font-size: 9pt; font-weight: 500; letter-spacing: 1px; }}
+.reset {{ color: {DIM}; font-size: 10pt; font-weight: 400; }}
+.section {{ color: {MUTED}; font-size: 9pt; font-weight: 500; letter-spacing: 1px; }}
+.amount {{ color: {TEXT}; font-size: 10pt; font-weight: 500; }}
+.big {{ color: {TEXT}; font-size: 26pt; font-weight: 600; }}
+.elapsed {{ color: {TEXT}; font-size: 20pt; font-weight: 600; }}
+.bigmuted {{ color: {MUTED}; font-size: 14pt; font-weight: 500; }}
+.rowtitle {{ color: {TEXT}; font-size: 11pt; font-weight: 600; }}
+.time {{ color: {DIM}; font-size: 10pt; font-weight: 500; }}
+.action {{ background: transparent; color: {TEXT}; font-size: 10pt; font-weight: 500; padding: 6px 14px; min-height: 24px;
+          border-width: 1px; border-style: solid; border-color: {BORDER}; border-radius: 6px; box-shadow: none; background-image: none; }}
+button.action, button.flat.action {{ border-width: 1px; border-style: solid; border-color: {BORDER}; }}
+.action:hover {{ background: {HOVER}; }}
+.action-primary {{ background: {TEXT}; border-color: {TEXT}; color: {BG}; }}
+.action-primary:hover {{ background: #FFFFFF; }}
+.action-go {{ border-color: {GREEN}; color: {GREEN}; }}
+.action-go:hover {{ background: {HOVER}; }}
+.action-warn {{ border-color: {YELLOW}; color: {YELLOW}; }}
+.action-warn:hover {{ background: {HOVER}; }}
+.action-stop {{ border-color: {RED}; color: {RED}; }}
+.action-stop:hover {{ background: {HOVER}; }}
 scrolledwindow, viewport {{ background: transparent; }}
 undershoot.top, undershoot.bottom, overshoot.top, overshoot.bottom {{ background: none; background-image: none; }}
-scrollbar slider {{ background: {LINE}; border-radius: 4px; min-width: 5px; }}
+scrollbar slider {{ background: {BORDER}; border-radius: 3px; min-width: 5px; }}
 """
 
 MARKUP = "<span foreground='{c}'>{t}</span>"
@@ -98,7 +95,6 @@ def button(text, css, on_click):
     b.get_style_context().add_class("action")
     if css:
         b.get_style_context().add_class(css)
-    b.set_relief(Gtk.ReliefStyle.NONE)
     b.set_valign(Gtk.Align.CENTER)
     b.connect("clicked", lambda _b: on_click())
     return b
@@ -188,10 +184,10 @@ def pill_path(cr, x, y, w, h):
 class Bar(Gtk.DrawingArea):
     """A thin rounded progress bar."""
 
-    def __init__(self, height=8):
+    def __init__(self, height=6):
         super().__init__()
         self.set_size_request(-1, height)
-        self.frac, self.color = 0.0, TEAL
+        self.frac, self.color = 0.0, GREEN
         self.connect("draw", self.on_draw)
 
     def set(self, frac, color):
@@ -264,7 +260,7 @@ class Timeline(Gtk.DrawingArea):
                 cr.line_to(round(x) + 0.5, area_h - 3)
                 cr.stroke()
             if (hour - self.lo // 60) % 2 == 0 or self.hi - self.lo <= 6 * 60:
-                layout.set_markup(f"<span size='8000' foreground='{MUTED}'>{hour:02d}</span>", -1)
+                layout.set_markup(f"<span font_family='Inter Tight' size='8000' foreground='{MUTED}'>{hour:02d}</span>", -1)
                 tw, _th = layout.get_pixel_size()
                 cr.move_to(min(max(x - tw / 2, 0), w - tw), area_h + 1)
                 PangoCairo.show_layout(cr, layout)

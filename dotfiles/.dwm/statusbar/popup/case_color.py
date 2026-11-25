@@ -14,7 +14,7 @@ import time
 from pathlib import Path
 
 COLOR_FILE = Path.home() / ".config" / "case-color"
-DEFAULT_COLOR = "#7A7F99"
+DEFAULT_COLOR = "#8B8C91"
 HEX_COLOR = re.compile(r"^#[0-9A-Fa-f]{6}$")
 
 

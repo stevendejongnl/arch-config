@@ -1,16 +1,14 @@
 #!/bin/sh
 # Right side of the tmux status bar: "now playing" (only while Playing) + clock.
-# Rime theme — https://git.madebysteven.nl/stevendejong/rime
+# Flat theme: plain secondary text, no filled blocks.
 
-green='#[fg=#12141c,bg=#7fd88f,nobold,nounderscore,noitalics]'
-accent=3ee6e0
-[ "$(~/.config/tmux/scripts/sudo-active.sh)" = "1" ] && accent=ff2a3d
-purple="#[fg=#12141c,bg=#$accent,nobold,nounderscore,noitalics]"
+dim='#[fg=#a8a9ad,bg=default,nobold,nounderscore,noitalics]'
+ink='#[fg=#ecebe6,bg=default,nobold,nounderscore,noitalics]'
 reset='#[fg=default,bg=default]'
 
 if command -v playerctl >/dev/null 2>&1 && [ "$(playerctl status 2>/dev/null)" = "Playing" ]; then
     info=$(playerctl metadata --format '{{ trunc(artist, 12) }} — {{ trunc(title, 20) }}' 2>/dev/null)
-    [ -n "$info" ] && printf '%s \xe2\x99\xab %s %s' "$green" "$info" "$reset"
+    [ -n "$info" ] && printf '%s♫ %s  %s' "$ink" "$info" "$reset"
 fi
 
-printf '%s %s %s' "$purple" "$(date '+%Y-%m-%d %H:%M')" "$reset"
+printf '%s%s %s' "$dim" "$(date '+%Y-%m-%d %H:%M')" "$reset"

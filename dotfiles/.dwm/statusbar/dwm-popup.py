@@ -41,7 +41,7 @@ class Popup:
         self.current = None
 
         body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
-        margins(body, 18, 18, 18, 18)
+        margins(body, 0, 0, 0, 0)
 
         self.stack = Gtk.Stack()
         self.stack.set_homogeneous(True)

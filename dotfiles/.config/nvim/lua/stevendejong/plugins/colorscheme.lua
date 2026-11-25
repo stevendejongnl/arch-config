@@ -1,9 +1,10 @@
+-- The colourscheme is local: colors/flat.lua. Nothing to download. Lazy needs the file to return a spec.
 return {
-  "embark-theme/vim",
-  name = "embark",
-  lazy = false,
-  priority = 1000,
-  config = function()
-    vim.cmd.colorscheme("embark")
-  end,
+  {
+    "folke/lazy.nvim",
+    optional = true,
+    init = function()
+      vim.cmd.colorscheme("flat")
+    end,
+  },
 }

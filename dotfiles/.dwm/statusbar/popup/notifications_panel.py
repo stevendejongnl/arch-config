@@ -5,18 +5,15 @@ import os
 import re
 import subprocess
 import time
-import zlib
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from gi.repository import GLib, Gtk, Pango
 
-from .theme import (DIM, GREEN, MARKUP, MUTED, ORANGE, PURPLE, RED, TEAL, YELLOW, button, clear, label, margins,
-                    rgb, run_async)
+from .theme import DIM, GREEN, MARKUP, MUTED, RED, TEXT, YELLOW, button, clear, label, margins, run_async
 
 SEEN_FILE = Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "dwm-notifications-seen"
 REFRESH_SECONDS = 2
-PALETTE = [TEAL, PURPLE, ORANGE, YELLOW, GREEN, "#6BA6FF"]
 TAG = re.compile(r"<[^>]+>")
 
 
@@ -78,10 +75,6 @@ def day_label(when):
     return when.strftime("%A %-d %B").upper()
 
 
-def app_color(app):
-    return PALETTE[zlib.crc32(app.encode()) % len(PALETTE)]
-
-
 class NotificationsPanel(Gtk.Box):
     name = "notifications"
     title = "Notifications"
@@ -107,9 +100,10 @@ class NotificationsPanel(Gtk.Box):
         head.pack_start(titles, True, True, 0)
         head.pack_end(self.clear_all, False, False, 0)
         head.pack_end(self.dnd, False, False, 0)
-        self.list = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        for child, top in ((head, 2), (self.list, 16)):
-            self.pack_start(margins(child, top), False, False, 0)
+        head.get_style_context().add_class("head")
+        self.list = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.pack_start(head, False, False, 0)
+        self.pack_start(self.list, False, False, 0)
 
     @staticmethod
     def available():
@@ -176,7 +170,7 @@ class NotificationsPanel(Gtk.Box):
         for n in sorted(items, key=lambda n: n["id"], reverse=True):
             if day_label(n["when"]) != day:
                 day = day_label(n["when"])
-                self.list.pack_start(margins(label(day, "section"), 4 if self.list.get_children() else 0),
+                self.list.pack_start(margins(label(day, "section"), 12, 4, 20, 20),
                                      False, False, 0)
             self.list.pack_start(self.card(n), False, False, 0)
         self.list.show_all()
@@ -192,19 +186,15 @@ class NotificationsPanel(Gtk.Box):
     def card(self, n):
         new = n["id"] > self.baseline
         row = Gtk.Box(spacing=12)
-        row.get_style_context().add_class("row-crit" if n["urgency"] == "CRITICAL" else "row-soon" if new else "row")
-        color = app_color(n["app"])
-
+        row.get_style_context().add_class("row-crit" if n["urgency"] == "CRITICAL" else "row")
         tile = label(n["app"][:1].upper(), "apptile", 0.5)
         tile.set_valign(Gtk.Align.START)
-        r, g, b = (round(c * 255) for c in rgb(color))
-        provider = Gtk.CssProvider()
-        provider.load_from_data(f"label {{ background: rgba({r},{g},{b},0.18); color: {color}; }}".encode())
-        tile.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
         top = Gtk.Box(spacing=8)
         top.pack_start(label(esc(n["app"].upper()), "app", markup=True), False, False, 0)
         top.pack_end(label(ago(n["when"]), "muted", 1.0), False, False, 0)
+        if new:
+            top.pack_end(label(f"<span foreground='{TEXT}'>●</span>", None, 1.0, markup=True), False, False, 4)
         summary = label(esc(plain(n["summary"]) or "(no title)"), "summary", markup=True)
         summary.set_ellipsize(Pango.EllipsizeMode.END)
         text = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)

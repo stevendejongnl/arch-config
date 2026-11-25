@@ -8,7 +8,7 @@
 cache="$HOME/.cache/slock"
 image="$cache/bg.ppm"
 keyfile="$cache/bg.key"
-bgcolor="#12141C"
+bgcolor="#1C1D1F"
 
 mkdir -p "$cache"
 

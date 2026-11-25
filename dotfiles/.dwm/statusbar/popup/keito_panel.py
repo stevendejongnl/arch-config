@@ -89,17 +89,19 @@ class KeitoPanel(Gtk.Box):
         head.pack_start(self.total, False, False, 0)
         head.pack_start(self.goal, False, False, 0)
         head.pack_end(self.caption, False, False, 6)
-        self.progress = Bar(10)
+        head.get_style_context().add_class("head")
+        self.progress = Bar(8)
         self.timeline = Timeline(60)
         self.legend = Gtk.Box(spacing=14)
         self.running_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.list = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        self.list = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.footer = Gtk.Box(spacing=8)
         self.footer.pack_end(button("Open Keito  ↗", None, lambda: self.open_url(APP_URL)), False, False, 0)
 
-        for child, top in ((head, 2), (self.progress, 10), (self.timeline, 16), (self.legend, 4),
-                           (self.running_box, 16), (self.list, 14), (self.footer, 14)):
-            self.pack_start(margins(child, top), False, False, 0)
+        self.pack_start(head, False, False, 0)
+        for child, top, side in ((self.progress, 14, 20), (self.legend, 8, 20), (self.timeline, 12, 20),
+                                 (self.running_box, 12, 0), (self.list, 0, 0), (self.footer, 12, 20)):
+            self.pack_start(margins(child, top, 12 if child is self.timeline else 0, side, side), False, False, 0)
 
     @staticmethod
     def available():
@@ -196,7 +198,7 @@ class KeitoPanel(Gtk.Box):
         done = sorted((e for e in entries if not e["is_running"]),
                       key=lambda e: minutes_of(e.get("started_time")) or 0, reverse=True)
         if done:
-            self.list.pack_start(label("TODAY", "section"), False, False, 0)
+            self.list.pack_start(margins(label("TODAY", "section"), 12, 4, 20, 20), False, False, 0)
         for e in done:
             self.list.pack_start(self.entry_row(e), False, False, 0)
         if not entries:

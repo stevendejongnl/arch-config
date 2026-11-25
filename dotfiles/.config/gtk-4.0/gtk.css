@@ -1,89 +1,144 @@
-/* Rime full palette override — https://git.madebysteven.nl/stevendejong/rime */
-@define-color accent_color #3ee6e0;
-@define-color accent_bg_color #3ee6e0;
-@define-color accent_fg_color #12141c;
-@define-color theme_selected_bg_color #3ee6e0;
-@define-color theme_selected_fg_color #12141c;
+/* Flat palette override: light ink on near-black, colour only for status. */
+@define-color accent_color #ecebe6;
+@define-color accent_bg_color #ecebe6;
+@define-color accent_fg_color #1c1d1f;
+@define-color theme_selected_bg_color #34363a;
+@define-color theme_selected_fg_color #ecebe6;
 
-@define-color window_bg_color #12141c;
-@define-color window_fg_color #d3d6e6;
-@define-color view_bg_color #1a1d29;
-@define-color view_fg_color #d3d6e6;
-@define-color headerbar_bg_color #1a1d29;
-@define-color headerbar_fg_color #d3d6e6;
-@define-color headerbar_border_color #2a2f3d;
-@define-color headerbar_backdrop_color #12141c;
-@define-color headerbar_shade_color #2a2f3d;
-@define-color popover_bg_color #1a1d29;
-@define-color popover_fg_color #d3d6e6;
-@define-color card_bg_color #20242f;
-@define-color card_fg_color #d3d6e6;
-@define-color dialog_bg_color #1a1d29;
-@define-color dialog_fg_color #d3d6e6;
-@define-color sidebar_bg_color #1a1d29;
-@define-color sidebar_fg_color #d3d6e6;
-@define-color sidebar_border_color #2a2f3d;
-@define-color borders #2a2f3d;
-@define-color unfocused_borders #2a2f3d;
-@define-color success_color #7fd88f;
-@define-color warning_color #ffd473;
-@define-color error_color #ff5c78;
-@define-color destructive_color #ff5c78;
-@define-color destructive_bg_color #ff5c78;
-@define-color destructive_fg_color #12141c;
+@define-color window_bg_color #1c1d1f;
+@define-color window_fg_color #ecebe6;
+@define-color view_bg_color #1c1d1f;
+@define-color view_fg_color #ecebe6;
+@define-color headerbar_bg_color #17181a;
+@define-color headerbar_fg_color #ecebe6;
+@define-color headerbar_border_color #2b2d31;
+@define-color headerbar_backdrop_color #17181a;
+@define-color headerbar_shade_color #2b2d31;
+@define-color popover_bg_color #1c1d1f;
+@define-color popover_fg_color #ecebe6;
+@define-color card_bg_color #1c1d1f;
+@define-color card_fg_color #ecebe6;
+@define-color dialog_bg_color #1c1d1f;
+@define-color dialog_fg_color #ecebe6;
+@define-color sidebar_bg_color #17181a;
+@define-color sidebar_fg_color #a8a9ad;
+@define-color sidebar_border_color #2b2d31;
+@define-color borders #2b2d31;
+@define-color unfocused_borders #2b2d31;
+@define-color success_color #9be3b4;
+@define-color warning_color #f2c46d;
+@define-color error_color #f08f87;
+@define-color destructive_color #f08f87;
+@define-color destructive_bg_color #f08f87;
+@define-color destructive_fg_color #1c1d1f;
+
+* { box-shadow: none; text-shadow: none; }
 
 window, .background {
-  background-color: #12141c;
-  color: #d3d6e6;
+  background-color: #1c1d1f;
+  color: #ecebe6;
 }
 
-headerbar, .titlebar {
-  background-color: #1a1d29;
-  color: #d3d6e6;
-  border-color: #2a2f3d;
-  box-shadow: none;
+headerbar, .titlebar,
+toolbar, .toolbar, .primary-toolbar,
+menubar, .menubar {
+  background-color: #17181a;
+  background-image: none;
+  color: #ecebe6;
+  border-color: #2b2d31;
+  border-radius: 0;
+}
+
+menubar menuitem, menubar > menuitem > label { color: #ecebe6; }
+
+.path-bar button, .path-bar {
+  background-color: transparent;
+  background-image: none;
+  color: #ecebe6;
 }
 
 button {
-  background-color: #20242f;
-  color: #d3d6e6;
-  border-color: #2a2f3d;
+  background-color: transparent;
+  background-image: none;
+  color: #ecebe6;
+  border: 1px solid #3d3f44;
+  border-radius: 6px;
+  min-height: 24px;
+  padding: 4px 14px;
 }
 
-button:hover {
-  background-color: #2a2f3d;
-}
+button:hover { background-color: #34363a; background-image: none; }
+button:active, button:checked { background-color: #34363a; color: #ecebe6; }
+button:disabled { color: #8b8c91; border-color: #2b2d31; }
 
 button.suggested-action, button.default {
-  background-color: #3ee6e0;
-  color: #12141c;
+  background-color: #ecebe6;
+  background-image: none;
+  border-color: #ecebe6;
+  color: #1c1d1f;
 }
 
 button.destructive-action {
-  background-color: #ff5c78;
-  color: #12141c;
+  background-color: transparent;
+  background-image: none;
+  border-color: #f08f87;
+  color: #f08f87;
 }
 
-entry, textview text {
-  background-color: #1a1d29;
-  color: #d3d6e6;
-  border-color: #2a2f3d;
+headerbar button, toolbar button, .titlebutton, .flat, button.flat, button.image-button {
+  border-color: transparent;
 }
+
+entry, textview text, spinbutton {
+  background-color: #17181a;
+  background-image: none;
+  color: #ecebe6;
+  border: 1px solid #3d3f44;
+  border-radius: 6px;
+  caret-color: #ecebe6;
+  min-height: 24px;
+}
+
+entry:focus, spinbutton:focus { border-color: #ecebe6; }
 
 menu, .menu, .context-menu, popover, popover.background {
-  background-color: #1a1d29;
-  color: #d3d6e6;
-  border-color: #2a2f3d;
+  background-color: #1c1d1f;
+  background-image: none;
+  color: #ecebe6;
+  border: 1px solid #3d3f44;
+  border-radius: 6px;
+  padding: 6px 0;
 }
 
-separator {
-  background-color: #2a2f3d;
+menuitem, modelbutton { min-height: 24px; padding: 6px 16px; border-radius: 0; }
+menuitem:hover, modelbutton:hover { background-color: #34363a; color: #ecebe6; }
+
+separator { background-color: #2b2d31; }
+
+scrollbar slider { background-color: #3d3f44; border-radius: 3px; }
+scrollbar slider:hover { background-color: #8b8c91; }
+
+iconview, treeview, treeview.view, .view, notebook, notebook stack,
+scrolledwindow, scrolledwindow viewport, scrolledwindow undershoot {
+  background-color: #1c1d1f;
+  color: #ecebe6;
 }
 
-scrollbar slider {
-  background-color: #2a2f3d;
+treeview:selected, iconview:selected, .view:selected, treeview.view:selected, .view content:selected,
+row:selected, list row:selected {
+  background-color: #34363a;
+  color: #ecebe6;
 }
 
-scrollbar slider:hover {
-  background-color: #3ee6e0;
-}
+list, listview { background-color: transparent; }
+row { min-height: 36px; border-bottom: 1px solid #2b2d31; }
+.sidebar row:selected, placessidebar row:selected { background-color: #34363a; color: #ecebe6; }
+
+check:checked, radio:checked { background-color: #ecebe6; color: #1c1d1f; border-color: #ecebe6; }
+switch:checked { background-color: #ecebe6; }
+switch:checked slider { background-color: #1c1d1f; }
+progressbar progress, scale highlight { background-color: #ecebe6; }
+progressbar trough, scale trough { background-color: #2b2d31; }
+tooltip, tooltip.background { background-color: #1c1d1f; border: 1px solid #3d3f44; border-radius: 6px; color: #ecebe6; }
+
+paned > separator { background-color: #2b2d31; }

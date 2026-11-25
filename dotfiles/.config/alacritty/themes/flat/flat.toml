@@ -1,0 +1,33 @@
+# Flat — light ink on near-black, colour only for status. Same palette as the Changewatch design.
+
+[colors.primary]
+background = "#1c1d1f"
+foreground = "#ecebe6"
+
+[colors.cursor]
+text = "#1c1d1f"
+cursor = "#ecebe6"
+
+[colors.selection]
+text = "#ecebe6"
+background = "#34363a"
+
+[colors.normal]
+black   = "#1c1d1f"
+red     = "#f08f87"
+green   = "#9be3b4"
+yellow  = "#f2c46d"
+blue    = "#8fb4f2"
+magenta = "#c3a6e8"
+cyan    = "#8cc9d6"
+white   = "#a8a9ad"
+
+[colors.bright]
+black   = "#3d3f44"
+red     = "#f6aaa4"
+green   = "#b4ebc8"
+yellow  = "#f7d58f"
+blue    = "#adc8f6"
+magenta = "#d4bff0"
+cyan    = "#a8dbe6"
+white   = "#ecebe6"

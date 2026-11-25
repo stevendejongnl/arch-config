@@ -28,7 +28,7 @@ class CasePanel(Gtk.Box):
         heading = label("PC CASE COLOUR", "section")
         note = label("The dot in the bar, the case lights and the mouse follow this colour. Type a hex value or drag in the picker.", "muted")
         for child, before in ((heading, 0), (note, 0), (self.chooser, 6)):
-            margins(child, before, 0, 4, 4)
+            margins(child, before + 14, 6, 20, 20)
             self.pack_start(child, False, False, 0)
 
     @staticmethod

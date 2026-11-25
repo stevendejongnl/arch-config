@@ -13,7 +13,7 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
   spec = { { import = "stevendejong.plugins" } },
   concurrency = 5,
-  install = { colorscheme = { "embark" } },
+  install = { colorscheme = { "flat" } },
   rocks = { enabled = false },
   checker = { enabled = true, notify = false },
   change_detection = { notify = false },

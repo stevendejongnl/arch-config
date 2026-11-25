@@ -1,6 +1,6 @@
-/* Rime theme — https://git.madebysteven.nl/stevendejong/rime
+/* Flat theme: light ink on near-black, the selected row is a light fill.
  * Used by the app launcher (Mod+Space), the window switcher (Mod+Alt+Space) and rofi-rbw.
- * The colours match the dwm status bar popup and the dunst notifications. */
+ * The colours match the dwm bar, the bar popup and the dunst notifications. */
 
 configuration {
     modes:                  "drun,window,run";
@@ -16,16 +16,18 @@ configuration {
 }
 
 * {
-    font:                   "JetBrainsMono Nerd Font 12";
+    font:                   "Inter Tight 12";
 
-    bg:                     #12141cf2;
-    card:                   #181b26;
-    line:                   #2a2f3d;
-    fg:                     #d3d6e6;
-    dim:                    #7a7f99;
-    accent:                 #3ee6e0;
-    yellow:                 #ffd473;
-    red:                    #ff5c78;
+    bg:                     #1c1d1f;
+    bar:                    #17181a;
+    line:                   #2b2d31;
+    line-hi:                #3d3f44;
+    hover:                  #34363a;
+    fg:                     #ecebe6;
+    sec:                    #a8a9ad;
+    dim:                    #8b8c91;
+    yellow:                 #f2c46d;
+    red:                    #f08f87;
 
     background-color:       transparent;
     text-color:             @fg;
@@ -38,50 +40,52 @@ window {
     location:               center;
     anchor:                 center;
     y-offset:               -80px;
-    width:                  660px;
+    width:                  620px;
     background-color:       @bg;
     border:                 1px;
-    border-color:           @line;
-    border-radius:          16px;
+    border-color:           @line-hi;
+    border-radius:          6px;
 }
 
 mainbox {
-    padding:                16px;
-    spacing:                14px;
+    padding:                0;
+    spacing:                0;
     children:               [ inputbar, message, listview ];
 }
 
 inputbar {
-    padding:                12px 16px;
+    padding:                0 16px;
     spacing:                12px;
-    background-color:       @card;
-    border:                 1px;
+    height:                 48px;
+    background-color:       transparent;
+    border:                 0 0 1px 0;
     border-color:           @line;
-    border-radius:          12px;
     children:               [ prompt, entry ];
 }
 
 prompt {
-    text-color:             @accent;
-    font:                   "JetBrainsMono Nerd Font 14";
+    text-color:             @dim;
+    font:                   "JetBrainsMono Nerd Font 12";
+    vertical-align:         0.5;
 }
 
 entry {
     text-color:             @fg;
     placeholder:            "Search";
     placeholder-color:      @dim;
-    cursor-color:           @accent;
+    cursor-color:           @fg;
+    vertical-align:         0.5;
 }
 
 message {
-    border:                 0px;
-    padding:                10px 14px;
-    background-color:       @card;
-    border-radius:          10px;
+    border:                 0 0 1px 0;
+    border-color:           @line;
+    padding:                10px 16px;
+    background-color:       transparent;
 }
 
 textbox {
-    text-color:             @dim;
+    text-color:             @sec;
 }
 
 listview {
@@ -90,24 +94,25 @@ listview {
     columns:                1;
     fixed-height:           false;
     scrollbar:              false;
-    spacing:                4px;
+    spacing:                0;
     dynamic:                true;
 }
 
 element {
-    padding:                9px 12px;
+    padding:                0 16px;
     spacing:                14px;
-    border-radius:          10px;
+    height:                 40px;
+    border-radius:          0;
 }
 
 element-icon {
-    size:                   28px;
+    size:                   22px;
     vertical-align:         0.5;
 }
 
 element-text {
     vertical-align:         0.5;
-    highlight:              bold #3ee6e0;
+    highlight:              bold underline;
 }
 
 element normal.normal, element alternate.normal {
@@ -116,8 +121,8 @@ element normal.normal, element alternate.normal {
 }
 
 element selected.normal {
-    background-color:       @line;
-    text-color:             #ffffff;
+    background-color:       @fg;
+    text-color:             #1c1d1f;
 }
 
 element normal.urgent, element alternate.urgent {
@@ -127,7 +132,7 @@ element normal.urgent, element alternate.urgent {
 
 element selected.urgent {
     background-color:       @red;
-    text-color:             #12141c;
+    text-color:             #1c1d1f;
 }
 
 element normal.active, element alternate.active {
@@ -136,6 +141,6 @@ element normal.active, element alternate.active {
 }
 
 element selected.active {
-    background-color:       @line;
-    text-color:             @yellow;
+    background-color:       @fg;
+    text-color:             #1c1d1f;
 }

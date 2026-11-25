@@ -4,13 +4,13 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .colors import DIM, GREEN, ORANGE, RED, TEAL, YELLOW
+from .colors import DIM, GREEN, ORANGE, RED, YELLOW
 
 ACCOUNTS = Path.home() / ".claude" / "accounts"
 # profile, short label, name, accent colour (the colours of the Claude Code status line badge)
 PROFILES = [
-    ("work", "CS", "CloudSuite", "#FF5C78"),
-    ("personal", "PH", "Personal", "#3EE6E0"),
+    ("work", "CS", "CloudSuite", "#B9A6F0"),
+    ("personal", "PH", "Personal", "#8CC9D6"),
 ]
 SESSION_SECONDS = 5 * 3600
 WEEK_SECONDS = 7 * 86400
@@ -23,7 +23,7 @@ def level_color(pct):
         return ORANGE
     if pct >= 60:
         return YELLOW
-    return TEAL
+    return GREEN
 
 
 def load(profile):
