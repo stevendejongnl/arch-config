@@ -11,7 +11,7 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 
 DIR = os.path.join(os.path.expanduser("~"), ".dwm", "statusbar", "home-eta")
-SENSOR = "sensor.waze_travel_time_steven_work_home"
+SENSORS = ["sensor.waze_travel_time_steven_work_home", "sensor.google_travel_time_steven_work_home"]
 PERSON = "person.steven_de_jong"
 WORK_STATE = "Work Steven"
 WINDOW_MIN = 15  # compare against the reading about this long ago
@@ -48,26 +48,35 @@ def minutes(state):
         return None
 
 
+def change(env, sensor, now_min):
+    """Minutes gained since about WINDOW_MIN ago, or None when the history does not reach back far enough."""
+    start = (datetime.now(timezone.utc) - timedelta(minutes=WINDOW_MIN + 5)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    history = get(env, f"/api/history/period/{start}?filter_entity_id={sensor}&minimal_response&no_attributes")
+    readings = [(datetime.fromisoformat(s["last_changed"]), minutes(s["state"])) for s in (history[0] if history else []) if "last_changed" in s]
+    readings = [(t, v) for t, v in readings if v is not None]
+    if not readings:
+        return None
+    target = datetime.now(timezone.utc) - timedelta(minutes=WINDOW_MIN)
+    # The reading closest to 15 minutes ago; skip it when history does not reach back far enough
+    t, value = min(readings, key=lambda r: abs((r[0] - target).total_seconds()))
+    if abs((t - target).total_seconds()) <= 6 * 60 or t < target:
+        return now_min - value
+    return None
+
+
 def main():
     env = load_env()
     if get(env, "/api/states/" + PERSON)["state"] != WORK_STATE:
         return
-    now_min = minutes(get(env, "/api/states/" + SENSOR)["state"])
-    if now_min is None:
+    # One entry per sensor that has a value; a sensor that is unknown or unavailable is left out
+    now_mins = {s: m for s in SENSORS if (m := minutes(get(env, "/api/states/" + s)["state"])) is not None}
+    if not now_mins:
         return
 
-    start = (datetime.now(timezone.utc) - timedelta(minutes=WINDOW_MIN + 5)).strftime("%Y-%m-%dT%H:%M:%SZ")
-    history = get(env, f"/api/history/period/{start}?filter_entity_id={SENSOR}&minimal_response&no_attributes")
-    readings = [(datetime.fromisoformat(s["last_changed"]), minutes(s["state"])) for s in (history[0] if history else []) if "last_changed" in s]
-    readings = [(t, v) for t, v in readings if v is not None]
-
-    delta = None
-    if readings:
-        target = datetime.now(timezone.utc) - timedelta(minutes=WINDOW_MIN)
-        # The reading closest to 15 minutes ago; skip it when history does not reach back far enough
-        t, value = min(readings, key=lambda r: abs((r[0] - target).total_seconds()))
-        if abs((t - target).total_seconds()) <= 6 * 60 or t < target:
-            delta = now_min - value
+    # The trend is the mean change of the sensors that have enough history
+    deltas = [d for s, m in now_mins.items() if (d := change(env, s, m)) is not None]
+    delta = sum(deltas) / len(deltas) if deltas else None
+    shown = "/".join(f"{m:.0f}" for m in now_mins.values())
 
     if delta is None:
         badge, trend = BADGE_GREY, ""
@@ -79,7 +88,7 @@ def main():
         badge, trend = BADGE_GREEN, f" ↓{delta:.0f}"
     else:
         badge, trend = BADGE_GREEN, " →"
-    sys.stdout.write(f"{badge} {CAR} {now_min:.0f}m{trend} {RESET} ")
+    sys.stdout.write(f"{badge} {CAR} {shown}m{trend} {RESET} ")
 
 
 if __name__ == "__main__":
