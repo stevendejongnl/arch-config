@@ -125,6 +125,11 @@ menu, .menu, .context-menu, popover, popover.background {
 menuitem, modelbutton { min-height: 24px; padding: 6px 16px; border-radius: 0; }
 menuitem:hover, modelbutton:hover { background-color: #34363a; color: #ecebe6; }
 
+menuitem check, menuitem radio { min-width: 16px; min-height: 16px; background-color: transparent; border: 1px solid #8b8c91; border-radius: 4px; color: #1c1d1f; box-shadow: none; }
+menuitem radio { border-radius: 8px; }
+menuitem check:checked, menuitem radio:checked { background-color: transparent; border-color: #ecebe6; color: #ecebe6; -gtk-icon-source: -gtk-icontheme("object-select-symbolic"); }
+menuitem check:checked:hover, menuitem radio:checked:hover { color: #ecebe6; }
+
 separator { background-color: #2b2d31; }
 
 scrollbar slider { background-color: #3d3f44; border-radius: 3px; }
