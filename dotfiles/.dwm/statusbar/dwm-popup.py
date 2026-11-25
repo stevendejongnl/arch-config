@@ -28,7 +28,7 @@ from popup.notifications_panel import NotificationsPanel  # noqa: E402
 
 PANELS = [CasePanel, ClaudePanel, CalendarPanel, KeitoPanel, NotificationsPanel]  # the order of the chips in the bar
 PANEL_WIDTH, PANEL_HEIGHT = 662, 440
-BAR_HEIGHT = 28  # clicks in this band at the top of the monitor are clicks on the bar
+BAR_HEIGHT = 30  # clicks in this band at the top of the monitor are clicks on the bar
 EDGE_GAP = 4  # the outer gap of dwm: popups sit where the tiled windows start and end
 RUN_DIR = Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp"))
 
