@@ -56,6 +56,11 @@ get_network() {
   OUTPUT+="$("$SLSTATUS_DIR"/network.sh)"
 }
 
+get_home_eta() {
+  # Drive time office -> home with a 15 minute trend; empty unless Steven is at the office (see home-eta.py)
+  OUTPUT+="$("$SLSTATUS_DIR"/home-eta.sh)"
+}
+
 get_sudo() {
   OUTPUT+="$("$SLSTATUS_DIR"/sudo.sh)"
 }
@@ -86,6 +91,7 @@ get_package_updates
 get_case_dot
 get_claude_usage
 get_network
+get_home_eta
 get_sudo
 get_date
 

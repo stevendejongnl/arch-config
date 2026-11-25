@@ -7,6 +7,7 @@
 .dwm/statusbar/keito/.env
 .dwm/statusbar/keito/state
 .dwm/statusbar/keito/last-run
+.dwm/statusbar/home-eta/.env
 .config/nvim/plugin/packer_compiled.lua
 .config/nvim/pack
 .config/tmux/plugins
