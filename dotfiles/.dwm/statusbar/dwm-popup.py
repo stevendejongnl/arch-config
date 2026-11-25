@@ -28,7 +28,8 @@ from popup.notifications_panel import NotificationsPanel  # noqa: E402
 
 PANELS = [CasePanel, ClaudePanel, CalendarPanel, KeitoPanel, NotificationsPanel]  # the order of the chips in the bar
 PANEL_WIDTH, PANEL_HEIGHT = 662, 440
-BAR_HEIGHT = 36  # clicks in this band at the top of the monitor are clicks on the bar
+BAR_HEIGHT = 28  # clicks in this band at the top of the monitor are clicks on the bar
+EDGE_GAP = 4  # the outer gap of dwm: popups sit where the tiled windows start and end
 RUN_DIR = Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp"))
 
 
@@ -151,7 +152,7 @@ def show(tab, at=None):
         # on the monitor of the focused window
         geo = display.get_monitor_at_point(*focused_point(display)).get_geometry()
         x = geo.x + geo.width
-    win.move(min(max(x, geo.x + 8), geo.x + geo.width - width - 8), geo.y)
+    win.move(min(max(x, geo.x + EDGE_GAP), geo.x + geo.width - width - EDGE_GAP), geo.y + BAR_HEIGHT + EDGE_GAP)
     win.show_all()
     popup.select(popup.current)
 

@@ -33,7 +33,7 @@
     origin = top-right
 
     # Offset from the origin
-    offset = 14x34
+    offset = 4x32
 
     # Scale factor. It is auto-detected if value is 0.
     scale = 0
@@ -95,7 +95,7 @@
     # If value is greater than 0, separator_height will be ignored and a border
     # of size frame_width will be drawn around each notification instead.
     # Click events on gaps do not currently propagate to applications below.
-    gap_size = 8
+    gap_size = 4
 
     # Define a color for the separator.
     # possible values are:
