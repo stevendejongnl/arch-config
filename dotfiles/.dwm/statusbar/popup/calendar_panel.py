@@ -1,4 +1,4 @@
-"""Calendar tab: the meetings of today on a timeline and as a list, with a button to join the Google Meet."""
+"""Calendar tab: the meetings of today as flat rows. The next meeting with a Google Meet gets a Join button."""
 import json
 import os
 import shutil
@@ -10,7 +10,7 @@ from pathlib import Path
 from gi.repository import Gtk
 
 from .browser import open_work
-from .theme import (DIM, GREEN, MARKUP, MUTED, TEAL, YELLOW, Timeline, button, clear, label, margins, run_async)
+from .theme import (DIM, GREEN, MARKUP, MUTED, TEAL, YELLOW, button, clear, label, margins, run_async)
 
 CREDENTIALS = Path.home() / ".config" / "gcalcli" / "credentials.json"
 FETCH = Path(__file__).with_name("calendar_fetch.py")
@@ -68,15 +68,12 @@ class CalendarPanel(Gtk.Box):
         head.pack_start(self.heading, False, False, 0)
         head.pack_end(self.status, False, False, 6)
         head.get_style_context().add_class("head")
-        self.timeline = Timeline(64)
         self.all_day = Gtk.Box(spacing=8)
         self.list = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        footer = Gtk.Box()
-        footer.pack_end(button("Open Google Calendar  ↗", None, lambda: self.open_url(CALENDAR_URL)), False, False, 0)
 
         self.pack_start(head, False, False, 0)
-        for child, top, side in ((self.timeline, 14, 20), (self.all_day, 10, 20), (self.list, 12, 0), (footer, 12, 20)):
-            self.pack_start(margins(child, top, 0, side, side), False, False, 0)
+        self.pack_start(margins(self.all_day, 12, 0, 20, 20), False, False, 0)
+        self.pack_start(self.list, False, False, 0)
 
         try:
             cached = json.loads(CACHE.read_text())
@@ -145,19 +142,13 @@ class CalendarPanel(Gtk.Box):
         now_min = now.hour * 60 + now.minute
         timed = self.timed()
 
-        blocks = []
-        for e in timed:
-            s, f = parse(e["start"]), parse(e["end"])
-            blocks.append((s.hour * 60 + s.minute, f.hour * 60 + f.minute, RESPONSE_COLORS.get(e["response"], DIM)))
-        self.timeline.set(blocks, now=now_min, lo_hour=8, hi_hour=18)
-
         ongoing = next((e for e in timed if parse(e["start"]) <= now < parse(e["end"])), None)
         upcoming = next((e for e in timed if parse(e["start"]) > now), None)
         if ongoing:
-            text = f"Now: {esc(ongoing['title'])}  ·  ends in {left((parse(ongoing['end']) - now).total_seconds())}"
+            text = f"Now  ·  ends in {minutes_text((parse(ongoing['end']) - now).total_seconds())}"
             self.status.set_markup(MARKUP.format(c=GREEN, t=text))
         elif upcoming:
-            text = f"Next: {esc(upcoming['title'])}  ·  in {left((parse(upcoming['start']) - now).total_seconds())}"
+            text = f"Next in {minutes_text((parse(upcoming['start']) - now).total_seconds())}"
             self.status.set_markup(MARKUP.format(c=YELLOW, t=text))
         else:
             self.status.set_markup(MARKUP.format(c=MUTED, t="No more meetings today"))
@@ -169,54 +160,59 @@ class CalendarPanel(Gtk.Box):
             self.all_day.pack_start(chip, False, False, 0)
 
         clear(self.list)
+        next_join = next((e for e in timed if parse(e["start"]) > now and e["meet"]), None)
         for e in timed:
-            self.list.pack_start(self.row(e, now), False, False, 0)
+            self.list.pack_start(self.row(e, now, e is next_join), False, False, 0)
         if not timed:
-            self.list.pack_start(label("No meetings today.", "muted"), False, False, 0)
+            self.list.pack_start(margins(label("No meetings today.", "muted"), 14, 0, 20, 20), False, False, 0)
         self.show_all()
         self.all_day.set_visible(any(e["all_day"] for e in events))
 
-    def row(self, e, now):
+    def row(self, e, now, join):
         start, end = parse(e["start"]), parse(e["end"])
         past = end <= now
         ongoing = start <= now < end
-        soon = not ongoing and not past and (start - now).total_seconds() <= SOON_MINUTES * 60
         row = Gtk.Box(spacing=14)
-        row.get_style_context().add_class("row-now" if ongoing else "row-soon" if soon else "row")
+        row.get_style_context().add_class("row")
 
         when = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=1)
         when.set_size_request(58, -1)
-        when.pack_start(label(start.strftime("%H:%M"), "time" if not past else "muted"), False, False, 0)
-        when.pack_start(label(end.strftime("%H:%M"), "muted"), False, False, 0)
+        when.set_valign(Gtk.Align.CENTER)
+        when.pack_start(label(start.strftime("%H:%M"), "monodim" if past else "mono"), False, False, 0)
+        when.pack_start(label(end.strftime("%H:%M"), "monodim"), False, False, 0)
 
         text = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-        text.pack_start(label(esc(short(e["title"])), "dim" if past else "rowtitle", markup=True, ellipsize=True), False, False, 0)
-        minutes = int((end - start).total_seconds() // 60)
-        duration = f"{minutes // 60}h {minutes % 60:02d}m" if minutes >= 60 and minutes % 60 else \
-            f"{minutes // 60}h" if minutes >= 60 else f"{minutes}m"
-        parts = [duration]
-        if e["attendees"] > 1:
-            parts.append(f"{e['attendees']} people")
-        if ongoing:
-            parts.append(f"ends in {left((end - now).total_seconds())}")
-        elif soon:
-            parts.append(f"starts in {left((start - now).total_seconds())}")
-        sub = "  ·  ".join(parts)
-        if e["response"] == "tentative":
-            sub += f"  ·  <span foreground='{YELLOW}'>tentative</span>"
-        text.pack_start(label(sub, "muted", markup=True, ellipsize=True), False, False, 0)
+        text.set_valign(Gtk.Align.CENTER)
+        text.pack_start(label(esc(short(e["title"])), "rowdone" if past else "rowname", markup=True, ellipsize=True),
+                        False, False, 0)
+        if e["meet"] and not past:
+            text.pack_start(label("Google Meet", "muted"), False, False, 0)
 
         row.pack_start(when, False, False, 0)
         row.pack_start(text, True, True, 0)
-        if e["meet"]:  # a past meeting keeps its link (a quiet button), to rejoin or to find the recording
-            css = "action-go" if ongoing else "action-primary" if soon else None
-            text_ = "▶  Join now" if ongoing else "↗  Meet link" if past else "▶  Join"
-            row.pack_end(button(text_, css, lambda url=e["meet"]: self.open_url(url)), False, False, 0)
-        return row
+        if past:
+            row.pack_end(label("done", "muted", 1.0), False, False, 0)
+        elif ongoing:
+            row.pack_end(label(f"<span foreground='{GREEN}'>●  Now</span>", "muted", 1.0, markup=True), False, False, 0)
+        elif join:
+            row.pack_end(button("Join", "action-primary", lambda url=e["meet"]: self.open_url(url)), False, False, 0)
+        else:
+            row.pack_end(label(f"in {left((start - now).total_seconds())}", "muted", 1.0), False, False, 0)
+        if not e["meet"]:
+            return row
+        box = Gtk.EventBox()  # a click on the row opens the meeting
+        box.add(row)
+        box.connect("button-press-event", lambda _w, _ev, url=e["meet"]: self.open_url(url))
+        return box
 
     @staticmethod
     def open_url(url):
         open_work(url)
+
+
+def minutes_text(seconds):
+    minutes = max(int(seconds // 60), 1)
+    return f"{minutes // 60}h {minutes % 60}m" if minutes >= 60 else f"{minutes} min"
 
 
 def short(text, limit=52):

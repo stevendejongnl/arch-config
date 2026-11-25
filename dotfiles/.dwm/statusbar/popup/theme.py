@@ -20,6 +20,7 @@ window {{ background: {BG}; border: 1px solid {BORDER}; border-radius: 6px; }}
 .card {{ background: transparent; border: none; border-bottom: 1px solid {LINE}; border-radius: 0; }}
 .row, .row-now, .row-soon, .row-crit {{ padding: 12px 20px; background: transparent; border: none;
                                         border-bottom: 1px solid {LINE}; border-radius: 0; }}
+.row-tight {{ padding: 9px 20px; background: transparent; border: none; border-bottom: 1px solid {LINE}; border-radius: 0; }}
 .row-now {{ border-left: 2px solid {GREEN}; }}
 .row-crit {{ border-left: 2px solid {RED}; }}
 .apptile {{ background: {LINE}; color: {TEXT}; border-radius: 6px; font-size: 11pt; font-weight: 600; min-width: 36px; min-height: 36px; }}
@@ -43,17 +44,26 @@ window {{ background: {BG}; border: 1px solid {BORDER}; border-radius: 6px; }}
 .bigmuted {{ color: {MUTED}; font-size: 14pt; font-weight: 500; }}
 .rowtitle {{ color: {TEXT}; font-size: 11pt; font-weight: 600; }}
 .time {{ color: {DIM}; font-size: 10pt; font-weight: 500; }}
+.mono {{ font-family: "JetBrains Mono", monospace; color: {TEXT}; font-size: 9.5pt; }}
+.monodim {{ font-family: "JetBrains Mono", monospace; color: {DIM}; font-size: 9.5pt; }}
+.timer {{ font-family: "JetBrains Mono", monospace; color: {TEXT}; font-size: 12pt; font-weight: 500; }}
+.rowname {{ color: {TEXT}; font-size: 10.5pt; font-weight: 500; }}
+.rowdone {{ color: {DIM}; font-size: 10.5pt; }}
 .action {{ background: transparent; color: {TEXT}; font-size: 10pt; font-weight: 500; padding: 6px 14px; min-height: 24px;
           border-width: 1px; border-style: solid; border-color: {BORDER}; border-radius: 6px; box-shadow: none; background-image: none; }}
 button.action, button.flat.action {{ border-width: 1px; border-style: solid; border-color: {BORDER}; }}
 .action:hover {{ background: {HOVER}; }}
-.action-primary {{ background: {TEXT}; border-color: {TEXT}; color: {BG}; }}
+button.action.action-primary {{ background: {TEXT}; border: 1px solid {TEXT}; }}
+button.action.action-primary, button.action.action-primary label {{ color: {BG}; }}
 .action-primary:hover {{ background: #FFFFFF; }}
-.action-go {{ border-color: {GREEN}; color: {GREEN}; }}
+button.action.action-go {{ border: 1px solid {GREEN}; }}
+button.action.action-go, button.action.action-go label {{ color: {GREEN}; }}
 .action-go:hover {{ background: {HOVER}; }}
-.action-warn {{ border-color: {YELLOW}; color: {YELLOW}; }}
+button.action.action-warn {{ border: 1px solid {YELLOW}; }}
+button.action.action-warn, button.action.action-warn label {{ color: {YELLOW}; }}
 .action-warn:hover {{ background: {HOVER}; }}
-.action-stop {{ border-color: {RED}; color: {RED}; }}
+button.action.action-stop {{ border: 1px solid {RED}; }}
+button.action.action-stop, button.action.action-stop label {{ color: {RED}; }}
 .action-stop:hover {{ background: {HOVER}; }}
 scrolledwindow, viewport {{ background: transparent; }}
 undershoot.top, undershoot.bottom, overshoot.top, overshoot.bottom {{ background: none; background-image: none; }}
@@ -66,7 +76,7 @@ MARKUP = "<span foreground='{c}'>{t}</span>"
 def install_css():
     css = Gtk.CssProvider()
     css.load_from_data(CSS.encode())
-    Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+    Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), css, Gtk.STYLE_PROVIDER_PRIORITY_USER)
 
 
 def rgb(hexcolor):
@@ -203,6 +213,38 @@ class Bar(Gtk.DrawingArea):
             cr.set_source_rgb(*rgb(self.color))
             pill_path(cr, 0, 0, max(w * min(self.frac, 1), h), h)
             cr.fill()
+
+
+class Segments(Gtk.DrawingArea):
+    """A thin bar of coloured parts, each a share of the whole (a day goal), on a track."""
+
+    def __init__(self, height=6):
+        super().__init__()
+        self.set_size_request(-1, height)
+        self.parts = []
+        self.connect("draw", self.on_draw)
+
+    def set(self, parts):
+        """parts: list of (fraction of the full bar, colour)."""
+        self.parts = parts
+        self.queue_draw()
+
+    def on_draw(self, _w, cr):
+        w, h = self.get_allocated_width(), self.get_allocated_height()
+        cr.set_source_rgb(*rgb(TRACK))
+        pill_path(cr, 0, 0, w, h)
+        cr.fill()
+        cr.save()
+        pill_path(cr, 0, 0, w, h)
+        cr.clip()
+        x = 0.0
+        for frac, color in self.parts:
+            width = w * min(max(frac, 0), 1)
+            cr.set_source_rgb(*rgb(color))
+            cr.rectangle(x, 0, width, h)
+            cr.fill()
+            x += width
+        cr.restore()
 
 
 class Timeline(Gtk.DrawingArea):

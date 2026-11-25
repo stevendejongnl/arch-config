@@ -1,4 +1,4 @@
-"""Keito tab: logged time against the day goal, a timeline of the day, the running timer and today's entries."""
+"""Keito tab: logged time against the day goal as a bar per project, the running timer and today's entries."""
 import json
 import os
 import urllib.request
@@ -9,7 +9,7 @@ from pathlib import Path
 from gi.repository import Gtk
 
 from .browser import open_work
-from .theme import (DIM, GREEN, MARKUP, MUTED, ORANGE, PURPLE, RED, TEAL, YELLOW, Bar, Timeline, button, clear, label,
+from .theme import (DIM, GREEN, MARKUP, MUTED, ORANGE, PURPLE, RED, TEAL, YELLOW, Segments, button, clear, label,
                     margins, run_async)
 
 KEITO_DIR = Path.home() / ".dwm" / "statusbar" / "keito"
@@ -43,6 +43,11 @@ def call(path, method="GET"):
 def hm(seconds):
     minutes = int(seconds) // 60
     return f"{minutes // 60}:{minutes % 60:02d}"
+
+
+def hms(seconds):
+    seconds = int(seconds)
+    return f"{seconds // 3600}:{seconds // 60 % 60:02d}:{seconds % 60:02d}"
 
 
 def minutes_of(clock):
@@ -90,18 +95,17 @@ class KeitoPanel(Gtk.Box):
         head.pack_start(self.goal, False, False, 0)
         head.pack_end(self.caption, False, False, 6)
         head.get_style_context().add_class("head")
-        self.progress = Bar(8)
-        self.timeline = Timeline(60)
+        self.progress = Segments(6)
         self.legend = Gtk.Box(spacing=14)
         self.running_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.list = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        self.footer = Gtk.Box(spacing=8)
-        self.footer.pack_end(button("Open Keito  ↗", None, lambda: self.open_url(APP_URL)), False, False, 0)
+        self.project_seconds = {}
 
         self.pack_start(head, False, False, 0)
-        for child, top, side in ((self.progress, 14, 20), (self.legend, 8, 20), (self.timeline, 12, 20),
-                                 (self.running_box, 12, 0), (self.list, 0, 0), (self.footer, 12, 20)):
-            self.pack_start(margins(child, top, 12 if child is self.timeline else 0, side, side), False, False, 0)
+        self.pack_start(margins(self.progress, 14, 0, 20, 20), False, False, 0)
+        self.pack_start(margins(self.legend, 8, 14, 20, 20), False, False, 0)
+        self.pack_start(self.running_box, False, False, 0)
+        self.pack_start(self.list, False, False, 0)
 
     @staticmethod
     def available():
@@ -132,7 +136,7 @@ class KeitoPanel(Gtk.Box):
         if self.running_elapsed is not None and self.data:
             running = next((e for e in self.data if e["is_running"]), None)
             if running:
-                self.running_elapsed.set_text(hm(elapsed(running)))
+                self.running_elapsed.set_text(hms(elapsed(running)))
                 self.update_total()
 
     def logged_seconds(self):
@@ -154,7 +158,12 @@ class KeitoPanel(Gtk.Box):
         if not GOAL_HOURS:
             return
         goal = GOAL_HOURS * 3600
-        self.progress.set(logged / goal, GREEN if logged >= goal else TEAL)
+        seconds = dict(self.project_seconds)
+        running = next((e for e in self.data if e["is_running"]), None) if self.data else None
+        if running:  # the running entry keeps growing between two refreshes
+            name = running["project"]["name"]
+            seconds[name] = seconds.get(name, 0) + elapsed(running) - running["duration_seconds"]
+        self.progress.set([(secs / goal, project_color(name)) for name, secs in seconds.items()])
         if logged >= goal:
             self.caption.set_markup(MARKUP.format(c=GREEN, t="Goal reached"))
         else:
@@ -174,20 +183,15 @@ class KeitoPanel(Gtk.Box):
             self.progress.hide()
 
         running = next((e for e in entries if e["is_running"]), None)
-        now = now_minutes()
-        blocks, projects = [], {}
+        self.project_seconds = {}
         for e in entries:
-            start = minutes_of(e.get("started_time"))
-            end = now if e["is_running"] else minutes_of(e.get("ended_time"))
-            color = project_color(e["project"]["name"])
-            projects[e["project"]["name"]] = color
-            if start is not None and end is not None and end > start:
-                blocks.append((start, end, color))
-        self.timeline.set(blocks, now=now)
+            name = e["project"]["name"]
+            self.project_seconds[name] = self.project_seconds.get(name, 0) + e["duration_seconds"]
+        self.update_total()
         clear(self.legend)
-        for name, color in projects.items():
-            self.legend.pack_start(label(f"<span foreground='{color}'>●</span>  {name}", "muted", markup=True),
-                                   False, False, 0)
+        for name in self.project_seconds:
+            self.legend.pack_start(label(f"<span foreground='{project_color(name)}'>●</span>  {name}", "muted",
+                                         markup=True), False, False, 0)
 
         clear(self.running_box)
         self.running_elapsed = None
@@ -198,11 +202,11 @@ class KeitoPanel(Gtk.Box):
         done = sorted((e for e in entries if not e["is_running"]),
                       key=lambda e: minutes_of(e.get("started_time")) or 0, reverse=True)
         if done:
-            self.list.pack_start(margins(label("TODAY", "section"), 12, 4, 20, 20), False, False, 0)
+            self.list.pack_start(margins(label("TODAY", "section"), 14, 6, 20, 20), False, False, 0)
         for e in done:
             self.list.pack_start(self.entry_row(e), False, False, 0)
         if not entries:
-            self.list.pack_start(label("Nothing logged today.", "muted"), False, False, 0)
+            self.list.pack_start(margins(label("Nothing logged today.", "muted"), 14, 0, 20, 20), False, False, 0)
         self.show_all()
         self.progress.set_visible(bool(GOAL_HOURS))
 
@@ -212,35 +216,30 @@ class KeitoPanel(Gtk.Box):
         return row
 
     def running_row(self, e):
-        row = self.row_frame("row-now")
-        text = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-        text.pack_start(label(f"<span foreground='{GREEN}'>●</span>  {esc(title_of(e))}", "rowtitle",
-                              markup=True, ellipsize=True), False, False, 0)
-        text.pack_start(label(f"{e['project']['name']} / {e['task']['name']}  ·  since {e.get('started_time') or ''}",
-                              "muted", ellipsize=True), False, False, 0)
-        self.running_elapsed = label(hm(elapsed(e)), "elapsed", 1.0)
-        row.pack_start(text, True, True, 0)
-        row.pack_end(button("■  Stop", "action-stop", lambda: self.act("stop", e["id"])), False, False, 0)
+        row = self.row_frame("row")
+        title = label(f"<span foreground='{GREEN}'>●</span>  {esc(short(title_of(e)))}", "rowname", markup=True,
+                      ellipsize=True)
+        title.set_valign(Gtk.Align.CENTER)
+        self.running_elapsed = label(hms(elapsed(e)), "timer", 1.0)
+        row.pack_start(title, True, True, 0)
+        row.pack_end(button("Stop", "action-stop", lambda: self.act("stop", e["id"])), False, False, 0)
         row.pack_end(self.running_elapsed, False, False, 6)
+        row.get_style_context().add_class("row-running")
         return row
 
     def entry_row(self, e):
-        row = self.row_frame("row")
-        color = project_color(e["project"]["name"])
-        stripe = Gtk.Box()
-        stripe.set_size_request(4, -1)
-        stripe_css = Gtk.CssProvider()
-        stripe_css.load_from_data(f"box {{ background: {color}; border-radius: 4px; }}".encode())
-        stripe.get_style_context().add_provider(stripe_css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-        text = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-        text.pack_start(label(esc(short(title_of(e))), "rowtitle", markup=True, ellipsize=True), False, False, 0)
-        span = f"{e.get('started_time') or '--'}–{e.get('ended_time') or '--'}"
-        text.pack_start(label(f"{span}  ·  {e['project']['name']} / {e['task']['name']}", "muted", ellipsize=True), False, False, 0)
-        row.pack_start(stripe, False, False, 0)
-        row.pack_start(text, True, True, 0)
-        row.pack_end(button("▶", None, lambda: self.act("restart", e["id"])), False, False, 0)
-        row.pack_end(label(hm(e["duration_seconds"]), "time", 1.0), False, False, 6)
-        return row
+        row = Gtk.Box(spacing=14)
+        row.get_style_context().add_class("row-tight")
+        length = label(hm(e["duration_seconds"]), "mono")
+        length.set_size_request(58, -1)
+        title = label(esc(short(title_of(e))), "rowname", markup=True, ellipsize=True)
+        row.pack_start(length, False, False, 0)
+        row.pack_start(title, True, True, 0)
+        row.pack_end(label(e["project"]["name"], "muted", 1.0), False, False, 0)
+        box = Gtk.EventBox()  # a click on the row starts the entry again
+        box.add(row)
+        box.connect("button-press-event", lambda _w, _ev: self.act("restart", e["id"]))
+        return box
 
     # actions ---------------------------------------------------------
 
