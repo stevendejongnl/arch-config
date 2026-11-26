@@ -10,7 +10,7 @@ from pathlib import Path
 from gi.repository import Gtk
 
 from .browser import open_work
-from .theme import (DIM, GREEN, MARKUP, MUTED, TEAL, YELLOW, button, clear, label, margins, run_async)
+from .theme import (DIM, GREEN, MARKUP, MUTED, TEAL, YELLOW, button, clear, label, link_row, margins, run_async)
 
 CREDENTIALS = Path.home() / ".config" / "gcalcli" / "credentials.json"
 FETCH = Path(__file__).with_name("calendar_fetch.py")
@@ -74,6 +74,7 @@ class CalendarPanel(Gtk.Box):
         self.pack_start(head, False, False, 0)
         self.pack_start(margins(self.all_day, 12, 0, 20, 20), False, False, 0)
         self.pack_start(self.list, False, False, 0)
+        self.pack_start(link_row("Open Google Calendar  ↗", lambda: self.open_url(CALENDAR_URL)), False, False, 0)
 
         try:
             cached = json.loads(CACHE.read_text())

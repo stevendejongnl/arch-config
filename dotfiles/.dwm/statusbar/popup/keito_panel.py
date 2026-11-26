@@ -9,7 +9,7 @@ from pathlib import Path
 from gi.repository import Gtk
 
 from .browser import open_work
-from .theme import (DIM, GREEN, MARKUP, MUTED, ORANGE, PURPLE, RED, TEAL, YELLOW, Segments, button, clear, label,
+from .theme import (DIM, GREEN, MARKUP, MUTED, ORANGE, PURPLE, RED, TEAL, YELLOW, Segments, button, clear, label, link_row,
                     margins, run_async)
 
 KEITO_DIR = Path.home() / ".dwm" / "statusbar" / "keito"
@@ -106,6 +106,7 @@ class KeitoPanel(Gtk.Box):
         self.pack_start(margins(self.legend, 8, 14, 20, 20), False, False, 0)
         self.pack_start(self.running_box, False, False, 0)
         self.pack_start(self.list, False, False, 0)
+        self.pack_start(link_row("Open Keito  ↗", lambda: self.open_url(APP_URL)), False, False, 0)
 
     @staticmethod
     def available():

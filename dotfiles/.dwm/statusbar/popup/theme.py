@@ -21,6 +21,10 @@ window {{ background: {BG}; border: 1px solid {BORDER}; border-radius: 6px; }}
 .row, .row-now, .row-soon, .row-crit {{ padding: 12px 20px; background: transparent; border: none;
                                         border-bottom: 1px solid {LINE}; border-radius: 0; }}
 .row-tight {{ padding: 9px 20px; background: transparent; border: none; border-bottom: 1px solid {LINE}; border-radius: 0; }}
+.linkrow {{ background: transparent; border-top: 1px solid {LINE}; }}
+.linkrow label {{ color: {MUTED}; font-size: 10pt; }}
+.linkrow:hover {{ background: {HOVER}; }}
+.linkrow:hover label {{ color: {TEXT}; }}
 .row-now {{ border-left: 2px solid {GREEN}; }}
 .row-crit {{ border-left: 2px solid {RED}; }}
 .apptile {{ background: {LINE}; color: {TEXT}; border-radius: 6px; font-size: 11pt; font-weight: 600; min-width: 36px; min-height: 36px; }}
@@ -108,6 +112,20 @@ def button(text, css, on_click):
     b.set_valign(Gtk.Align.CENTER)
     b.connect("clicked", lambda _b: on_click())
     return b
+
+
+def link_row(text, on_click):
+    """A flat footer row that opens something on click."""
+    box = Gtk.EventBox()
+    box.get_style_context().add_class("linkrow")
+    text_label = label(text)
+    text_label.set_margin_top(12)
+    text_label.set_margin_bottom(12)
+    text_label.set_margin_start(20)
+    box.add(text_label)
+    box.connect("button-press-event", lambda _w, _ev: on_click())
+    box.connect("realize", lambda w: w.get_window().set_cursor(Gdk.Cursor.new_from_name(w.get_display(), "pointer")))
+    return box
 
 
 def margins(widget, top=0, bottom=0, start=0, end=0):

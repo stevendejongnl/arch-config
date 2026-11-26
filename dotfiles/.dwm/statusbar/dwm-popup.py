@@ -46,7 +46,7 @@ class Popup:
 
         self.stack = Gtk.Stack()
         self.stack.set_homogeneous(True)
-        self.stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self.stack.set_transition_type(Gtk.StackTransitionType.NONE)  # no fade from the first panel to the chosen one at start
         self.stack.set_transition_duration(120)
         for panel in self.panels:
             scroller = Gtk.ScrolledWindow()
@@ -155,6 +155,7 @@ def show(tab, at=None):
     win.move(min(max(x, geo.x + EDGE_GAP), geo.x + geo.width - width - EDGE_GAP), geo.y + BAR_HEIGHT + EDGE_GAP)
     win.show_all()
     popup.select(popup.current)
+    popup.stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)  # fade only when switching tabs
 
     def close(*_):
         write_state("")
