@@ -19,5 +19,5 @@ systemctl --user start autostart.target &
 
 watch-screenshots &
 
-# Start statusbar updater loop
-nohup bash -c 'while true; do xsetroot -name "$($HOME/.dwm/statusbar/statusbar.sh)"; sleep 1; done' > /tmp/statusbar.log 2>&1 &
+# Start statusbar updater loop. autostart runs again on every dwm restart, so the lock keeps it to one loop.
+nohup flock -n "$XDG_RUNTIME_DIR/dwm-statusbar.lock" bash -c 'while true; do xsetroot -name "$($HOME/.dwm/statusbar/statusbar.sh)"; sleep 1; done' > /tmp/statusbar.log 2>&1 &
