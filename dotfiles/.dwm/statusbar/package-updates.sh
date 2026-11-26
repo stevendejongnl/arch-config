@@ -24,15 +24,26 @@ else
 fi
 
 if [ "$((current_time - last_run))" -ge "$interval" ]; then
-    if ! updates_arch=$(checkupdates | wc -l); then
-        updates_arch=0
+    # checkupdates exits 0 with updates, 2 with none and 1 on an error (offline, VPN down). An error must
+    # not count as zero updates, so the old numbers stay until a check works.
+    old_arch=0
+    old_aur=0
+    if [ -f "$status_file" ]; then
+        IFS=/ read -r old_arch old_aur < "$status_file"
     fi
 
-    if ! updates_aur=$(yay -Qum 2>/dev/null | wc -l); then
-        updates_aur=0
-    fi
+    arch_list=$(checkupdates 2>/dev/null)
+    case $? in
+        0) updates_arch=$(echo "$arch_list" | wc -l) ;;
+        2) updates_arch=0 ;;
+        *) updates_arch=$old_arch ;;
+    esac
 
-    # updates="$((updates_arch + updates_aur))"
+    if aur_list=$(yay -Qum 2>/dev/null); then
+        updates_aur=$(printf '%s' "$aur_list" | grep -c .)
+    else
+        updates_aur=$old_aur
+    fi
 
     echo "$updates_arch/$updates_aur" > "$status_file"
     echo "$current_time" > "$last_run_file"
