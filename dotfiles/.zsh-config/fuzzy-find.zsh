@@ -1,5 +1,9 @@
 eval "$(fzf --zsh)"
 
+# Ctrl+T is the tmux new-window key, so fzf file search moves to Ctrl+F
+bindkey -r '^T'
+bindkey '^F' fzf-file-widget
+
 # Load fzf-git.sh for git-specific keybindings (CTRL-G prefix)
 source ~/.zplug/repos/junegunn/fzf-git.sh/fzf-git.sh
 
